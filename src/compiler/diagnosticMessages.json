@@ -1819,6 +1819,10 @@
         "category": "Error",
         "code": 2671
     },
+    "Import or export declaration in a result ambient module declaration cannot reference module through relative module name.": {
+        "category": "Error",
+        "code": 2672
+    },    
     "Import declaration '{0}' is using private name '{1}'.": {
         "category": "Error",
         "code": 4000

@@ -752,6 +752,15 @@ namespace ts {
             if (moduleSpecifier.kind === SyntaxKind.StringLiteral && isBundledEmit && (compilerOptions.out || compilerOptions.outFile)) {
                 const moduleName = getExternalModuleNameFromDeclaration(host, resolver, parent);
                 if (moduleName) {
+                    if (isExternalModuleNameRelative(moduleName)) {
+                        const start = skipTrivia(currentText, moduleSpecifier.pos);
+                        const diagnostic = createFileDiagnostic(
+                            getSourceFileOfNode(moduleSpecifier),
+                            start,
+                            moduleSpecifier.end - start,
+                            Diagnostics.Import_or_export_declaration_in_a_result_ambient_module_declaration_cannot_reference_module_through_relative_module_name);
+                        emitterDiagnostics.add(diagnostic)
+                    }
                     write("\"");
                     write(moduleName);
                     write("\"");
