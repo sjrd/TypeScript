@@ -1,7 +1,9 @@
+package be.doeraene.tsc
+
 /// <reference path="core.ts"/>
 /// <reference path="diagnosticInformationMap.generated.ts"/>
 
-package ts {
+object Scanner {
   interface ErrorCallback {
     (message: DiagnosticMessage, length: Int): void
   }

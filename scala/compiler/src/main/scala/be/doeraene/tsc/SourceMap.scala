@@ -1,7 +1,9 @@
+package be.doeraene.tsc
+
 /// <reference path="checker.ts"/>
 
 /* @internal */
-package ts {
+object SourceMap {
   interface SourceMapWriter {
     getSourceMapData(): SourceMapData
     setSourceFile(sourceFile: SourceFile): void
@@ -168,7 +170,7 @@ package ts {
           sourceMapData.sourceMapDecodedMappings[sourceMapData.sourceMapDecodedMappings.length - 1] :
           defaultLastEncodedSourceMapSpan
 
-        // TODO: Update lastEncodedNameIndex 
+        // TODO: Update lastEncodedNameIndex
         // Since we dont support this any more, lets not worry about it right now.
         // When we start supporting nameIndex, we will get back to this
 

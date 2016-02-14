@@ -1,4 +1,6 @@
-package ts {
+package be.doeraene.tsc
+
+object Types {
   interface Map<T> {
     [index: String]: T
   }
@@ -2640,7 +2642,7 @@ package ts {
     percent = 0x25,         // %
     plus = 0x2B,          // +
     question = 0x3F,        // ?
-    semicolon = 0x3B,       // 
+    semicolon = 0x3B,       //
     singleQuote = 0x27,       // '
     slash = 0x2F,         // /
     tilde = 0x7E,         // ~

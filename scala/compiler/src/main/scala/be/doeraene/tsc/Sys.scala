@@ -1,6 +1,8 @@
+package be.doeraene.tsc
+
 /// <reference path="core.ts"/>
 
-package ts {
+object Sys {
   type FileWatcherCallback = (path: String, removed?: Boolean) => void
   type DirectoryWatcherCallback = (path: String) => void
 

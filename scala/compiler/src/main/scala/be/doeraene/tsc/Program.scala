@@ -1,8 +1,10 @@
+package be.doeraene.tsc
+
 /// <reference path="sys.ts" />
 /// <reference path="emitter.ts" />
 /// <reference path="core.ts" />
 
-package ts {
+object Program {
   /* @internal */ var programTime = 0
   /* @internal */ var emitTime = 0
   /* @internal */ var ioReadTime = 0

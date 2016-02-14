@@ -1,7 +1,9 @@
+package be.doeraene.tsc
+
 /// <reference path="types.ts"/>
 
 /* @internal */
-package ts {
+object Core {
   /**
    * Ternary values are defined such that
    * x & y is False if either x or y is False.

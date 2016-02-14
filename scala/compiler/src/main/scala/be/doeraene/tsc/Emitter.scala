@@ -1,9 +1,11 @@
+package be.doeraene.tsc
+
 /// <reference path="checker.ts"/>
 /// <reference path="sourcemap.ts" />
 /// <reference path="declarationEmitter.ts"/>
 
 /* @internal */
-package ts {
+object Emitter {
   def getResolvedExternalModuleName(host: EmitHost, file: SourceFile): String {
     return file.moduleName || getExternalModuleNameFromPath(host, file.fileName)
   }
@@ -296,11 +298,11 @@ package ts {
    * If loop contains block scoped binding captured in some def then loop body is converted to a def.
    * Lexical bindings declared in loop initializer will be passed into the loop body def as parameters,
    * however if this binding is modified inside the body - this new value should be propagated back to the original binding.
-   * This is done by declaring new variable (out parameter holder) outside of the loop for every binding that is reassigned inside the body. 
+   * This is done by declaring new variable (out parameter holder) outside of the loop for every binding that is reassigned inside the body.
    * On every iteration this variable is initialized with value of corresponding binding.
    * At every point where control flow leaves the loop either explicitly (break/continue) or implicitly (at the end of loop body)
    * we copy the value inside the loop to the out parameter holder.
-   * 
+   *
    * for (var x;;) {
    *   var a = 1
    *   var b = () => a
@@ -308,9 +310,9 @@ package ts {
    *   if (...) break
    *   ...
    * }
-   * 
+   *
    * will be converted to
-   * 
+   *
    * var out_x
    * var loop = def(x) {
    *   var a = 1
@@ -326,7 +328,7 @@ package ts {
    *   x = out_x
    *   if (state == "break") break
    * }
-   * 
+   *
    * NOTE: values to out parameters are not copies if loop is abrupted with 'return' - in this case this will end the entire enclosing def
    * so nobody can observe this new value.
    */
@@ -3073,7 +3075,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
 
         writeLine()
-        // end of loop body -> copy out parameter 
+        // end of loop body -> copy out parameter
         copyLoopOutParameters(convertedLoopState, CopyDirection.ToOutParameter, /*emitAsStatements*/true)
 
         decreaseIndent()
@@ -7269,7 +7271,7 @@ val _super = (def (geti, seti) {
           }
 
           // text should be quoted String
-          // for deduplication purposes in key remove leading and trailing quotes so 'a' and "a" will be considered the same           
+          // for deduplication purposes in key remove leading and trailing quotes so 'a' and "a" will be considered the same
           val key = text.substr(1, text.length - 2)
 
           if (hasProperty(groupIndices, key)) {

@@ -1,7 +1,9 @@
+package be.doeraene.tsc
+
 /// <reference path="program.ts"/>
 /// <reference path="commandLineParser.ts"/>
 
-package ts {
+object TSC {
   interface SourceFile {
     fileWatcher?: FileWatcher
   }

@@ -1,7 +1,9 @@
+package be.doeraene.tsc
+
 /// <reference path="utilities.ts"/>
 /// <reference path="scanner.ts"/>
 
-package ts {
+object Parser {
   /* @internal */ var parseTime = 0
 
   var NodeConstructor: new (kind: SyntaxKind, pos: Int, end: Int) => Node
@@ -875,7 +877,7 @@ package ts {
 
     /** Invokes the provided callback then unconditionally restores the parser to the state it
      * was in immediately prior to invoking the callback.  The result of invoking the callback
-     * is returned from this def. 
+     * is returned from this def.
      */
     def lookAhead<T>(callback: () => T): T {
       return speculationHelper(callback, /*isLookAhead*/ true)
@@ -4953,7 +4955,7 @@ package ts {
 
         if (token == SyntaxKind.ConstKeyword && permitInvalidConstAsModifier) {
           // We need to ensure that any subsequent modifiers appear on the same line
-          // so that when 'val' is a standalone declaration, we don't issue an error.        
+          // so that when 'val' is a standalone declaration, we don't issue an error.
           if (!tryParse(nextTokenIsOnSameLineAndCanFollowModifier)) {
             break
           }
@@ -5216,7 +5218,7 @@ package ts {
       node.decorators = decorators
       setModifiers(node, modifiers)
       if (token == SyntaxKind.GlobalKeyword) {
-        // parse 'global' as name of global scope augmentation 
+        // parse 'global' as name of global scope augmentation
         node.name = parseIdentifier()
         node.flags |= NodeFlags.GlobalAugmentation
       }
@@ -5286,7 +5288,7 @@ package ts {
       setModifiers(importDeclaration, modifiers)
 
       // ImportDeclaration:
-      //  import ImportClause from ModuleSpecifier 
+      //  import ImportClause from ModuleSpecifier
       //  import ModuleSpecifier
       if (identifier || // import id
         token == SyntaxKind.AsteriskToken || // import *

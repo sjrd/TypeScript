@@ -1,7 +1,9 @@
+package be.doeraene.tsc
+
 /// <reference path="binder.ts"/>
 
 /* @internal */
-package ts {
+object Checker {
   var nextSymbolId = 1
   var nextNodeId = 1
   var nextMergeId = 1
@@ -16997,7 +16999,7 @@ package ts {
 
       val checkLetConstNames = (isLet(node) || isConst(node))
 
-      // 1. LexicalDeclaration : LetOrConst BindingList 
+      // 1. LexicalDeclaration : LetOrConst BindingList
       // It is a Syntax Error if the BoundNames of BindingList contains "var".
       // 2. ForDeclaration: ForDeclaration : LetOrConst ForBinding
       // It is a Syntax Error if the BoundNames of ForDeclaration contains "var".

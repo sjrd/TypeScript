@@ -1,10 +1,12 @@
+package be.doeraene.tsc
+
 /// <reference path="sys.ts"/>
 /// <reference path="types.ts"/>
 /// <reference path="core.ts"/>
 /// <reference path="diagnosticInformationMap.generated.ts"/>
 /// <reference path="scanner.ts"/>
 
-package ts {
+object CommandLineParser {
   /* @internal */
   var optionDeclarations: CommandLineOption[] = [
     {

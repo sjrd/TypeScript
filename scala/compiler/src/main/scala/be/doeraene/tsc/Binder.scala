@@ -1,8 +1,10 @@
+package be.doeraene.tsc
+
 /// <reference path="utilities.ts"/>
 /// <reference path="parser.ts"/>
 
 /* @internal */
-package ts {
+object Binder {
   var bindTime = 0
 
   val enum ModuleInstanceState {

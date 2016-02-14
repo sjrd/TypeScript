@@ -1,7 +1,9 @@
+package be.doeraene.tsc
+
 /// <reference path="sys.ts" />
 
 /* @internal */
-package ts {
+object Utilities {
   interface ReferencePathMatchResult {
     fileReference?: FileReference
     diagnosticMessage?: DiagnosticMessage
@@ -185,7 +187,7 @@ package ts {
   // missing.  This happens whenever the parser knows it needs to parse something, but can't
   // get anything in the source code that it expects at that location. For example:
   //
-  //      var a: 
+  //      var a:
   //
   // Here, the Type in the Type-Annotation is not-optional (as there is a colon in the source
   // code). So the parser will attempt to parse out a type, and will create an actual node.
@@ -1200,10 +1202,10 @@ package ts {
     if (node.jsDocComment) {
       return node.jsDocComment
     }
-    // Try to recognize this pattern when node is initializer of variable declaration and JSDoc comments are on containing variable statement. 
-    // /** 
+    // Try to recognize this pattern when node is initializer of variable declaration and JSDoc comments are on containing variable statement.
+    // /**
     //   * @param {Int} name
-    //   * @returns {Int} 
+    //   * @returns {Int}
     //   */
     // var x = def(name) { return name.length; }
     if (checkParentVariableStatement) {
