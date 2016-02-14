@@ -5,14 +5,14 @@ package be.doeraene.tsc
 /* @internal */
 object Utilities {
   trait ReferencePathMatchResult {
-    val fileReference?: FileReference
-    val diagnosticMessage?: DiagnosticMessage
-    val isNoDefaultLib?: Boolean
+    val fileReference: Option[FileReference]
+    val diagnosticMessage: Option[DiagnosticMessage]
+    val isNoDefaultLib: Option[Boolean]
   }
 
   trait SynthesizedNode extends Node {
-    val leadingCommentRanges?: Array[CommentRange]
-    val trailingCommentRanges?: Array[CommentRange]
+    val leadingCommentRanges: Option[Array[CommentRange]]
+    val trailingCommentRanges: Option[Array[CommentRange]]
     val startsOnNewLine: Boolean
   }
 
@@ -30,7 +30,7 @@ object Utilities {
   }
 
   trait StringSymbolWriter extends SymbolWriter {
-    def String(): String
+    def string(): String
   }
 
   trait EmitHost extends ScriptReferenceHost {
@@ -46,30 +46,31 @@ object Utilities {
   }
 
   // Pool writers to avoid needing to allocate them for every symbol we write.
-  val stringWriters: Array[StringSymbolWriter] = []
+  val stringWriters: Array[StringSymbolWriter] = Array()
   def getSingleLineStringWriter(): StringSymbolWriter = {
     if (stringWriters.length == 0) {
       var str = ""
 
       val writeText: (String) => Unit = text => str += text
-      return {
-        String: () => str,
-        writeKeyword: writeText,
-        writeOperator: writeText,
-        writePunctuation: writeText,
-        writeSpace: writeText,
-        writeStringLiteral: writeText,
-        writeParameter: writeText,
-        writeSymbol: writeText,
+      return new StringSymbolWriter {
+        def string() = str
+
+        val writeKeyword = writeText
+        val writeOperator = writeText
+        val writePunctuation = writeText
+        val writeSpace = writeText
+        val writeStringLiteral = writeText
+        val writeParameter = writeText
+        val writeSymbol = writeText
 
         // Completely ignore indentation for String writers.  And map newlines to
         // a single space.
-        writeLine: () => str += " ",
-        increaseIndent: () => { },
-        decreaseIndent: () => { },
-        clear: () => str = "",
-        trackSymbol: () => { },
-        reportInaccessibleThisError: () => { }
+        def writeLine() = str += " "
+        def increaseIndent() = { }
+        def decreaseIndent() = { }
+        def clear() = str = ""
+        def trackSymbol() = { }
+        def reportInaccessibleThisError() = { }
       }
     }
 
@@ -85,8 +86,8 @@ object Utilities {
     return node.end - node.pos
   }
 
-  def arrayIsEqualTo<T>(array1: Array[T], array2: Array[T], equaler?: (a: T, b: T) => Boolean): Boolean = {
-    if (!array1 || !array2) {
+  def arrayIsEqualTo[T](array1: Array[T], array2: Array[T], equaler: Option[(T, T) => Boolean]): Boolean = {
+    if (array1 == null || array2 == null) {
       return array1 == array2
     }
 
@@ -94,8 +95,10 @@ object Utilities {
       return false
     }
 
-    for (var i = 0; i < array1.length; i++) {
-      val equals = equaler ? equaler(array1[i], array2[i]) : array1[i] == array2[i]
+    val equaler1 = equaler.getOrElse((a: T, b: T) => a == b)
+
+    for (i <- 0 until array1.length) {
+      val equals = equaler1(array1(i), array2(i))
       if (!equals) {
         return false
       }

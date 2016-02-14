@@ -1,32 +1,29 @@
 package be.doeraene.tsc
 
 object Types {
-  trait Map<T> {
-    [index: String]: T
-  }
-
   // branded String type used to store absolute, normalized and canonicalized paths
   // arbitrary file name can be converted to Path via toPath def
-  type Path = String & { __pathBrand: any }
+  final class Path(val path: String) extends AnyVal
 
-  trait FileMap<T> {
-    get(fileName: Path): T
-    set(fileName: Path, value: T): Unit
-    contains(fileName: Path): Boolean
-    remove(fileName: Path): Unit
+  trait FileMap[T] {
+    def get(fileName: Path): T
+    def set(fileName: Path, value: T): Unit
+    def contains(fileName: Path): Boolean
+    def remove(fileName: Path): Unit
 
-    forEachValue(f: (key: Path, v: T) => Unit): Unit
-    clear(): Unit
+    def forEachValue(f: (Path, T) => Unit): Unit
+    def clear(): Unit
   }
 
   trait TextRange {
-    pos: Int
-    end: Int
+    def pos: Int
+    def end: Int
   }
 
   // token > SyntaxKind.Identifer => token is a keyword
   // Also, If you add a new SyntaxKind be sure to keep the `Markers` section at the bottom in sync
-  val enum SyntaxKind {
+  object SyntaxKind extends Enumeration {
+    val
     Unknown,
     EndOfFileToken,
     SingleLineCommentTrivia,
@@ -344,96 +341,97 @@ object Types {
     // Synthesized list
     SyntaxList,
     // Enum value count
-    Count,
+    Count = Value
+
     // Markers
-    FirstAssignment = EqualsToken,
-    LastAssignment = CaretEqualsToken,
-    FirstReservedWord = BreakKeyword,
-    LastReservedWord = WithKeyword,
-    FirstKeyword = BreakKeyword,
-    LastKeyword = OfKeyword,
-    FirstFutureReservedWord = ImplementsKeyword,
-    LastFutureReservedWord = YieldKeyword,
-    FirstTypeNode = TypePredicate,
-    LastTypeNode = StringLiteralType,
-    FirstPunctuation = OpenBraceToken,
-    LastPunctuation = CaretEqualsToken,
-    FirstToken = Unknown,
-    LastToken = LastKeyword,
-    FirstTriviaToken = SingleLineCommentTrivia,
-    LastTriviaToken = ConflictMarkerTrivia,
-    FirstLiteralToken = NumericLiteral,
-    LastLiteralToken = NoSubstitutionTemplateLiteral,
-    FirstTemplateToken = NoSubstitutionTemplateLiteral,
-    LastTemplateToken = TemplateTail,
-    FirstBinaryOperator = LessThanToken,
-    LastBinaryOperator = CaretEqualsToken,
-    FirstNode = QualifiedName,
+    val FirstAssignment = EqualsToken
+    val LastAssignment = CaretEqualsToken
+    val FirstReservedWord = BreakKeyword
+    val LastReservedWord = WithKeyword
+    val FirstKeyword = BreakKeyword
+    val LastKeyword = OfKeyword
+    val FirstFutureReservedWord = ImplementsKeyword
+    val LastFutureReservedWord = YieldKeyword
+    val FirstTypeNode = TypePredicate
+    val LastTypeNode = StringLiteralType
+    val FirstPunctuation = OpenBraceToken
+    val LastPunctuation = CaretEqualsToken
+    val FirstToken = Unknown
+    val LastToken = LastKeyword
+    val FirstTriviaToken = SingleLineCommentTrivia
+    val LastTriviaToken = ConflictMarkerTrivia
+    val FirstLiteralToken = NumericLiteral
+    val LastLiteralToken = NoSubstitutionTemplateLiteral
+    val FirstTemplateToken = NoSubstitutionTemplateLiteral
+    val LastTemplateToken = TemplateTail
+    val FirstBinaryOperator = LessThanToken
+    val LastBinaryOperator = CaretEqualsToken
+    val FirstNode = QualifiedName
   }
 
-  val enum NodeFlags {
-    None =         0,
-    Export =       1 << 0,  // Declarations
-    Ambient =      1 << 1,  // Declarations
-    Public =       1 << 2,  // Property/Method
-    Private =      1 << 3,  // Property/Method
-    Protected =      1 << 4,  // Property/Method
-    Static =       1 << 5,  // Property/Method
-    Readonly =       1 << 6,  // Property/Method
-    Abstract =       1 << 7,  // Class/Method/ConstructSignature
-    Async =        1 << 8,  // Property/Method/Function
-    Default =      1 << 9,  // Function/Class (export default declaration)
-    Let =        1 << 10,  // Variable declaration
-    Const =        1 << 11,  // Variable declaration
-    Namespace =      1 << 12,  // Namespace declaration
-    ExportContext =    1 << 13,  // Export context (initialized by binding)
-    ContainsThis =     1 << 14,  // Interface contains references to "this"
-    HasImplicitReturn =  1 << 15,  // If def implicitly returns on one of codepaths (initialized by binding)
-    HasExplicitReturn =  1 << 16,  // If def has explicit reachable return on one of codepaths (initialized by binding)
-    GlobalAugmentation = 1 << 17,  // Set if module declaration is an augmentation for the global scope
-    HasClassExtends =  1 << 18,  // If the file has a non-ambient class with an extends clause in ES5 or lower (initialized by binding)
-    HasDecorators =    1 << 19,  // If the file has decorators (initialized by binding)
-    HasParamDecorators = 1 << 20,  // If the file has parameter decorators (initialized by binding)
-    HasAsyncFunctions =  1 << 21,  // If the file has async functions (initialized by binding)
-    DisallowInContext =  1 << 22,  // If node was parsed in a context where 'in-expressions' are not allowed
-    YieldContext =     1 << 23,  // If node was parsed in the 'yield' context created when parsing a generator
-    DecoratorContext =   1 << 24,  // If node was parsed as part of a decorator
-    AwaitContext =     1 << 25,  // If node was parsed in the 'await' context created when parsing an async def
-    ThisNodeHasError =   1 << 26,  // If the parser encountered an error when parsing the code that created this node
-    JavaScriptFile =   1 << 27,  // If node was parsed in a JavaScript
-    ThisNodeOrAnySubNodesHasError = 1 << 28,  // If this node or any of its children had an error
-    HasAggregatedChildData = 1 << 29,  // If we've computed data from children and cached it in this node
+  object NodeFlags {
+    final val None =         0
+    final val Export =       1 << 0  // Declarations
+    final val Ambient =      1 << 1  // Declarations
+    final val Public =       1 << 2  // Property/Method
+    final val Private =      1 << 3  // Property/Method
+    final val Protected =      1 << 4  // Property/Method
+    final val Static =       1 << 5  // Property/Method
+    final val Readonly =       1 << 6  // Property/Method
+    final val Abstract =       1 << 7  // Class/Method/ConstructSignature
+    final val Async =        1 << 8  // Property/Method/Function
+    final val Default =      1 << 9  // Function/Class (export default declaration)
+    final val Let =        1 << 10  // Variable declaration
+    final val Const =        1 << 11  // Variable declaration
+    final val Namespace =      1 << 12  // Namespace declaration
+    final val ExportContext =    1 << 13  // Export context (initialized by binding)
+    final val ContainsThis =     1 << 14  // Interface contains references to "this"
+    final val HasImplicitReturn =  1 << 15  // If def implicitly returns on one of codepaths (initialized by binding)
+    final val HasExplicitReturn =  1 << 16  // If def has explicit reachable return on one of codepaths (initialized by binding)
+    final val GlobalAugmentation = 1 << 17  // Set if module declaration is an augmentation for the global scope
+    final val HasClassExtends =  1 << 18  // If the file has a non-ambient class with an extends clause in ES5 or lower (initialized by binding)
+    final val HasDecorators =    1 << 19  // If the file has decorators (initialized by binding)
+    final val HasParamDecorators = 1 << 20  // If the file has parameter decorators (initialized by binding)
+    final val HasAsyncFunctions =  1 << 21  // If the file has async functions (initialized by binding)
+    final val DisallowInContext =  1 << 22  // If node was parsed in a context where 'in-expressions' are not allowed
+    final val YieldContext =     1 << 23  // If node was parsed in the 'yield' context created when parsing a generator
+    final val DecoratorContext =   1 << 24  // If node was parsed as part of a decorator
+    final val AwaitContext =     1 << 25  // If node was parsed in the 'await' context created when parsing an async def
+    final val ThisNodeHasError =   1 << 26  // If the parser encountered an error when parsing the code that created this node
+    final val JavaScriptFile =   1 << 27  // If node was parsed in a JavaScript
+    final val ThisNodeOrAnySubNodesHasError = 1 << 28  // If this node or any of its children had an error
+    final val HasAggregatedChildData = 1 << 29  // If we've computed data from children and cached it in this node
 
-    Modifier = Export | Ambient | Public | Private | Protected | Static | Abstract | Default | Async,
-    AccessibilityModifier = Public | Private | Protected,
-    BlockScoped = Let | Const,
+    final val Modifier = Export | Ambient | Public | Private | Protected | Static | Abstract | Default | Async
+    final val AccessibilityModifier = Public | Private | Protected
+    final val BlockScoped = Let | Const
 
-    ReachabilityCheckFlags = HasImplicitReturn | HasExplicitReturn,
-    EmitHelperFlags = HasClassExtends | HasDecorators | HasParamDecorators | HasAsyncFunctions,
+    final val ReachabilityCheckFlags = HasImplicitReturn | HasExplicitReturn
+    final val EmitHelperFlags = HasClassExtends | HasDecorators | HasParamDecorators | HasAsyncFunctions
 
     // Parsing context flags
-    ContextFlags = DisallowInContext | YieldContext | DecoratorContext | AwaitContext,
+    final val ContextFlags = DisallowInContext | YieldContext | DecoratorContext | AwaitContext
 
     // Exclude these flags when parsing a Type
-    TypeExcludesFlags = YieldContext | AwaitContext,
+    final val TypeExcludesFlags = YieldContext | AwaitContext
   }
 
-  val enum JsxFlags {
-    None = 0,
+  object JsxFlags {
+    final val None = 0
     /** An element from a named property of the JSX.IntrinsicElements trait */
-    IntrinsicNamedElement = 1 << 0,
+    final val IntrinsicNamedElement = 1 << 0
     /** An element inferred from the String index signature of the JSX.IntrinsicElements trait */
-    IntrinsicIndexedElement = 1 << 1,
+    final val IntrinsicIndexedElement = 1 << 1
 
-    IntrinsicElement = IntrinsicNamedElement | IntrinsicIndexedElement,
+    final val IntrinsicElement = IntrinsicNamedElement | IntrinsicIndexedElement
   }
 
 
   /* @internal */
-  val enum RelationComparisonResult {
-    Succeeded = 1, // Should be truthy
-    Failed = 2,
-    FailedAndReported = 3
+  object RelationComparisonResult {
+    final val Succeeded = 1 // Should be truthy
+    final val Failed = 2
+    final val FailedAndReported = 3
   }
 
   trait Node extends TextRange {
