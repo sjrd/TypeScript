@@ -1,57 +1,57 @@
 /// <reference path="sys.ts" />
 
 /* @internal */
-namespace ts {
-  export interface ReferencePathMatchResult {
-    fileReference?: FileReference;
-    diagnosticMessage?: DiagnosticMessage;
-    isNoDefaultLib?: boolean;
+package ts {
+  interface ReferencePathMatchResult {
+    fileReference?: FileReference
+    diagnosticMessage?: DiagnosticMessage
+    isNoDefaultLib?: Boolean
   }
 
-  export interface SynthesizedNode extends Node {
-    leadingCommentRanges?: CommentRange[];
-    trailingCommentRanges?: CommentRange[];
-    startsOnNewLine: boolean;
+  interface SynthesizedNode extends Node {
+    leadingCommentRanges?: CommentRange[]
+    trailingCommentRanges?: CommentRange[]
+    startsOnNewLine: Boolean
   }
 
-  export function getDeclarationOfKind(symbol: Symbol, kind: SyntaxKind): Declaration {
-    const declarations = symbol.declarations;
+  def getDeclarationOfKind(symbol: Symbol, kind: SyntaxKind): Declaration {
+    val declarations = symbol.declarations
     if (declarations) {
-      for (const declaration of declarations) {
-        if (declaration.kind === kind) {
-          return declaration;
+      for (val declaration of declarations) {
+        if (declaration.kind == kind) {
+          return declaration
         }
       }
     }
 
-    return undefined;
+    return undefined
   }
 
-  export interface StringSymbolWriter extends SymbolWriter {
-    string(): string;
+  interface StringSymbolWriter extends SymbolWriter {
+    String(): String
   }
 
-  export interface EmitHost extends ScriptReferenceHost {
-    getSourceFiles(): SourceFile[];
+  interface EmitHost extends ScriptReferenceHost {
+    getSourceFiles(): SourceFile[]
 
-    getCommonSourceDirectory(): string;
-    getCanonicalFileName(fileName: string): string;
-    getNewLine(): string;
+    getCommonSourceDirectory(): String
+    getCanonicalFileName(fileName: String): String
+    getNewLine(): String
 
-    isEmitBlocked(emitFileName: string): boolean;
+    isEmitBlocked(emitFileName: String): Boolean
 
-    writeFile: WriteFileCallback;
+    writeFile: WriteFileCallback
   }
 
   // Pool writers to avoid needing to allocate them for every symbol we write.
-  const stringWriters: StringSymbolWriter[] = [];
-  export function getSingleLineStringWriter(): StringSymbolWriter {
-    if (stringWriters.length === 0) {
-      let str = "";
+  val stringWriters: StringSymbolWriter[] = []
+  def getSingleLineStringWriter(): StringSymbolWriter {
+    if (stringWriters.length == 0) {
+      var str = ""
 
-      const writeText: (text: string) => void = text => str += text;
+      val writeText: (text: String) => void = text => str += text
       return {
-        string: () => str,
+        String: () => str,
         writeKeyword: writeText,
         writeOperator: writeText,
         writePunctuation: writeText,
@@ -60,7 +60,7 @@ namespace ts {
         writeParameter: writeText,
         writeSymbol: writeText,
 
-        // Completely ignore indentation for string writers.  And map newlines to
+        // Completely ignore indentation for String writers.  And map newlines to
         // a single space.
         writeLine: () => str += " ",
         increaseIndent: () => { },
@@ -68,115 +68,115 @@ namespace ts {
         clear: () => str = "",
         trackSymbol: () => { },
         reportInaccessibleThisError: () => { }
-      };
-    }
-
-    return stringWriters.pop();
-  }
-
-  export function releaseStringWriter(writer: StringSymbolWriter) {
-    writer.clear();
-    stringWriters.push(writer);
-  }
-
-  export function getFullWidth(node: Node) {
-    return node.end - node.pos;
-  }
-
-  export function arrayIsEqualTo<T>(array1: T[], array2: T[], equaler?: (a: T, b: T) => boolean): boolean {
-    if (!array1 || !array2) {
-      return array1 === array2;
-    }
-
-    if (array1.length !== array2.length) {
-      return false;
-    }
-
-    for (let i = 0; i < array1.length; i++) {
-      const equals = equaler ? equaler(array1[i], array2[i]) : array1[i] === array2[i];
-      if (!equals) {
-        return false;
       }
     }
 
-    return true;
+    return stringWriters.pop()
   }
 
-  export function hasResolvedModule(sourceFile: SourceFile, moduleNameText: string): boolean {
-    return sourceFile.resolvedModules && hasProperty(sourceFile.resolvedModules, moduleNameText);
+  def releaseStringWriter(writer: StringSymbolWriter) {
+    writer.clear()
+    stringWriters.push(writer)
   }
 
-  export function getResolvedModule(sourceFile: SourceFile, moduleNameText: string): ResolvedModule {
-    return hasResolvedModule(sourceFile, moduleNameText) ? sourceFile.resolvedModules[moduleNameText] : undefined;
+  def getFullWidth(node: Node) {
+    return node.end - node.pos
   }
 
-  export function setResolvedModule(sourceFile: SourceFile, moduleNameText: string, resolvedModule: ResolvedModule): void {
-    if (!sourceFile.resolvedModules) {
-      sourceFile.resolvedModules = {};
+  def arrayIsEqualTo<T>(array1: T[], array2: T[], equaler?: (a: T, b: T) => Boolean): Boolean {
+    if (!array1 || !array2) {
+      return array1 == array2
     }
 
-    sourceFile.resolvedModules[moduleNameText] = resolvedModule;
+    if (array1.length != array2.length) {
+      return false
+    }
+
+    for (var i = 0; i < array1.length; i++) {
+      val equals = equaler ? equaler(array1[i], array2[i]) : array1[i] == array2[i]
+      if (!equals) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  def hasResolvedModule(sourceFile: SourceFile, moduleNameText: String): Boolean {
+    return sourceFile.resolvedModules && hasProperty(sourceFile.resolvedModules, moduleNameText)
+  }
+
+  def getResolvedModule(sourceFile: SourceFile, moduleNameText: String): ResolvedModule {
+    return hasResolvedModule(sourceFile, moduleNameText) ? sourceFile.resolvedModules[moduleNameText] : undefined
+  }
+
+  def setResolvedModule(sourceFile: SourceFile, moduleNameText: String, resolvedModule: ResolvedModule): void {
+    if (!sourceFile.resolvedModules) {
+      sourceFile.resolvedModules = {}
+    }
+
+    sourceFile.resolvedModules[moduleNameText] = resolvedModule
   }
 
   // Returns true if this node contains a parse error anywhere underneath it.
-  export function containsParseError(node: Node): boolean {
-    aggregateChildData(node);
-    return (node.flags & NodeFlags.ThisNodeOrAnySubNodesHasError) !== 0;
+  def containsParseError(node: Node): Boolean {
+    aggregateChildData(node)
+    return (node.flags & NodeFlags.ThisNodeOrAnySubNodesHasError) != 0
   }
 
-  function aggregateChildData(node: Node): void {
+  def aggregateChildData(node: Node): void {
     if (!(node.flags & NodeFlags.HasAggregatedChildData)) {
       // A node is considered to contain a parse error if:
       //  a) the parser explicitly marked that it had an error
       //  b) any of it's children reported that it had an error.
-      const thisNodeOrAnySubNodesHasError = ((node.flags & NodeFlags.ThisNodeHasError) !== 0) ||
-        forEachChild(node, containsParseError);
+      val thisNodeOrAnySubNodesHasError = ((node.flags & NodeFlags.ThisNodeHasError) != 0) ||
+        forEachChild(node, containsParseError)
 
       // If so, mark ourselves accordingly.
       if (thisNodeOrAnySubNodesHasError) {
-        node.flags |= NodeFlags.ThisNodeOrAnySubNodesHasError;
+        node.flags |= NodeFlags.ThisNodeOrAnySubNodesHasError
       }
 
       // Also mark that we've propagated the child information to this node.  This way we can
       // always consult the bit directly on this node without needing to check its children
       // again.
-      node.flags |= NodeFlags.HasAggregatedChildData;
+      node.flags |= NodeFlags.HasAggregatedChildData
     }
   }
 
-  export function getSourceFileOfNode(node: Node): SourceFile {
-    while (node && node.kind !== SyntaxKind.SourceFile) {
-      node = node.parent;
+  def getSourceFileOfNode(node: Node): SourceFile {
+    while (node && node.kind != SyntaxKind.SourceFile) {
+      node = node.parent
     }
-    return <SourceFile>node;
+    return <SourceFile>node
   }
 
-  export function isStatementWithLocals(node: Node) {
+  def isStatementWithLocals(node: Node) {
     switch (node.kind) {
       case SyntaxKind.Block:
       case SyntaxKind.CaseBlock:
       case SyntaxKind.ForStatement:
       case SyntaxKind.ForInStatement:
       case SyntaxKind.ForOfStatement:
-        return true;
+        return true
     }
-    return false;
+    return false
   }
 
-  export function getStartPositionOfLine(line: number, sourceFile: SourceFile): number {
-    Debug.assert(line >= 0);
-    return getLineStarts(sourceFile)[line];
+  def getStartPositionOfLine(line: Int, sourceFile: SourceFile): Int {
+    Debug.assert(line >= 0)
+    return getLineStarts(sourceFile)[line]
   }
 
-  // This is a useful function for debugging purposes.
-  export function nodePosToString(node: Node): string {
-    const file = getSourceFileOfNode(node);
-    const loc = getLineAndCharacterOfPosition(file, node.pos);
-    return `${ file.fileName }(${ loc.line + 1 },${ loc.character + 1 })`;
+  // This is a useful def for debugging purposes.
+  def nodePosToString(node: Node): String {
+    val file = getSourceFileOfNode(node)
+    val loc = getLineAndCharacterOfPosition(file, node.pos)
+    return `${ file.fileName }(${ loc.line + 1 },${ loc.character + 1 })`
   }
 
-  export function getStartPosOfNode(node: Node): number {
-    return node.pos;
+  def getStartPosOfNode(node: Node): Int {
+    return node.pos
   }
 
   // Returns true if this node is missing from the actual source code. A 'missing' node is different
@@ -185,123 +185,123 @@ namespace ts {
   // missing.  This happens whenever the parser knows it needs to parse something, but can't
   // get anything in the source code that it expects at that location. For example:
   //
-  //      let a: ;
+  //      var a: 
   //
   // Here, the Type in the Type-Annotation is not-optional (as there is a colon in the source
   // code). So the parser will attempt to parse out a type, and will create an actual node.
   // However, this node will be 'missing' in the sense that no actual source-code/tokens are
   // contained within it.
-  export function nodeIsMissing(node: Node) {
+  def nodeIsMissing(node: Node) {
     if (!node) {
-      return true;
+      return true
     }
 
-    return node.pos === node.end && node.pos >= 0 && node.kind !== SyntaxKind.EndOfFileToken;
+    return node.pos == node.end && node.pos >= 0 && node.kind != SyntaxKind.EndOfFileToken
   }
 
-  export function nodeIsPresent(node: Node) {
-    return !nodeIsMissing(node);
+  def nodeIsPresent(node: Node) {
+    return !nodeIsMissing(node)
   }
 
-  export function getTokenPosOfNode(node: Node, sourceFile?: SourceFile): number {
+  def getTokenPosOfNode(node: Node, sourceFile?: SourceFile): Int {
     // With nodes that have no width (i.e. 'Missing' nodes), we actually *don't*
     // want to skip trivia because this will launch us forward to the next token.
     if (nodeIsMissing(node)) {
-      return node.pos;
+      return node.pos
     }
 
-    return skipTrivia((sourceFile || getSourceFileOfNode(node)).text, node.pos);
+    return skipTrivia((sourceFile || getSourceFileOfNode(node)).text, node.pos)
   }
 
-  export function getNonDecoratorTokenPosOfNode(node: Node, sourceFile?: SourceFile): number {
+  def getNonDecoratorTokenPosOfNode(node: Node, sourceFile?: SourceFile): Int {
     if (nodeIsMissing(node) || !node.decorators) {
-      return getTokenPosOfNode(node, sourceFile);
+      return getTokenPosOfNode(node, sourceFile)
     }
 
-    return skipTrivia((sourceFile || getSourceFileOfNode(node)).text, node.decorators.end);
+    return skipTrivia((sourceFile || getSourceFileOfNode(node)).text, node.decorators.end)
   }
 
-  export function getSourceTextOfNodeFromSourceFile(sourceFile: SourceFile, node: Node, includeTrivia = false): string {
+  def getSourceTextOfNodeFromSourceFile(sourceFile: SourceFile, node: Node, includeTrivia = false): String {
     if (nodeIsMissing(node)) {
-      return "";
+      return ""
     }
 
-    const text = sourceFile.text;
-    return text.substring(includeTrivia ? node.pos : skipTrivia(text, node.pos), node.end);
+    val text = sourceFile.text
+    return text.substring(includeTrivia ? node.pos : skipTrivia(text, node.pos), node.end)
   }
 
-  export function getTextOfNodeFromSourceText(sourceText: string, node: Node): string {
+  def getTextOfNodeFromSourceText(sourceText: String, node: Node): String {
     if (nodeIsMissing(node)) {
-      return "";
+      return ""
     }
 
-    return sourceText.substring(skipTrivia(sourceText, node.pos), node.end);
+    return sourceText.substring(skipTrivia(sourceText, node.pos), node.end)
   }
 
-  export function getTextOfNode(node: Node, includeTrivia = false): string {
-    return getSourceTextOfNodeFromSourceFile(getSourceFileOfNode(node), node, includeTrivia);
+  def getTextOfNode(node: Node, includeTrivia = false): String {
+    return getSourceTextOfNodeFromSourceFile(getSourceFileOfNode(node), node, includeTrivia)
   }
 
   // Add an extra underscore to identifiers that start with two underscores to avoid issues with magic names like '__proto__'
-  export function escapeIdentifier(identifier: string): string {
-    return identifier.length >= 2 && identifier.charCodeAt(0) === CharacterCodes._ && identifier.charCodeAt(1) === CharacterCodes._ ? "_" + identifier : identifier;
+  def escapeIdentifier(identifier: String): String {
+    return identifier.length >= 2 && identifier.charCodeAt(0) == CharacterCodes._ && identifier.charCodeAt(1) == CharacterCodes._ ? "_" + identifier : identifier
   }
 
   // Remove extra underscore from escaped identifier
-  export function unescapeIdentifier(identifier: string): string {
-    return identifier.length >= 3 && identifier.charCodeAt(0) === CharacterCodes._ && identifier.charCodeAt(1) === CharacterCodes._ && identifier.charCodeAt(2) === CharacterCodes._ ? identifier.substr(1) : identifier;
+  def unescapeIdentifier(identifier: String): String {
+    return identifier.length >= 3 && identifier.charCodeAt(0) == CharacterCodes._ && identifier.charCodeAt(1) == CharacterCodes._ && identifier.charCodeAt(2) == CharacterCodes._ ? identifier.substr(1) : identifier
   }
 
-  // Make an identifier from an external module name by extracting the string after the last "/" and replacing
+  // Make an identifier from an external module name by extracting the String after the last "/" and replacing
   // all non-alphanumeric characters with underscores
-  export function makeIdentifierFromModuleName(moduleName: string): string {
-    return getBaseFileName(moduleName).replace(/^(\d)/, "_$1").replace(/\W/g, "_");
+  def makeIdentifierFromModuleName(moduleName: String): String {
+    return getBaseFileName(moduleName).replace(/^(\d)/, "_$1").replace(/\W/g, "_")
   }
 
-  export function isBlockOrCatchScoped(declaration: Declaration) {
-    return (getCombinedNodeFlags(declaration) & NodeFlags.BlockScoped) !== 0 ||
-      isCatchClauseVariableDeclaration(declaration);
+  def isBlockOrCatchScoped(declaration: Declaration) {
+    return (getCombinedNodeFlags(declaration) & NodeFlags.BlockScoped) != 0 ||
+      isCatchClauseVariableDeclaration(declaration)
   }
 
-  export function isAmbientModule(node: Node): boolean {
-    return node && node.kind === SyntaxKind.ModuleDeclaration &&
-      ((<ModuleDeclaration>node).name.kind === SyntaxKind.StringLiteral || isGlobalScopeAugmentation(<ModuleDeclaration>node));
+  def isAmbientModule(node: Node): Boolean {
+    return node && node.kind == SyntaxKind.ModuleDeclaration &&
+      ((<ModuleDeclaration>node).name.kind == SyntaxKind.StringLiteral || isGlobalScopeAugmentation(<ModuleDeclaration>node))
   }
 
-  export function isBlockScopedContainerTopLevel(node: Node): boolean {
-    return node.kind === SyntaxKind.SourceFile ||
-      node.kind === SyntaxKind.ModuleDeclaration ||
+  def isBlockScopedContainerTopLevel(node: Node): Boolean {
+    return node.kind == SyntaxKind.SourceFile ||
+      node.kind == SyntaxKind.ModuleDeclaration ||
       isFunctionLike(node) ||
-      isFunctionBlock(node);
+      isFunctionBlock(node)
   }
 
-  export function isGlobalScopeAugmentation(module: ModuleDeclaration): boolean {
-    return !!(module.flags & NodeFlags.GlobalAugmentation);
+  def isGlobalScopeAugmentation(module: ModuleDeclaration): Boolean {
+    return !!(module.flags & NodeFlags.GlobalAugmentation)
   }
 
-  export function isExternalModuleAugmentation(node: Node): boolean {
+  def isExternalModuleAugmentation(node: Node): Boolean {
     // external module augmentation is a ambient module declaration that is either:
     // - defined in the top level scope and source file is an external module
     // - defined inside ambient module declaration located in the top level scope and source file not an external module
     if (!node || !isAmbientModule(node)) {
-      return false;
+      return false
     }
     switch (node.parent.kind) {
       case SyntaxKind.SourceFile:
-        return isExternalModule(<SourceFile>node.parent);
+        return isExternalModule(<SourceFile>node.parent)
       case SyntaxKind.ModuleBlock:
-        return isAmbientModule(node.parent.parent) && !isExternalModule(<SourceFile>node.parent.parent.parent);
+        return isAmbientModule(node.parent.parent) && !isExternalModule(<SourceFile>node.parent.parent.parent)
     }
-    return false;
+    return false
   }
 
   // Gets the nearest enclosing block scope container that has the provided node
   // as a descendant, that is not the provided node.
-  export function getEnclosingBlockScopeContainer(node: Node): Node {
-    let current = node.parent;
+  def getEnclosingBlockScopeContainer(node: Node): Node {
+    var current = node.parent
     while (current) {
       if (isFunctionLike(current)) {
-        return current;
+        return current
       }
       switch (current.kind) {
         case SyntaxKind.SourceFile:
@@ -311,42 +311,42 @@ namespace ts {
         case SyntaxKind.ForStatement:
         case SyntaxKind.ForInStatement:
         case SyntaxKind.ForOfStatement:
-          return current;
+          return current
         case SyntaxKind.Block:
-          // function block is not considered block-scope container
+          // def block is not considered block-scope container
           // see comment in binder.ts: bind(...), case for SyntaxKind.Block
           if (!isFunctionLike(current.parent)) {
-            return current;
+            return current
           }
       }
 
-      current = current.parent;
+      current = current.parent
     }
   }
 
-  export function isCatchClauseVariableDeclaration(declaration: Declaration) {
+  def isCatchClauseVariableDeclaration(declaration: Declaration) {
     return declaration &&
-      declaration.kind === SyntaxKind.VariableDeclaration &&
+      declaration.kind == SyntaxKind.VariableDeclaration &&
       declaration.parent &&
-      declaration.parent.kind === SyntaxKind.CatchClause;
+      declaration.parent.kind == SyntaxKind.CatchClause
   }
 
   // Return display name of an identifier
   // Computed property names will just be emitted as "[<expr>]", where <expr> is the source
   // text of the expression in the computed property.
-  export function declarationNameToString(name: DeclarationName) {
-    return getFullWidth(name) === 0 ? "(Missing)" : getTextOfNode(name);
+  def declarationNameToString(name: DeclarationName) {
+    return getFullWidth(name) == 0 ? "(Missing)" : getTextOfNode(name)
   }
 
-  export function createDiagnosticForNode(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Diagnostic {
-    const sourceFile = getSourceFileOfNode(node);
-    const span = getErrorSpanForNode(sourceFile, node);
-    return createFileDiagnostic(sourceFile, span.start, span.length, message, arg0, arg1, arg2);
+  def createDiagnosticForNode(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Diagnostic {
+    val sourceFile = getSourceFileOfNode(node)
+    val span = getErrorSpanForNode(sourceFile, node)
+    return createFileDiagnostic(sourceFile, span.start, span.length, message, arg0, arg1, arg2)
   }
 
-  export function createDiagnosticForNodeFromMessageChain(node: Node, messageChain: DiagnosticMessageChain): Diagnostic {
-    const sourceFile = getSourceFileOfNode(node);
-    const span = getErrorSpanForNode(sourceFile, node);
+  def createDiagnosticForNodeFromMessageChain(node: Node, messageChain: DiagnosticMessageChain): Diagnostic {
+    val sourceFile = getSourceFileOfNode(node)
+    val span = getErrorSpanForNode(sourceFile, node)
     return {
       file: sourceFile,
       start: span.start,
@@ -354,26 +354,26 @@ namespace ts {
       code: messageChain.code,
       category: messageChain.category,
       messageText: messageChain.next ? messageChain : messageChain.messageText
-    };
+    }
   }
 
-  export function getSpanOfTokenAtPosition(sourceFile: SourceFile, pos: number): TextSpan {
-    const scanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/ true, sourceFile.languageVariant, sourceFile.text, /*onError:*/ undefined, pos);
-    scanner.scan();
-    const start = scanner.getTokenPos();
-    return createTextSpanFromBounds(start, scanner.getTextPos());
+  def getSpanOfTokenAtPosition(sourceFile: SourceFile, pos: Int): TextSpan {
+    val scanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/ true, sourceFile.languageVariant, sourceFile.text, /*onError:*/ undefined, pos)
+    scanner.scan()
+    val start = scanner.getTokenPos()
+    return createTextSpanFromBounds(start, scanner.getTextPos())
   }
 
-  export function getErrorSpanForNode(sourceFile: SourceFile, node: Node): TextSpan {
-    let errorNode = node;
+  def getErrorSpanForNode(sourceFile: SourceFile, node: Node): TextSpan {
+    var errorNode = node
     switch (node.kind) {
       case SyntaxKind.SourceFile:
-        let pos = skipTrivia(sourceFile.text, 0, /*stopAfterLineBreak*/ false);
-        if (pos === sourceFile.text.length) {
+        var pos = skipTrivia(sourceFile.text, 0, /*stopAfterLineBreak*/ false)
+        if (pos == sourceFile.text.length) {
           // file is empty - return span for the beginning of the file
-          return createTextSpan(0, 0);
+          return createTextSpan(0, 0)
         }
-        return getSpanOfTokenAtPosition(sourceFile, pos);
+        return getSpanOfTokenAtPosition(sourceFile, pos)
       // This list is a work in progress. Add missing node kinds to improve their error
       // spans.
       case SyntaxKind.VariableDeclaration:
@@ -390,123 +390,123 @@ namespace ts {
       case SyntaxKind.GetAccessor:
       case SyntaxKind.SetAccessor:
       case SyntaxKind.TypeAliasDeclaration:
-        errorNode = (<Declaration>node).name;
-        break;
+        errorNode = (<Declaration>node).name
+        break
     }
 
-    if (errorNode === undefined) {
+    if (errorNode == undefined) {
       // If we don't have a better node, then just set the error on the first token of
       // construct.
-      return getSpanOfTokenAtPosition(sourceFile, node.pos);
+      return getSpanOfTokenAtPosition(sourceFile, node.pos)
     }
 
-    const pos = nodeIsMissing(errorNode)
+    val pos = nodeIsMissing(errorNode)
       ? errorNode.pos
-      : skipTrivia(sourceFile.text, errorNode.pos);
+      : skipTrivia(sourceFile.text, errorNode.pos)
 
-    return createTextSpanFromBounds(pos, errorNode.end);
+    return createTextSpanFromBounds(pos, errorNode.end)
   }
 
-  export function isExternalModule(file: SourceFile): boolean {
-    return file.externalModuleIndicator !== undefined;
+  def isExternalModule(file: SourceFile): Boolean {
+    return file.externalModuleIndicator != undefined
   }
 
-  export function isExternalOrCommonJsModule(file: SourceFile): boolean {
-    return (file.externalModuleIndicator || file.commonJsModuleIndicator) !== undefined;
+  def isExternalOrCommonJsModule(file: SourceFile): Boolean {
+    return (file.externalModuleIndicator || file.commonJsModuleIndicator) != undefined
   }
 
-  export function isDeclarationFile(file: SourceFile): boolean {
-    return file.isDeclarationFile;
+  def isDeclarationFile(file: SourceFile): Boolean {
+    return file.isDeclarationFile
   }
 
-  export function isConstEnumDeclaration(node: Node): boolean {
-    return node.kind === SyntaxKind.EnumDeclaration && isConst(node);
+  def isConstEnumDeclaration(node: Node): Boolean {
+    return node.kind == SyntaxKind.EnumDeclaration && isConst(node)
   }
 
-  function walkUpBindingElementsAndPatterns(node: Node): Node {
-    while (node && (node.kind === SyntaxKind.BindingElement || isBindingPattern(node))) {
-      node = node.parent;
+  def walkUpBindingElementsAndPatterns(node: Node): Node {
+    while (node && (node.kind == SyntaxKind.BindingElement || isBindingPattern(node))) {
+      node = node.parent
     }
 
-    return node;
+    return node
   }
 
   // Returns the node flags for this node and all relevant parent nodes.  This is done so that
   // nodes like variable declarations and binding elements can returned a view of their flags
   // that includes the modifiers from their container.  i.e. flags like export/declare aren't
   // stored on the variable declaration directly, but on the containing variable statement
-  // (if it has one).  Similarly, flags for let/const are store on the variable declaration
-  // list.  By calling this function, all those flags are combined so that the client can treat
+  // (if it has one).  Similarly, flags for var/val are store on the variable declaration
+  // list.  By calling this def, all those flags are combined so that the client can treat
   // the node as if it actually had those flags.
-  export function getCombinedNodeFlags(node: Node): NodeFlags {
-    node = walkUpBindingElementsAndPatterns(node);
+  def getCombinedNodeFlags(node: Node): NodeFlags {
+    node = walkUpBindingElementsAndPatterns(node)
 
-    let flags = node.flags;
-    if (node.kind === SyntaxKind.VariableDeclaration) {
-      node = node.parent;
+    var flags = node.flags
+    if (node.kind == SyntaxKind.VariableDeclaration) {
+      node = node.parent
     }
 
-    if (node && node.kind === SyntaxKind.VariableDeclarationList) {
-      flags |= node.flags;
-      node = node.parent;
+    if (node && node.kind == SyntaxKind.VariableDeclarationList) {
+      flags |= node.flags
+      node = node.parent
     }
 
-    if (node && node.kind === SyntaxKind.VariableStatement) {
-      flags |= node.flags;
+    if (node && node.kind == SyntaxKind.VariableStatement) {
+      flags |= node.flags
     }
 
-    return flags;
+    return flags
   }
 
-  export function isConst(node: Node): boolean {
-    return !!(getCombinedNodeFlags(node) & NodeFlags.Const);
+  def isConst(node: Node): Boolean {
+    return !!(getCombinedNodeFlags(node) & NodeFlags.Const)
   }
 
-  export function isLet(node: Node): boolean {
-    return !!(getCombinedNodeFlags(node) & NodeFlags.Let);
+  def isLet(node: Node): Boolean {
+    return !!(getCombinedNodeFlags(node) & NodeFlags.Let)
   }
 
-  export function isSuperCallExpression(n: Node): boolean {
-    return n.kind === SyntaxKind.CallExpression && (<CallExpression>n).expression.kind === SyntaxKind.SuperKeyword;
+  def isSuperCallExpression(n: Node): Boolean {
+    return n.kind == SyntaxKind.CallExpression && (<CallExpression>n).expression.kind == SyntaxKind.SuperKeyword
   }
 
-  export function isPrologueDirective(node: Node): boolean {
-    return node.kind === SyntaxKind.ExpressionStatement && (<ExpressionStatement>node).expression.kind === SyntaxKind.StringLiteral;
+  def isPrologueDirective(node: Node): Boolean {
+    return node.kind == SyntaxKind.ExpressionStatement && (<ExpressionStatement>node).expression.kind == SyntaxKind.StringLiteral
   }
 
-  export function getLeadingCommentRangesOfNode(node: Node, sourceFileOfNode: SourceFile) {
-    return getLeadingCommentRanges(sourceFileOfNode.text, node.pos);
+  def getLeadingCommentRangesOfNode(node: Node, sourceFileOfNode: SourceFile) {
+    return getLeadingCommentRanges(sourceFileOfNode.text, node.pos)
   }
 
-  export function getLeadingCommentRangesOfNodeFromText(node: Node, text: string) {
-    return getLeadingCommentRanges(text, node.pos);
+  def getLeadingCommentRangesOfNodeFromText(node: Node, text: String) {
+    return getLeadingCommentRanges(text, node.pos)
   }
 
-  export function getJsDocComments(node: Node, sourceFileOfNode: SourceFile) {
-    return getJsDocCommentsFromText(node, sourceFileOfNode.text);
+  def getJsDocComments(node: Node, sourceFileOfNode: SourceFile) {
+    return getJsDocCommentsFromText(node, sourceFileOfNode.text)
   }
 
-  export function getJsDocCommentsFromText(node: Node, text: string) {
-    const commentRanges = (node.kind === SyntaxKind.Parameter || node.kind === SyntaxKind.TypeParameter) ?
+  def getJsDocCommentsFromText(node: Node, text: String) {
+    val commentRanges = (node.kind == SyntaxKind.Parameter || node.kind == SyntaxKind.TypeParameter) ?
       concatenate(getTrailingCommentRanges(text, node.pos),
         getLeadingCommentRanges(text, node.pos)) :
-      getLeadingCommentRangesOfNodeFromText(node, text);
-    return filter(commentRanges, isJsDocComment);
+      getLeadingCommentRangesOfNodeFromText(node, text)
+    return filter(commentRanges, isJsDocComment)
 
-    function isJsDocComment(comment: CommentRange) {
+    def isJsDocComment(comment: CommentRange) {
       // True if the comment starts with '/**' but not if it is '/**/'
-      return text.charCodeAt(comment.pos + 1) === CharacterCodes.asterisk &&
-        text.charCodeAt(comment.pos + 2) === CharacterCodes.asterisk &&
-        text.charCodeAt(comment.pos + 3) !== CharacterCodes.slash;
+      return text.charCodeAt(comment.pos + 1) == CharacterCodes.asterisk &&
+        text.charCodeAt(comment.pos + 2) == CharacterCodes.asterisk &&
+        text.charCodeAt(comment.pos + 3) != CharacterCodes.slash
     }
   }
 
-  export let fullTripleSlashReferencePathRegEx = /^(\/\/\/\s*<reference\s+path\s*=\s*)('|")(.+?)\2.*?\/>/;
-  export let fullTripleSlashAMDReferencePathRegEx = /^(\/\/\/\s*<amd-dependency\s+path\s*=\s*)('|")(.+?)\2.*?\/>/;
+  var fullTripleSlashReferencePathRegEx = /^(\/\/\/\s*<reference\s+path\s*=\s*)('|")(.+?)\2.*?\/>/
+  var fullTripleSlashAMDReferencePathRegEx = /^(\/\/\/\s*<amd-dependency\s+path\s*=\s*)('|")(.+?)\2.*?\/>/
 
-  export function isTypeNode(node: Node): boolean {
+  def isTypeNode(node: Node): Boolean {
     if (SyntaxKind.FirstTypeNode <= node.kind && node.kind <= SyntaxKind.LastTypeNode) {
-      return true;
+      return true
     }
 
     switch (node.kind) {
@@ -515,51 +515,51 @@ namespace ts {
       case SyntaxKind.StringKeyword:
       case SyntaxKind.BooleanKeyword:
       case SyntaxKind.SymbolKeyword:
-        return true;
+        return true
       case SyntaxKind.VoidKeyword:
-        return node.parent.kind !== SyntaxKind.VoidExpression;
+        return node.parent.kind != SyntaxKind.VoidExpression
       case SyntaxKind.ExpressionWithTypeArguments:
-        return !isExpressionWithTypeArgumentsInClassExtendsClause(node);
+        return !isExpressionWithTypeArgumentsInClassExtendsClause(node)
 
       // Identifiers and qualified names may be type nodes, depending on their context. Climb
       // above them to find the lowest container
       case SyntaxKind.Identifier:
         // If the identifier is the RHS of a qualified name, then it's a type iff its parent is.
-        if (node.parent.kind === SyntaxKind.QualifiedName && (<QualifiedName>node.parent).right === node) {
-          node = node.parent;
+        if (node.parent.kind == SyntaxKind.QualifiedName && (<QualifiedName>node.parent).right == node) {
+          node = node.parent
         }
-        else if (node.parent.kind === SyntaxKind.PropertyAccessExpression && (<PropertyAccessExpression>node.parent).name === node) {
-          node = node.parent;
+        else if (node.parent.kind == SyntaxKind.PropertyAccessExpression && (<PropertyAccessExpression>node.parent).name == node) {
+          node = node.parent
         }
         // At this point, node is either a qualified name or an identifier
-        Debug.assert(node.kind === SyntaxKind.Identifier || node.kind === SyntaxKind.QualifiedName || node.kind === SyntaxKind.PropertyAccessExpression,
-          "'node' was expected to be a qualified name, identifier or property access in 'isTypeNode'.");
+        Debug.assert(node.kind == SyntaxKind.Identifier || node.kind == SyntaxKind.QualifiedName || node.kind == SyntaxKind.PropertyAccessExpression,
+          "'node' was expected to be a qualified name, identifier or property access in 'isTypeNode'.")
       case SyntaxKind.QualifiedName:
       case SyntaxKind.PropertyAccessExpression:
       case SyntaxKind.ThisKeyword:
-        let parent = node.parent;
-        if (parent.kind === SyntaxKind.TypeQuery) {
-          return false;
+        var parent = node.parent
+        if (parent.kind == SyntaxKind.TypeQuery) {
+          return false
         }
         // Do not recursively call isTypeNode on the parent. In the example:
         //
-        //   let a: A.B.C;
+        //   var a: A.B.C
         //
         // Calling isTypeNode would consider the qualified name A.B a type node. Only C or
         // A.B.C is a type node.
         if (SyntaxKind.FirstTypeNode <= parent.kind && parent.kind <= SyntaxKind.LastTypeNode) {
-          return true;
+          return true
         }
         switch (parent.kind) {
           case SyntaxKind.ExpressionWithTypeArguments:
-            return !isExpressionWithTypeArgumentsInClassExtendsClause(parent);
+            return !isExpressionWithTypeArgumentsInClassExtendsClause(parent)
           case SyntaxKind.TypeParameter:
-            return node === (<TypeParameterDeclaration>parent).constraint;
+            return node == (<TypeParameterDeclaration>parent).constraint
           case SyntaxKind.PropertyDeclaration:
           case SyntaxKind.PropertySignature:
           case SyntaxKind.Parameter:
           case SyntaxKind.VariableDeclaration:
-            return node === (<VariableLikeDeclaration>parent).type;
+            return node == (<VariableLikeDeclaration>parent).type
           case SyntaxKind.FunctionDeclaration:
           case SyntaxKind.FunctionExpression:
           case SyntaxKind.ArrowFunction:
@@ -568,35 +568,35 @@ namespace ts {
           case SyntaxKind.MethodSignature:
           case SyntaxKind.GetAccessor:
           case SyntaxKind.SetAccessor:
-            return node === (<FunctionLikeDeclaration>parent).type;
+            return node == (<FunctionLikeDeclaration>parent).type
           case SyntaxKind.CallSignature:
           case SyntaxKind.ConstructSignature:
           case SyntaxKind.IndexSignature:
-            return node === (<SignatureDeclaration>parent).type;
+            return node == (<SignatureDeclaration>parent).type
           case SyntaxKind.TypeAssertionExpression:
-            return node === (<TypeAssertion>parent).type;
+            return node == (<TypeAssertion>parent).type
           case SyntaxKind.CallExpression:
           case SyntaxKind.NewExpression:
-            return (<CallExpression>parent).typeArguments && indexOf((<CallExpression>parent).typeArguments, node) >= 0;
+            return (<CallExpression>parent).typeArguments && indexOf((<CallExpression>parent).typeArguments, node) >= 0
           case SyntaxKind.TaggedTemplateExpression:
             // TODO (drosen): TaggedTemplateExpressions may eventually support type arguments.
-            return false;
+            return false
         }
     }
 
-    return false;
+    return false
   }
 
   // Warning: This has the same semantics as the forEach family of functions,
   //      in that traversal terminates in the event that 'visitor' supplies a truthy value.
-  export function forEachReturnStatement<T>(body: Block, visitor: (stmt: ReturnStatement) => T): T {
+  def forEachReturnStatement<T>(body: Block, visitor: (stmt: ReturnStatement) => T): T {
 
-    return traverse(body);
+    return traverse(body)
 
-    function traverse(node: Node): T {
+    def traverse(node: Node): T {
       switch (node.kind) {
         case SyntaxKind.ReturnStatement:
-          return visitor(<ReturnStatement>node);
+          return visitor(<ReturnStatement>node)
         case SyntaxKind.CaseBlock:
         case SyntaxKind.Block:
         case SyntaxKind.IfStatement:
@@ -612,22 +612,22 @@ namespace ts {
         case SyntaxKind.LabeledStatement:
         case SyntaxKind.TryStatement:
         case SyntaxKind.CatchClause:
-          return forEachChild(node, traverse);
+          return forEachChild(node, traverse)
       }
     }
   }
 
-  export function forEachYieldExpression(body: Block, visitor: (expr: YieldExpression) => void): void {
+  def forEachYieldExpression(body: Block, visitor: (expr: YieldExpression) => void): void {
 
-    return traverse(body);
+    return traverse(body)
 
-    function traverse(node: Node): void {
+    def traverse(node: Node): void {
       switch (node.kind) {
         case SyntaxKind.YieldExpression:
-          visitor(<YieldExpression>node);
-          let operand = (<YieldExpression>node).expression;
+          visitor(<YieldExpression>node)
+          var operand = (<YieldExpression>node).expression
           if (operand) {
-            traverse(operand);
+            traverse(operand)
           }
         case SyntaxKind.EnumDeclaration:
         case SyntaxKind.InterfaceDeclaration:
@@ -638,27 +638,27 @@ namespace ts {
           // These are not allowed inside a generator now, but eventually they may be allowed
           // as local types. Regardless, any yield statements contained within them should be
           // skipped in this traversal.
-          return;
+          return
         default:
           if (isFunctionLike(node)) {
-            const name = (<FunctionLikeDeclaration>node).name;
-            if (name && name.kind === SyntaxKind.ComputedPropertyName) {
+            val name = (<FunctionLikeDeclaration>node).name
+            if (name && name.kind == SyntaxKind.ComputedPropertyName) {
               // Note that we will not include methods/accessors of a class because they would require
               // first descending into the class. This is by design.
-              traverse((<ComputedPropertyName>name).expression);
-              return;
+              traverse((<ComputedPropertyName>name).expression)
+              return
             }
           }
           else if (!isTypeNode(node)) {
             // This is the general case, which should include mostly expressions and statements.
             // Also includes NodeArrays.
-            forEachChild(node, traverse);
+            forEachChild(node, traverse)
           }
       }
     }
   }
 
-  export function isVariableLike(node: Node): node is VariableLikeDeclaration {
+  def isVariableLike(node: Node): node is VariableLikeDeclaration {
     if (node) {
       switch (node.kind) {
         case SyntaxKind.BindingElement:
@@ -669,25 +669,25 @@ namespace ts {
         case SyntaxKind.PropertySignature:
         case SyntaxKind.ShorthandPropertyAssignment:
         case SyntaxKind.VariableDeclaration:
-          return true;
+          return true
       }
     }
-    return false;
+    return false
   }
 
-  export function isAccessor(node: Node): node is AccessorDeclaration {
-    return node && (node.kind === SyntaxKind.GetAccessor || node.kind === SyntaxKind.SetAccessor);
+  def isAccessor(node: Node): node is AccessorDeclaration {
+    return node && (node.kind == SyntaxKind.GetAccessor || node.kind == SyntaxKind.SetAccessor)
   }
 
-  export function isClassLike(node: Node): node is ClassLikeDeclaration {
-    return node && (node.kind === SyntaxKind.ClassDeclaration || node.kind === SyntaxKind.ClassExpression);
+  def isClassLike(node: Node): node is ClassLikeDeclaration {
+    return node && (node.kind == SyntaxKind.ClassDeclaration || node.kind == SyntaxKind.ClassExpression)
   }
 
-  export function isFunctionLike(node: Node): node is FunctionLikeDeclaration {
-    return node && isFunctionLikeKind(node.kind);
+  def isFunctionLike(node: Node): node is FunctionLikeDeclaration {
+    return node && isFunctionLikeKind(node.kind)
   }
 
-  export function isFunctionLikeKind(kind: SyntaxKind): boolean {
+  def isFunctionLikeKind(kind: SyntaxKind): Boolean {
     switch (kind) {
       case SyntaxKind.Constructor:
       case SyntaxKind.FunctionExpression:
@@ -702,11 +702,11 @@ namespace ts {
       case SyntaxKind.IndexSignature:
       case SyntaxKind.FunctionType:
       case SyntaxKind.ConstructorType:
-        return true;
+        return true
     }
   }
 
-  export function introducesArgumentsExoticObject(node: Node) {
+  def introducesArgumentsExoticObject(node: Node) {
     switch (node.kind) {
       case SyntaxKind.MethodDeclaration:
       case SyntaxKind.MethodSignature:
@@ -715,62 +715,62 @@ namespace ts {
       case SyntaxKind.SetAccessor:
       case SyntaxKind.FunctionDeclaration:
       case SyntaxKind.FunctionExpression:
-        return true;
+        return true
     }
-    return false;
+    return false
   }
 
-  export function isIterationStatement(node: Node, lookInLabeledStatements: boolean): boolean {
+  def isIterationStatement(node: Node, lookInLabeledStatements: Boolean): Boolean {
     switch (node.kind) {
       case SyntaxKind.ForStatement:
       case SyntaxKind.ForInStatement:
       case SyntaxKind.ForOfStatement:
       case SyntaxKind.DoStatement:
       case SyntaxKind.WhileStatement:
-        return true;
+        return true
       case SyntaxKind.LabeledStatement:
-        return lookInLabeledStatements && isIterationStatement((<LabeledStatement>node).statement, lookInLabeledStatements);
+        return lookInLabeledStatements && isIterationStatement((<LabeledStatement>node).statement, lookInLabeledStatements)
     }
 
-    return false;
+    return false
   }
 
 
-  export function isFunctionBlock(node: Node) {
-    return node && node.kind === SyntaxKind.Block && isFunctionLike(node.parent);
+  def isFunctionBlock(node: Node) {
+    return node && node.kind == SyntaxKind.Block && isFunctionLike(node.parent)
   }
 
-  export function isObjectLiteralMethod(node: Node): node is MethodDeclaration {
-    return node && node.kind === SyntaxKind.MethodDeclaration && node.parent.kind === SyntaxKind.ObjectLiteralExpression;
+  def isObjectLiteralMethod(node: Node): node is MethodDeclaration {
+    return node && node.kind == SyntaxKind.MethodDeclaration && node.parent.kind == SyntaxKind.ObjectLiteralExpression
   }
 
-  export function isIdentifierTypePredicate(predicate: TypePredicate): predicate is IdentifierTypePredicate {
-    return predicate && predicate.kind === TypePredicateKind.Identifier;
+  def isIdentifierTypePredicate(predicate: TypePredicate): predicate is IdentifierTypePredicate {
+    return predicate && predicate.kind == TypePredicateKind.Identifier
   }
 
-  export function getContainingFunction(node: Node): FunctionLikeDeclaration {
+  def getContainingFunction(node: Node): FunctionLikeDeclaration {
     while (true) {
-      node = node.parent;
+      node = node.parent
       if (!node || isFunctionLike(node)) {
-        return <FunctionLikeDeclaration>node;
+        return <FunctionLikeDeclaration>node
       }
     }
   }
 
-  export function getContainingClass(node: Node): ClassLikeDeclaration {
+  def getContainingClass(node: Node): ClassLikeDeclaration {
     while (true) {
-      node = node.parent;
+      node = node.parent
       if (!node || isClassLike(node)) {
-        return <ClassLikeDeclaration>node;
+        return <ClassLikeDeclaration>node
       }
     }
   }
 
-  export function getThisContainer(node: Node, includeArrowFunctions: boolean): Node {
+  def getThisContainer(node: Node, includeArrowFunctions: Boolean): Node {
     while (true) {
-      node = node.parent;
+      node = node.parent
       if (!node) {
-        return undefined;
+        return undefined
       }
       switch (node.kind) {
         case SyntaxKind.ComputedPropertyName:
@@ -779,31 +779,31 @@ namespace ts {
           // A computed property name in a class needs to be a this container
           // so that we can error on it.
           if (isClassLike(node.parent.parent)) {
-            return node;
+            return node
           }
           // If this is a computed property, then the parent should not
           // make it a this container. The parent might be a property
           // in an object literal, like a method or accessor. But in order for
           // such a parent to be a this container, the reference must be in
           // the *body* of the container.
-          node = node.parent;
-          break;
+          node = node.parent
+          break
         case SyntaxKind.Decorator:
           // Decorators are always applied outside of the body of a class or method.
-          if (node.parent.kind === SyntaxKind.Parameter && isClassElement(node.parent.parent)) {
+          if (node.parent.kind == SyntaxKind.Parameter && isClassElement(node.parent.parent)) {
             // If the decorator's parent is a Parameter, we resolve the this container from
             // the grandparent class declaration.
-            node = node.parent.parent;
+            node = node.parent.parent
           }
           else if (isClassElement(node.parent)) {
             // If the decorator's parent is a class element, we resolve the 'this' container
             // from the parent class declaration.
-            node = node.parent;
+            node = node.parent
           }
-          break;
+          break
         case SyntaxKind.ArrowFunction:
           if (!includeArrowFunctions) {
-            continue;
+            continue
           }
         // Fall through
         case SyntaxKind.FunctionDeclaration:
@@ -821,7 +821,7 @@ namespace ts {
         case SyntaxKind.IndexSignature:
         case SyntaxKind.EnumDeclaration:
         case SyntaxKind.SourceFile:
-          return node;
+          return node
       }
     }
   }
@@ -830,25 +830,25 @@ namespace ts {
     * Given an super call\property node returns a closest node where either
     * - super call\property is legal in the node and not legal in the parent node the node.
     *   i.e. super call is legal in constructor but not legal in the class body.
-    * - node is arrow function (so caller might need to call getSuperContainer in case it needs to climb higher)
+    * - node is arrow def (so caller might need to call getSuperContainer in case it needs to climb higher)
     * - super call\property is definitely illegal in the node (but might be legal in some subnode)
-    *   i.e. super property access is illegal in function declaration but can be legal in the statement list
+    *   i.e. super property access is illegal in def declaration but can be legal in the statement list
     */
-  export function getSuperContainer(node: Node, stopOnFunctions: boolean): Node {
+  def getSuperContainer(node: Node, stopOnFunctions: Boolean): Node {
     while (true) {
-      node = node.parent;
+      node = node.parent
       if (!node) {
-        return node;
+        return node
       }
       switch (node.kind) {
         case SyntaxKind.ComputedPropertyName:
-          node = node.parent;
-          break;
+          node = node.parent
+          break
         case SyntaxKind.FunctionDeclaration:
         case SyntaxKind.FunctionExpression:
         case SyntaxKind.ArrowFunction:
           if (!stopOnFunctions) {
-            continue;
+            continue
           }
         case SyntaxKind.PropertyDeclaration:
         case SyntaxKind.PropertySignature:
@@ -857,20 +857,20 @@ namespace ts {
         case SyntaxKind.Constructor:
         case SyntaxKind.GetAccessor:
         case SyntaxKind.SetAccessor:
-          return node;
+          return node
         case SyntaxKind.Decorator:
           // Decorators are always applied outside of the body of a class or method.
-          if (node.parent.kind === SyntaxKind.Parameter && isClassElement(node.parent.parent)) {
+          if (node.parent.kind == SyntaxKind.Parameter && isClassElement(node.parent.parent)) {
             // If the decorator's parent is a Parameter, we resolve the this container from
             // the grandparent class declaration.
-            node = node.parent.parent;
+            node = node.parent.parent
           }
           else if (isClassElement(node.parent)) {
             // If the decorator's parent is a class element, we resolve the 'this' container
             // from the parent class declaration.
-            node = node.parent;
+            node = node.parent
           }
-          break;
+          break
       }
     }
   }
@@ -878,81 +878,81 @@ namespace ts {
   /**
    * Determines whether a node is a property or element access expression for super.
    */
-  export function isSuperPropertyOrElementAccess(node: Node) {
-    return (node.kind === SyntaxKind.PropertyAccessExpression
-      || node.kind === SyntaxKind.ElementAccessExpression)
-      && (<PropertyAccessExpression | ElementAccessExpression>node).expression.kind === SyntaxKind.SuperKeyword;
+  def isSuperPropertyOrElementAccess(node: Node) {
+    return (node.kind == SyntaxKind.PropertyAccessExpression
+      || node.kind == SyntaxKind.ElementAccessExpression)
+      && (<PropertyAccessExpression | ElementAccessExpression>node).expression.kind == SyntaxKind.SuperKeyword
   }
 
 
-  export function getEntityNameFromTypeNode(node: TypeNode): EntityName | Expression {
+  def getEntityNameFromTypeNode(node: TypeNode): EntityName | Expression {
     if (node) {
       switch (node.kind) {
         case SyntaxKind.TypeReference:
-          return (<TypeReferenceNode>node).typeName;
+          return (<TypeReferenceNode>node).typeName
         case SyntaxKind.ExpressionWithTypeArguments:
-          return (<ExpressionWithTypeArguments>node).expression;
+          return (<ExpressionWithTypeArguments>node).expression
         case SyntaxKind.Identifier:
         case SyntaxKind.QualifiedName:
-          return (<EntityName><Node>node);
+          return (<EntityName><Node>node)
       }
     }
 
-    return undefined;
+    return undefined
   }
 
-  export function getInvokedExpression(node: CallLikeExpression): Expression {
-    if (node.kind === SyntaxKind.TaggedTemplateExpression) {
-      return (<TaggedTemplateExpression>node).tag;
+  def getInvokedExpression(node: CallLikeExpression): Expression {
+    if (node.kind == SyntaxKind.TaggedTemplateExpression) {
+      return (<TaggedTemplateExpression>node).tag
     }
 
     // Will either be a CallExpression, NewExpression, or Decorator.
-    return (<CallExpression | Decorator>node).expression;
+    return (<CallExpression | Decorator>node).expression
   }
 
-  export function nodeCanBeDecorated(node: Node): boolean {
+  def nodeCanBeDecorated(node: Node): Boolean {
     switch (node.kind) {
       case SyntaxKind.ClassDeclaration:
         // classes are valid targets
-        return true;
+        return true
 
       case SyntaxKind.PropertyDeclaration:
         // property declarations are valid if their parent is a class declaration.
-        return node.parent.kind === SyntaxKind.ClassDeclaration;
+        return node.parent.kind == SyntaxKind.ClassDeclaration
 
       case SyntaxKind.GetAccessor:
       case SyntaxKind.SetAccessor:
       case SyntaxKind.MethodDeclaration:
         // if this method has a body and its parent is a class declaration, this is a valid target.
-        return (<FunctionLikeDeclaration>node).body !== undefined
-          && node.parent.kind === SyntaxKind.ClassDeclaration;
+        return (<FunctionLikeDeclaration>node).body != undefined
+          && node.parent.kind == SyntaxKind.ClassDeclaration
 
       case SyntaxKind.Parameter:
-        // if the parameter's parent has a body and its grandparent is a class declaration, this is a valid target;
-        return (<FunctionLikeDeclaration>node.parent).body !== undefined
-          && (node.parent.kind === SyntaxKind.Constructor
-          || node.parent.kind === SyntaxKind.MethodDeclaration
-          || node.parent.kind === SyntaxKind.SetAccessor)
-          && node.parent.parent.kind === SyntaxKind.ClassDeclaration;
+        // if the parameter's parent has a body and its grandparent is a class declaration, this is a valid target
+        return (<FunctionLikeDeclaration>node.parent).body != undefined
+          && (node.parent.kind == SyntaxKind.Constructor
+          || node.parent.kind == SyntaxKind.MethodDeclaration
+          || node.parent.kind == SyntaxKind.SetAccessor)
+          && node.parent.parent.kind == SyntaxKind.ClassDeclaration
     }
 
-    return false;
+    return false
   }
 
-  export function nodeIsDecorated(node: Node): boolean {
-    return node.decorators !== undefined
-      && nodeCanBeDecorated(node);
+  def nodeIsDecorated(node: Node): Boolean {
+    return node.decorators != undefined
+      && nodeCanBeDecorated(node)
   }
 
-  export function isPropertyAccessExpression(node: Node): node is PropertyAccessExpression {
-    return node.kind === SyntaxKind.PropertyAccessExpression;
+  def isPropertyAccessExpression(node: Node): node is PropertyAccessExpression {
+    return node.kind == SyntaxKind.PropertyAccessExpression
   }
 
-  export function isElementAccessExpression(node: Node): node is ElementAccessExpression {
-    return node.kind === SyntaxKind.ElementAccessExpression;
+  def isElementAccessExpression(node: Node): node is ElementAccessExpression {
+    return node.kind == SyntaxKind.ElementAccessExpression
   }
 
-  export function isExpression(node: Node): boolean {
+  def isExpression(node: Node): Boolean {
     switch (node.kind) {
       case SyntaxKind.SuperKeyword:
       case SyntaxKind.NullKeyword:
@@ -987,21 +987,21 @@ namespace ts {
       case SyntaxKind.JsxSelfClosingElement:
       case SyntaxKind.YieldExpression:
       case SyntaxKind.AwaitExpression:
-        return true;
+        return true
       case SyntaxKind.QualifiedName:
-        while (node.parent.kind === SyntaxKind.QualifiedName) {
-          node = node.parent;
+        while (node.parent.kind == SyntaxKind.QualifiedName) {
+          node = node.parent
         }
-        return node.parent.kind === SyntaxKind.TypeQuery;
+        return node.parent.kind == SyntaxKind.TypeQuery
       case SyntaxKind.Identifier:
-        if (node.parent.kind === SyntaxKind.TypeQuery) {
-          return true;
+        if (node.parent.kind == SyntaxKind.TypeQuery) {
+          return true
         }
       // fall through
       case SyntaxKind.NumericLiteral:
       case SyntaxKind.StringLiteral:
       case SyntaxKind.ThisKeyword:
-        let parent = node.parent;
+        var parent = node.parent
         switch (parent.kind) {
           case SyntaxKind.VariableDeclaration:
           case SyntaxKind.Parameter:
@@ -1010,7 +1010,7 @@ namespace ts {
           case SyntaxKind.EnumMember:
           case SyntaxKind.PropertyAssignment:
           case SyntaxKind.BindingElement:
-            return (<VariableLikeDeclaration>parent).initializer === node;
+            return (<VariableLikeDeclaration>parent).initializer == node
           case SyntaxKind.ExpressionStatement:
           case SyntaxKind.IfStatement:
           case SyntaxKind.DoStatement:
@@ -1021,142 +1021,142 @@ namespace ts {
           case SyntaxKind.CaseClause:
           case SyntaxKind.ThrowStatement:
           case SyntaxKind.SwitchStatement:
-            return (<ExpressionStatement>parent).expression === node;
+            return (<ExpressionStatement>parent).expression == node
           case SyntaxKind.ForStatement:
-            let forStatement = <ForStatement>parent;
-            return (forStatement.initializer === node && forStatement.initializer.kind !== SyntaxKind.VariableDeclarationList) ||
-              forStatement.condition === node ||
-              forStatement.incrementor === node;
+            var forStatement = <ForStatement>parent
+            return (forStatement.initializer == node && forStatement.initializer.kind != SyntaxKind.VariableDeclarationList) ||
+              forStatement.condition == node ||
+              forStatement.incrementor == node
           case SyntaxKind.ForInStatement:
           case SyntaxKind.ForOfStatement:
-            let forInStatement = <ForInStatement | ForOfStatement>parent;
-            return (forInStatement.initializer === node && forInStatement.initializer.kind !== SyntaxKind.VariableDeclarationList) ||
-              forInStatement.expression === node;
+            var forInStatement = <ForInStatement | ForOfStatement>parent
+            return (forInStatement.initializer == node && forInStatement.initializer.kind != SyntaxKind.VariableDeclarationList) ||
+              forInStatement.expression == node
           case SyntaxKind.TypeAssertionExpression:
           case SyntaxKind.AsExpression:
-            return node === (<AssertionExpression>parent).expression;
+            return node == (<AssertionExpression>parent).expression
           case SyntaxKind.TemplateSpan:
-            return node === (<TemplateSpan>parent).expression;
+            return node == (<TemplateSpan>parent).expression
           case SyntaxKind.ComputedPropertyName:
-            return node === (<ComputedPropertyName>parent).expression;
+            return node == (<ComputedPropertyName>parent).expression
           case SyntaxKind.Decorator:
           case SyntaxKind.JsxExpression:
           case SyntaxKind.JsxSpreadAttribute:
-            return true;
+            return true
           case SyntaxKind.ExpressionWithTypeArguments:
-            return (<ExpressionWithTypeArguments>parent).expression === node && isExpressionWithTypeArgumentsInClassExtendsClause(parent);
+            return (<ExpressionWithTypeArguments>parent).expression == node && isExpressionWithTypeArgumentsInClassExtendsClause(parent)
           default:
             if (isExpression(parent)) {
-              return true;
+              return true
             }
         }
     }
-    return false;
+    return false
   }
 
-  export function isExternalModuleNameRelative(moduleName: string): boolean {
+  def isExternalModuleNameRelative(moduleName: String): Boolean {
     // TypeScript 1.0 spec (April 2014): 11.2.1
     // An external module name is "relative" if the first term is "." or "..".
-    return moduleName.substr(0, 2) === "./" || moduleName.substr(0, 3) === "../" || moduleName.substr(0, 2) === ".\\" || moduleName.substr(0, 3) === "..\\";
+    return moduleName.substr(0, 2) == "./" || moduleName.substr(0, 3) == "../" || moduleName.substr(0, 2) == ".\\" || moduleName.substr(0, 3) == "..\\"
   }
 
-  export function isInstantiatedModule(node: ModuleDeclaration, preserveConstEnums: boolean) {
-    const moduleState = getModuleInstanceState(node);
-    return moduleState === ModuleInstanceState.Instantiated ||
-      (preserveConstEnums && moduleState === ModuleInstanceState.ConstEnumOnly);
+  def isInstantiatedModule(node: ModuleDeclaration, preserveConstEnums: Boolean) {
+    val moduleState = getModuleInstanceState(node)
+    return moduleState == ModuleInstanceState.Instantiated ||
+      (preserveConstEnums && moduleState == ModuleInstanceState.ConstEnumOnly)
   }
 
-  export function isExternalModuleImportEqualsDeclaration(node: Node) {
-    return node.kind === SyntaxKind.ImportEqualsDeclaration && (<ImportEqualsDeclaration>node).moduleReference.kind === SyntaxKind.ExternalModuleReference;
+  def isExternalModuleImportEqualsDeclaration(node: Node) {
+    return node.kind == SyntaxKind.ImportEqualsDeclaration && (<ImportEqualsDeclaration>node).moduleReference.kind == SyntaxKind.ExternalModuleReference
   }
 
-  export function getExternalModuleImportEqualsDeclarationExpression(node: Node) {
-    Debug.assert(isExternalModuleImportEqualsDeclaration(node));
-    return (<ExternalModuleReference>(<ImportEqualsDeclaration>node).moduleReference).expression;
+  def getExternalModuleImportEqualsDeclarationExpression(node: Node) {
+    Debug.assert(isExternalModuleImportEqualsDeclaration(node))
+    return (<ExternalModuleReference>(<ImportEqualsDeclaration>node).moduleReference).expression
   }
 
-  export function isInternalModuleImportEqualsDeclaration(node: Node): node is ImportEqualsDeclaration {
-    return node.kind === SyntaxKind.ImportEqualsDeclaration && (<ImportEqualsDeclaration>node).moduleReference.kind !== SyntaxKind.ExternalModuleReference;
+  def isInternalModuleImportEqualsDeclaration(node: Node): node is ImportEqualsDeclaration {
+    return node.kind == SyntaxKind.ImportEqualsDeclaration && (<ImportEqualsDeclaration>node).moduleReference.kind != SyntaxKind.ExternalModuleReference
   }
 
-  export function isSourceFileJavaScript(file: SourceFile): boolean {
-    return isInJavaScriptFile(file);
+  def isSourceFileJavaScript(file: SourceFile): Boolean {
+    return isInJavaScriptFile(file)
   }
 
-  export function isInJavaScriptFile(node: Node): boolean {
-    return node && !!(node.flags & NodeFlags.JavaScriptFile);
+  def isInJavaScriptFile(node: Node): Boolean {
+    return node && !!(node.flags & NodeFlags.JavaScriptFile)
   }
 
   /**
    * Returns true if the node is a CallExpression to the identifier 'require' with
    * exactly one argument.
-   * This function does not test if the node is in a JavaScript file or not.
+   * This def does not test if the node is in a JavaScript file or not.
   */
-  export function isRequireCall(expression: Node, checkArgumentIsStringLiteral: boolean): expression is CallExpression {
+  def isRequireCall(expression: Node, checkArgumentIsStringLiteral: Boolean): expression is CallExpression {
     // of the form 'require("name")'
-    const isRequire = expression.kind === SyntaxKind.CallExpression &&
-      (<CallExpression>expression).expression.kind === SyntaxKind.Identifier &&
-      (<Identifier>(<CallExpression>expression).expression).text === "require" &&
-      (<CallExpression>expression).arguments.length === 1;
+    val isRequire = expression.kind == SyntaxKind.CallExpression &&
+      (<CallExpression>expression).expression.kind == SyntaxKind.Identifier &&
+      (<Identifier>(<CallExpression>expression).expression).text == "require" &&
+      (<CallExpression>expression).arguments.length == 1
 
-    return isRequire && (!checkArgumentIsStringLiteral || (<CallExpression>expression).arguments[0].kind === SyntaxKind.StringLiteral);
+    return isRequire && (!checkArgumentIsStringLiteral || (<CallExpression>expression).arguments[0].kind == SyntaxKind.StringLiteral)
   }
 
   /// Given a BinaryExpression, returns SpecialPropertyAssignmentKind for the various kinds of property
   /// assignments we treat as special in the binder
-  export function getSpecialPropertyAssignmentKind(expression: Node): SpecialPropertyAssignmentKind {
-    if (expression.kind !== SyntaxKind.BinaryExpression) {
-      return SpecialPropertyAssignmentKind.None;
+  def getSpecialPropertyAssignmentKind(expression: Node): SpecialPropertyAssignmentKind {
+    if (expression.kind != SyntaxKind.BinaryExpression) {
+      return SpecialPropertyAssignmentKind.None
     }
-    const expr = <BinaryExpression>expression;
-    if (expr.operatorToken.kind !== SyntaxKind.EqualsToken || expr.left.kind !== SyntaxKind.PropertyAccessExpression) {
-      return SpecialPropertyAssignmentKind.None;
+    val expr = <BinaryExpression>expression
+    if (expr.operatorToken.kind != SyntaxKind.EqualsToken || expr.left.kind != SyntaxKind.PropertyAccessExpression) {
+      return SpecialPropertyAssignmentKind.None
     }
-    const lhs = <PropertyAccessExpression>expr.left;
-    if (lhs.expression.kind === SyntaxKind.Identifier) {
-      const lhsId = <Identifier>lhs.expression;
-      if (lhsId.text === "exports") {
+    val lhs = <PropertyAccessExpression>expr.left
+    if (lhs.expression.kind == SyntaxKind.Identifier) {
+      val lhsId = <Identifier>lhs.expression
+      if (lhsId.text == "exports") {
         // exports.name = expr
-        return SpecialPropertyAssignmentKind.ExportsProperty;
+        return SpecialPropertyAssignmentKind.ExportsProperty
       }
-      else if (lhsId.text === "module" && lhs.name.text === "exports") {
+      else if (lhsId.text == "module" && lhs.name.text == "exports") {
         // module.exports = expr
-        return SpecialPropertyAssignmentKind.ModuleExports;
+        return SpecialPropertyAssignmentKind.ModuleExports
       }
     }
-    else if (lhs.expression.kind === SyntaxKind.ThisKeyword) {
-      return SpecialPropertyAssignmentKind.ThisProperty;
+    else if (lhs.expression.kind == SyntaxKind.ThisKeyword) {
+      return SpecialPropertyAssignmentKind.ThisProperty
     }
-    else if (lhs.expression.kind === SyntaxKind.PropertyAccessExpression) {
+    else if (lhs.expression.kind == SyntaxKind.PropertyAccessExpression) {
       // chained dot, e.g. x.y.z = expr; this var is the 'x.y' part
-      const innerPropertyAccess = <PropertyAccessExpression>lhs.expression;
-      if (innerPropertyAccess.expression.kind === SyntaxKind.Identifier && innerPropertyAccess.name.text === "prototype") {
-        return SpecialPropertyAssignmentKind.PrototypeProperty;
+      val innerPropertyAccess = <PropertyAccessExpression>lhs.expression
+      if (innerPropertyAccess.expression.kind == SyntaxKind.Identifier && innerPropertyAccess.name.text == "prototype") {
+        return SpecialPropertyAssignmentKind.PrototypeProperty
       }
     }
 
-    return SpecialPropertyAssignmentKind.None;
+    return SpecialPropertyAssignmentKind.None
   }
 
-  export function getExternalModuleName(node: Node): Expression {
-    if (node.kind === SyntaxKind.ImportDeclaration) {
-      return (<ImportDeclaration>node).moduleSpecifier;
+  def getExternalModuleName(node: Node): Expression {
+    if (node.kind == SyntaxKind.ImportDeclaration) {
+      return (<ImportDeclaration>node).moduleSpecifier
     }
-    if (node.kind === SyntaxKind.ImportEqualsDeclaration) {
-      const reference = (<ImportEqualsDeclaration>node).moduleReference;
-      if (reference.kind === SyntaxKind.ExternalModuleReference) {
-        return (<ExternalModuleReference>reference).expression;
+    if (node.kind == SyntaxKind.ImportEqualsDeclaration) {
+      val reference = (<ImportEqualsDeclaration>node).moduleReference
+      if (reference.kind == SyntaxKind.ExternalModuleReference) {
+        return (<ExternalModuleReference>reference).expression
       }
     }
-    if (node.kind === SyntaxKind.ExportDeclaration) {
-      return (<ExportDeclaration>node).moduleSpecifier;
+    if (node.kind == SyntaxKind.ExportDeclaration) {
+      return (<ExportDeclaration>node).moduleSpecifier
     }
-    if (node.kind === SyntaxKind.ModuleDeclaration && (<ModuleDeclaration>node).name.kind === SyntaxKind.StringLiteral) {
-      return (<ModuleDeclaration>node).name;
+    if (node.kind == SyntaxKind.ModuleDeclaration && (<ModuleDeclaration>node).name.kind == SyntaxKind.StringLiteral) {
+      return (<ModuleDeclaration>node).name
     }
   }
 
-  export function hasQuestionToken(node: Node) {
+  def hasQuestionToken(node: Node) {
     if (node) {
       switch (node.kind) {
         case SyntaxKind.Parameter:
@@ -1166,170 +1166,170 @@ namespace ts {
         case SyntaxKind.PropertyAssignment:
         case SyntaxKind.PropertyDeclaration:
         case SyntaxKind.PropertySignature:
-          return (<ParameterDeclaration | MethodDeclaration | PropertyDeclaration>node).questionToken !== undefined;
+          return (<ParameterDeclaration | MethodDeclaration | PropertyDeclaration>node).questionToken != undefined
       }
     }
 
-    return false;
+    return false
   }
 
-  export function isJSDocConstructSignature(node: Node) {
-    return node.kind === SyntaxKind.JSDocFunctionType &&
+  def isJSDocConstructSignature(node: Node) {
+    return node.kind == SyntaxKind.JSDocFunctionType &&
       (<JSDocFunctionType>node).parameters.length > 0 &&
-      (<JSDocFunctionType>node).parameters[0].type.kind === SyntaxKind.JSDocConstructorType;
+      (<JSDocFunctionType>node).parameters[0].type.kind == SyntaxKind.JSDocConstructorType
   }
 
-  function getJSDocTag(node: Node, kind: SyntaxKind, checkParentVariableStatement: boolean): JSDocTag {
+  def getJSDocTag(node: Node, kind: SyntaxKind, checkParentVariableStatement: Boolean): JSDocTag {
     if (!node) {
-      return undefined;
+      return undefined
     }
 
-    const jsDocComment = getJSDocComment(node, checkParentVariableStatement);
+    val jsDocComment = getJSDocComment(node, checkParentVariableStatement)
     if (!jsDocComment) {
-      return undefined;
+      return undefined
     }
 
-    for (const tag of jsDocComment.tags) {
-      if (tag.kind === kind) {
-        return tag;
+    for (val tag of jsDocComment.tags) {
+      if (tag.kind == kind) {
+        return tag
       }
     }
   }
 
-  function getJSDocComment(node: Node, checkParentVariableStatement: boolean): JSDocComment {
+  def getJSDocComment(node: Node, checkParentVariableStatement: Boolean): JSDocComment {
     if (node.jsDocComment) {
-      return node.jsDocComment;
+      return node.jsDocComment
     }
     // Try to recognize this pattern when node is initializer of variable declaration and JSDoc comments are on containing variable statement. 
     // /** 
-    //   * @param {number} name
-    //   * @returns {number} 
+    //   * @param {Int} name
+    //   * @returns {Int} 
     //   */
-    // var x = function(name) { return name.length; }
+    // var x = def(name) { return name.length; }
     if (checkParentVariableStatement) {
-      const isInitializerOfVariableDeclarationInStatement =
-        node.parent.kind === SyntaxKind.VariableDeclaration &&
-        (<VariableDeclaration>node.parent).initializer === node &&
-        node.parent.parent.parent.kind === SyntaxKind.VariableStatement;
+      val isInitializerOfVariableDeclarationInStatement =
+        node.parent.kind == SyntaxKind.VariableDeclaration &&
+        (<VariableDeclaration>node.parent).initializer == node &&
+        node.parent.parent.parent.kind == SyntaxKind.VariableStatement
 
-      const variableStatementNode = isInitializerOfVariableDeclarationInStatement ? node.parent.parent.parent : undefined;
+      val variableStatementNode = isInitializerOfVariableDeclarationInStatement ? node.parent.parent.parent : undefined
       if (variableStatementNode) {
-        return variableStatementNode.jsDocComment;
+        return variableStatementNode.jsDocComment
       }
 
       // Also recognize when the node is the RHS of an assignment expression
-      const parent = node.parent;
-      const isSourceOfAssignmentExpressionStatement =
+      val parent = node.parent
+      val isSourceOfAssignmentExpressionStatement =
         parent && parent.parent &&
-        parent.kind === SyntaxKind.BinaryExpression &&
-        (parent as BinaryExpression).operatorToken.kind === SyntaxKind.EqualsToken &&
-        parent.parent.kind === SyntaxKind.ExpressionStatement;
+        parent.kind == SyntaxKind.BinaryExpression &&
+        (parent as BinaryExpression).operatorToken.kind == SyntaxKind.EqualsToken &&
+        parent.parent.kind == SyntaxKind.ExpressionStatement
       if (isSourceOfAssignmentExpressionStatement) {
-        return parent.parent.jsDocComment;
+        return parent.parent.jsDocComment
       }
 
-      const isPropertyAssignmentExpression = parent && parent.kind === SyntaxKind.PropertyAssignment;
+      val isPropertyAssignmentExpression = parent && parent.kind == SyntaxKind.PropertyAssignment
       if (isPropertyAssignmentExpression) {
-        return parent.jsDocComment;
+        return parent.jsDocComment
       }
     }
 
-    return undefined;
+    return undefined
   }
 
-  export function getJSDocTypeTag(node: Node): JSDocTypeTag {
-    return <JSDocTypeTag>getJSDocTag(node, SyntaxKind.JSDocTypeTag, /*checkParentVariableStatement*/ false);
+  def getJSDocTypeTag(node: Node): JSDocTypeTag {
+    return <JSDocTypeTag>getJSDocTag(node, SyntaxKind.JSDocTypeTag, /*checkParentVariableStatement*/ false)
   }
 
-  export function getJSDocReturnTag(node: Node): JSDocReturnTag {
-    return <JSDocReturnTag>getJSDocTag(node, SyntaxKind.JSDocReturnTag, /*checkParentVariableStatement*/ true);
+  def getJSDocReturnTag(node: Node): JSDocReturnTag {
+    return <JSDocReturnTag>getJSDocTag(node, SyntaxKind.JSDocReturnTag, /*checkParentVariableStatement*/ true)
   }
 
-  export function getJSDocTemplateTag(node: Node): JSDocTemplateTag {
-    return <JSDocTemplateTag>getJSDocTag(node, SyntaxKind.JSDocTemplateTag, /*checkParentVariableStatement*/ false);
+  def getJSDocTemplateTag(node: Node): JSDocTemplateTag {
+    return <JSDocTemplateTag>getJSDocTag(node, SyntaxKind.JSDocTemplateTag, /*checkParentVariableStatement*/ false)
   }
 
-  export function getCorrespondingJSDocParameterTag(parameter: ParameterDeclaration): JSDocParameterTag {
-    if (parameter.name && parameter.name.kind === SyntaxKind.Identifier) {
+  def getCorrespondingJSDocParameterTag(parameter: ParameterDeclaration): JSDocParameterTag {
+    if (parameter.name && parameter.name.kind == SyntaxKind.Identifier) {
       // If it's a parameter, see if the parent has a jsdoc comment with an @param
       // annotation.
-      const parameterName = (<Identifier>parameter.name).text;
+      val parameterName = (<Identifier>parameter.name).text
 
-      const jsDocComment = getJSDocComment(parameter.parent, /*checkParentVariableStatement*/ true);
+      val jsDocComment = getJSDocComment(parameter.parent, /*checkParentVariableStatement*/ true)
       if (jsDocComment) {
-        for (const tag of jsDocComment.tags) {
-          if (tag.kind === SyntaxKind.JSDocParameterTag) {
-            const parameterTag = <JSDocParameterTag>tag;
-            const name = parameterTag.preParameterName || parameterTag.postParameterName;
-            if (name.text === parameterName) {
-              return parameterTag;
+        for (val tag of jsDocComment.tags) {
+          if (tag.kind == SyntaxKind.JSDocParameterTag) {
+            val parameterTag = <JSDocParameterTag>tag
+            val name = parameterTag.preParameterName || parameterTag.postParameterName
+            if (name.text == parameterName) {
+              return parameterTag
             }
           }
         }
       }
     }
 
-    return undefined;
+    return undefined
   }
 
-  export function hasRestParameter(s: SignatureDeclaration): boolean {
-    return isRestParameter(lastOrUndefined(s.parameters));
+  def hasRestParameter(s: SignatureDeclaration): Boolean {
+    return isRestParameter(lastOrUndefined(s.parameters))
   }
 
-  export function isRestParameter(node: ParameterDeclaration) {
+  def isRestParameter(node: ParameterDeclaration) {
     if (node) {
       if (node.flags & NodeFlags.JavaScriptFile) {
-        if (node.type && node.type.kind === SyntaxKind.JSDocVariadicType) {
-          return true;
+        if (node.type && node.type.kind == SyntaxKind.JSDocVariadicType) {
+          return true
         }
 
-        const paramTag = getCorrespondingJSDocParameterTag(node);
+        val paramTag = getCorrespondingJSDocParameterTag(node)
         if (paramTag && paramTag.typeExpression) {
-          return paramTag.typeExpression.type.kind === SyntaxKind.JSDocVariadicType;
+          return paramTag.typeExpression.type.kind == SyntaxKind.JSDocVariadicType
         }
       }
 
-      return node.dotDotDotToken !== undefined;
+      return node.dotDotDotToken != undefined
     }
 
-    return false;
+    return false
   }
 
-  export function isLiteralKind(kind: SyntaxKind): boolean {
-    return SyntaxKind.FirstLiteralToken <= kind && kind <= SyntaxKind.LastLiteralToken;
+  def isLiteralKind(kind: SyntaxKind): Boolean {
+    return SyntaxKind.FirstLiteralToken <= kind && kind <= SyntaxKind.LastLiteralToken
   }
 
-  export function isTextualLiteralKind(kind: SyntaxKind): boolean {
-    return kind === SyntaxKind.StringLiteral || kind === SyntaxKind.NoSubstitutionTemplateLiteral;
+  def isTextualLiteralKind(kind: SyntaxKind): Boolean {
+    return kind == SyntaxKind.StringLiteral || kind == SyntaxKind.NoSubstitutionTemplateLiteral
   }
 
-  export function isTemplateLiteralKind(kind: SyntaxKind): boolean {
-    return SyntaxKind.FirstTemplateToken <= kind && kind <= SyntaxKind.LastTemplateToken;
+  def isTemplateLiteralKind(kind: SyntaxKind): Boolean {
+    return SyntaxKind.FirstTemplateToken <= kind && kind <= SyntaxKind.LastTemplateToken
   }
 
-  export function isBindingPattern(node: Node): node is BindingPattern {
-    return !!node && (node.kind === SyntaxKind.ArrayBindingPattern || node.kind === SyntaxKind.ObjectBindingPattern);
+  def isBindingPattern(node: Node): node is BindingPattern {
+    return !!node && (node.kind == SyntaxKind.ArrayBindingPattern || node.kind == SyntaxKind.ObjectBindingPattern)
   }
 
-  export function isNodeDescendentOf(node: Node, ancestor: Node): boolean {
+  def isNodeDescendentOf(node: Node, ancestor: Node): Boolean {
     while (node) {
-      if (node === ancestor) return true;
-      node = node.parent;
+      if (node == ancestor) return true
+      node = node.parent
     }
-    return false;
+    return false
   }
 
-  export function isInAmbientContext(node: Node): boolean {
+  def isInAmbientContext(node: Node): Boolean {
     while (node) {
-      if (node.flags & NodeFlags.Ambient || (node.kind === SyntaxKind.SourceFile && (node as SourceFile).isDeclarationFile)) {
-        return true;
+      if (node.flags & NodeFlags.Ambient || (node.kind == SyntaxKind.SourceFile && (node as SourceFile).isDeclarationFile)) {
+        return true
       }
-      node = node.parent;
+      node = node.parent
     }
-    return false;
+    return false
   }
 
-  export function isDeclaration(node: Node): boolean {
+  def isDeclaration(node: Node): Boolean {
     switch (node.kind) {
       case SyntaxKind.ArrowFunction:
       case SyntaxKind.BindingElement:
@@ -1359,12 +1359,12 @@ namespace ts {
       case SyntaxKind.TypeAliasDeclaration:
       case SyntaxKind.TypeParameter:
       case SyntaxKind.VariableDeclaration:
-        return true;
+        return true
     }
-    return false;
+    return false
   }
 
-  export function isStatement(n: Node): boolean {
+  def isStatement(n: Node): Boolean {
     switch (n.kind) {
       case SyntaxKind.BreakStatement:
       case SyntaxKind.ContinueStatement:
@@ -1385,13 +1385,13 @@ namespace ts {
       case SyntaxKind.WhileStatement:
       case SyntaxKind.WithStatement:
       case SyntaxKind.ExportAssignment:
-        return true;
+        return true
       default:
-        return false;
+        return false
     }
   }
 
-  export function isClassElement(n: Node): boolean {
+  def isClassElement(n: Node): Boolean {
     switch (n.kind) {
       case SyntaxKind.Constructor:
       case SyntaxKind.PropertyDeclaration:
@@ -1400,35 +1400,35 @@ namespace ts {
       case SyntaxKind.SetAccessor:
       case SyntaxKind.MethodSignature:
       case SyntaxKind.IndexSignature:
-        return true;
+        return true
       default:
-        return false;
+        return false
     }
   }
 
-  // True if the given identifier, string literal, or number literal is the name of a declaration node
-  export function isDeclarationName(name: Node): name is Identifier | StringLiteral | LiteralExpression {
-    if (name.kind !== SyntaxKind.Identifier && name.kind !== SyntaxKind.StringLiteral && name.kind !== SyntaxKind.NumericLiteral) {
-      return false;
+  // True if the given identifier, String literal, or Int literal is the name of a declaration node
+  def isDeclarationName(name: Node): name is Identifier | StringLiteral | LiteralExpression {
+    if (name.kind != SyntaxKind.Identifier && name.kind != SyntaxKind.StringLiteral && name.kind != SyntaxKind.NumericLiteral) {
+      return false
     }
 
-    const parent = name.parent;
-    if (parent.kind === SyntaxKind.ImportSpecifier || parent.kind === SyntaxKind.ExportSpecifier) {
+    val parent = name.parent
+    if (parent.kind == SyntaxKind.ImportSpecifier || parent.kind == SyntaxKind.ExportSpecifier) {
       if ((<ImportOrExportSpecifier>parent).propertyName) {
-        return true;
+        return true
       }
     }
 
     if (isDeclaration(parent)) {
-      return (<Declaration>parent).name === name;
+      return (<Declaration>parent).name == name
     }
 
-    return false;
+    return false
   }
 
   // Return true if the given identifier is classified as an IdentifierName
-  export function isIdentifierName(node: Identifier): boolean {
-    let parent = node.parent;
+  def isIdentifierName(node: Identifier): Boolean {
+    var parent = node.parent
     switch (parent.kind) {
       case SyntaxKind.PropertyDeclaration:
       case SyntaxKind.PropertySignature:
@@ -1440,25 +1440,25 @@ namespace ts {
       case SyntaxKind.PropertyAssignment:
       case SyntaxKind.PropertyAccessExpression:
         // Name in member declaration or property name in property access
-        return (<Declaration | PropertyAccessExpression>parent).name === node;
+        return (<Declaration | PropertyAccessExpression>parent).name == node
       case SyntaxKind.QualifiedName:
         // Name on right hand side of dot in a type query
-        if ((<QualifiedName>parent).right === node) {
-          while (parent.kind === SyntaxKind.QualifiedName) {
-            parent = parent.parent;
+        if ((<QualifiedName>parent).right == node) {
+          while (parent.kind == SyntaxKind.QualifiedName) {
+            parent = parent.parent
           }
-          return parent.kind === SyntaxKind.TypeQuery;
+          return parent.kind == SyntaxKind.TypeQuery
         }
-        return false;
+        return false
       case SyntaxKind.BindingElement:
       case SyntaxKind.ImportSpecifier:
         // Property name in binding element or import specifier
-        return (<BindingElement | ImportSpecifier>parent).propertyName === node;
+        return (<BindingElement | ImportSpecifier>parent).propertyName == node
       case SyntaxKind.ExportSpecifier:
-        // Any name in an export specifier
-        return true;
+        // Any name in an specifier
+        return true
     }
-    return false;
+    return false
   }
 
   // An alias symbol is created by one of the following declarations:
@@ -1466,76 +1466,76 @@ namespace ts {
   // import <symbol> from ...
   // import * as <symbol> from ...
   // import { x as <symbol> } from ...
-  // export { x as <symbol> } from ...
-  // export = ...
-  // export default ...
-  export function isAliasSymbolDeclaration(node: Node): boolean {
-    return node.kind === SyntaxKind.ImportEqualsDeclaration ||
-      node.kind === SyntaxKind.ImportClause && !!(<ImportClause>node).name ||
-      node.kind === SyntaxKind.NamespaceImport ||
-      node.kind === SyntaxKind.ImportSpecifier ||
-      node.kind === SyntaxKind.ExportSpecifier ||
-      node.kind === SyntaxKind.ExportAssignment && (<ExportAssignment>node).expression.kind === SyntaxKind.Identifier;
+  // { x as <symbol> } from ...
+  // = ...
+  // default ...
+  def isAliasSymbolDeclaration(node: Node): Boolean {
+    return node.kind == SyntaxKind.ImportEqualsDeclaration ||
+      node.kind == SyntaxKind.ImportClause && !!(<ImportClause>node).name ||
+      node.kind == SyntaxKind.NamespaceImport ||
+      node.kind == SyntaxKind.ImportSpecifier ||
+      node.kind == SyntaxKind.ExportSpecifier ||
+      node.kind == SyntaxKind.ExportAssignment && (<ExportAssignment>node).expression.kind == SyntaxKind.Identifier
   }
 
-  export function getClassExtendsHeritageClauseElement(node: ClassLikeDeclaration) {
-    const heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ExtendsKeyword);
-    return heritageClause && heritageClause.types.length > 0 ? heritageClause.types[0] : undefined;
+  def getClassExtendsHeritageClauseElement(node: ClassLikeDeclaration) {
+    val heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ExtendsKeyword)
+    return heritageClause && heritageClause.types.length > 0 ? heritageClause.types[0] : undefined
   }
 
-  export function getClassImplementsHeritageClauseElements(node: ClassLikeDeclaration) {
-    const heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ImplementsKeyword);
-    return heritageClause ? heritageClause.types : undefined;
+  def getClassImplementsHeritageClauseElements(node: ClassLikeDeclaration) {
+    val heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ImplementsKeyword)
+    return heritageClause ? heritageClause.types : undefined
   }
 
-  export function getInterfaceBaseTypeNodes(node: InterfaceDeclaration) {
-    const heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ExtendsKeyword);
-    return heritageClause ? heritageClause.types : undefined;
+  def getInterfaceBaseTypeNodes(node: InterfaceDeclaration) {
+    val heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ExtendsKeyword)
+    return heritageClause ? heritageClause.types : undefined
   }
 
-  export function getHeritageClause(clauses: NodeArray<HeritageClause>, kind: SyntaxKind) {
+  def getHeritageClause(clauses: NodeArray<HeritageClause>, kind: SyntaxKind) {
     if (clauses) {
-      for (const clause of clauses) {
-        if (clause.token === kind) {
-          return clause;
+      for (val clause of clauses) {
+        if (clause.token == kind) {
+          return clause
         }
       }
     }
 
-    return undefined;
+    return undefined
   }
 
-  export function tryResolveScriptReference(host: ScriptReferenceHost, sourceFile: SourceFile, reference: FileReference) {
+  def tryResolveScriptReference(host: ScriptReferenceHost, sourceFile: SourceFile, reference: FileReference) {
     if (!host.getCompilerOptions().noResolve) {
-      const referenceFileName = isRootedDiskPath(reference.fileName) ? reference.fileName : combinePaths(getDirectoryPath(sourceFile.fileName), reference.fileName);
-      return host.getSourceFile(referenceFileName);
+      val referenceFileName = isRootedDiskPath(reference.fileName) ? reference.fileName : combinePaths(getDirectoryPath(sourceFile.fileName), reference.fileName)
+      return host.getSourceFile(referenceFileName)
     }
   }
 
-  export function getAncestor(node: Node, kind: SyntaxKind): Node {
+  def getAncestor(node: Node, kind: SyntaxKind): Node {
     while (node) {
-      if (node.kind === kind) {
-        return node;
+      if (node.kind == kind) {
+        return node
       }
-      node = node.parent;
+      node = node.parent
     }
-    return undefined;
+    return undefined
   }
 
-  export function getFileReferenceFromReferencePath(comment: string, commentRange: CommentRange): ReferencePathMatchResult {
-    const simpleReferenceRegEx = /^\/\/\/\s*<reference\s+/gim;
-    const isNoDefaultLibRegEx = /^(\/\/\/\s*<reference\s+no-default-lib\s*=\s*)('|")(.+?)\2\s*\/>/gim;
+  def getFileReferenceFromReferencePath(comment: String, commentRange: CommentRange): ReferencePathMatchResult {
+    val simpleReferenceRegEx = /^\/\/\/\s*<reference\s+/gim
+    val isNoDefaultLibRegEx = /^(\/\/\/\s*<reference\s+no-default-lib\s*=\s*)('|")(.+?)\2\s*\/>/gim
     if (simpleReferenceRegEx.test(comment)) {
       if (isNoDefaultLibRegEx.test(comment)) {
         return {
           isNoDefaultLib: true
-        };
+        }
       }
       else {
-        const matchResult = fullTripleSlashReferencePathRegEx.exec(comment);
+        val matchResult = fullTripleSlashReferencePathRegEx.exec(comment)
         if (matchResult) {
-          const start = commentRange.pos;
-          const end = commentRange.end;
+          val start = commentRange.pos
+          val end = commentRange.end
           return {
             fileReference: {
               pos: start,
@@ -1543,34 +1543,34 @@ namespace ts {
               fileName: matchResult[3]
             },
             isNoDefaultLib: false
-          };
+          }
         }
         else {
           return {
             diagnosticMessage: Diagnostics.Invalid_reference_directive_syntax,
             isNoDefaultLib: false
-          };
+          }
         }
       }
     }
 
-    return undefined;
+    return undefined
   }
 
-  export function isKeyword(token: SyntaxKind): boolean {
-    return SyntaxKind.FirstKeyword <= token && token <= SyntaxKind.LastKeyword;
+  def isKeyword(token: SyntaxKind): Boolean {
+    return SyntaxKind.FirstKeyword <= token && token <= SyntaxKind.LastKeyword
   }
 
-  export function isTrivia(token: SyntaxKind) {
-    return SyntaxKind.FirstTriviaToken <= token && token <= SyntaxKind.LastTriviaToken;
+  def isTrivia(token: SyntaxKind) {
+    return SyntaxKind.FirstTriviaToken <= token && token <= SyntaxKind.LastTriviaToken
   }
 
-  export function isAsyncFunctionLike(node: Node): boolean {
-    return isFunctionLike(node) && (node.flags & NodeFlags.Async) !== 0 && !isAccessor(node);
+  def isAsyncFunctionLike(node: Node): Boolean {
+    return isFunctionLike(node) && (node.flags & NodeFlags.Async) != 0 && !isAccessor(node)
   }
 
-  export function isStringOrNumericLiteral(kind: SyntaxKind): boolean {
-    return kind === SyntaxKind.StringLiteral || kind === SyntaxKind.NumericLiteral;
+  def isStringOrNumericLiteral(kind: SyntaxKind): Boolean {
+    return kind == SyntaxKind.StringLiteral || kind == SyntaxKind.NumericLiteral
   }
 
   /**
@@ -1580,14 +1580,14 @@ namespace ts {
    *    is a property of the Symbol constructor that denotes a built in
    *    Symbol.
    */
-  export function hasDynamicName(declaration: Declaration): boolean {
-    return declaration.name && isDynamicName(declaration.name);
+  def hasDynamicName(declaration: Declaration): Boolean {
+    return declaration.name && isDynamicName(declaration.name)
   }
 
-  export function isDynamicName(name: DeclarationName): boolean {
-    return name.kind === SyntaxKind.ComputedPropertyName &&
+  def isDynamicName(name: DeclarationName): Boolean {
+    return name.kind == SyntaxKind.ComputedPropertyName &&
       !isStringOrNumericLiteral((<ComputedPropertyName>name).expression.kind) &&
-      !isWellKnownSymbolSyntactically((<ComputedPropertyName>name).expression);
+      !isWellKnownSymbolSyntactically((<ComputedPropertyName>name).expression)
   }
 
   /**
@@ -1595,37 +1595,37 @@ namespace ts {
    *  Symbol.name
    * where Symbol is literally the word "Symbol", and name is any identifierName
    */
-  export function isWellKnownSymbolSyntactically(node: Expression): boolean {
-    return isPropertyAccessExpression(node) && isESSymbolIdentifier(node.expression);
+  def isWellKnownSymbolSyntactically(node: Expression): Boolean {
+    return isPropertyAccessExpression(node) && isESSymbolIdentifier(node.expression)
   }
 
-  export function getPropertyNameForPropertyNameNode(name: DeclarationName): string {
-    if (name.kind === SyntaxKind.Identifier || name.kind === SyntaxKind.StringLiteral || name.kind === SyntaxKind.NumericLiteral) {
-      return (<Identifier | LiteralExpression>name).text;
+  def getPropertyNameForPropertyNameNode(name: DeclarationName): String {
+    if (name.kind == SyntaxKind.Identifier || name.kind == SyntaxKind.StringLiteral || name.kind == SyntaxKind.NumericLiteral) {
+      return (<Identifier | LiteralExpression>name).text
     }
-    if (name.kind === SyntaxKind.ComputedPropertyName) {
-      const nameExpression = (<ComputedPropertyName>name).expression;
+    if (name.kind == SyntaxKind.ComputedPropertyName) {
+      val nameExpression = (<ComputedPropertyName>name).expression
       if (isWellKnownSymbolSyntactically(nameExpression)) {
-        const rightHandSideName = (<PropertyAccessExpression>nameExpression).name.text;
-        return getPropertyNameForKnownSymbolName(rightHandSideName);
+        val rightHandSideName = (<PropertyAccessExpression>nameExpression).name.text
+        return getPropertyNameForKnownSymbolName(rightHandSideName)
       }
     }
 
-    return undefined;
+    return undefined
   }
 
-  export function getPropertyNameForKnownSymbolName(symbolName: string): string {
-    return "__@" + symbolName;
+  def getPropertyNameForKnownSymbolName(symbolName: String): String {
+    return "__@" + symbolName
   }
 
   /**
    * Includes the word "Symbol" with unicode escapes
    */
-  export function isESSymbolIdentifier(node: Node): boolean {
-    return node.kind === SyntaxKind.Identifier && (<Identifier>node).text === "Symbol";
+  def isESSymbolIdentifier(node: Node): Boolean {
+    return node.kind == SyntaxKind.Identifier && (<Identifier>node).text == "Symbol"
   }
 
-  export function isModifierKind(token: SyntaxKind): boolean {
+  def isModifierKind(token: SyntaxKind): Boolean {
     switch (token) {
       case SyntaxKind.AbstractKeyword:
       case SyntaxKind.AsyncKeyword:
@@ -1638,25 +1638,25 @@ namespace ts {
       case SyntaxKind.ProtectedKeyword:
       case SyntaxKind.ReadonlyKeyword:
       case SyntaxKind.StaticKeyword:
-        return true;
+        return true
     }
-    return false;
+    return false
   }
 
-  export function isParameterDeclaration(node: VariableLikeDeclaration) {
-    const root = getRootDeclaration(node);
-    return root.kind === SyntaxKind.Parameter;
+  def isParameterDeclaration(node: VariableLikeDeclaration) {
+    val root = getRootDeclaration(node)
+    return root.kind == SyntaxKind.Parameter
   }
 
-  export function getRootDeclaration(node: Node): Node {
-    while (node.kind === SyntaxKind.BindingElement) {
-      node = node.parent.parent;
+  def getRootDeclaration(node: Node): Node {
+    while (node.kind == SyntaxKind.BindingElement) {
+      node = node.parent.parent
     }
-    return node;
+    return node
   }
 
-  export function nodeStartsNewLexicalEnvironment(n: Node): boolean {
-    return isFunctionLike(n) || n.kind === SyntaxKind.ModuleDeclaration || n.kind === SyntaxKind.SourceFile;
+  def nodeStartsNewLexicalEnvironment(n: Node): Boolean {
+    return isFunctionLike(n) || n.kind == SyntaxKind.ModuleDeclaration || n.kind == SyntaxKind.SourceFile
   }
 
   /**
@@ -1668,31 +1668,31 @@ namespace ts {
    * @param flags The NodeFlags to use for the cloned node.
    * @param parent The parent for the new node.
    */
-  export function cloneNode<T extends Node>(node: T, location?: TextRange, flags?: NodeFlags, parent?: Node): T {
+  def cloneNode<T extends Node>(node: T, location?: TextRange, flags?: NodeFlags, parent?: Node): T {
     // We don't use "clone" from core.ts here, as we need to preserve the prototype chain of
     // the original node. We also need to exclude specific properties and only include own-
     // properties (to skip members already defined on the shared prototype).
-    const clone = location !== undefined
+    val clone = location != undefined
       ? <T>createNode(node.kind, location.pos, location.end)
-      : <T>createSynthesizedNode(node.kind);
+      : <T>createSynthesizedNode(node.kind)
 
-    for (const key in node) {
+    for (val key in node) {
       if (clone.hasOwnProperty(key) || !node.hasOwnProperty(key)) {
-        continue;
+        continue
       }
 
-      (<any>clone)[key] = (<any>node)[key];
+      (<any>clone)[key] = (<any>node)[key]
     }
 
-    if (flags !== undefined) {
-      clone.flags = flags;
+    if (flags != undefined) {
+      clone.flags = flags
     }
 
-    if (parent !== undefined) {
-      clone.parent = parent;
+    if (parent != undefined) {
+      clone.parent = parent
     }
 
-    return clone;
+    return clone
   }
 
   /**
@@ -1700,44 +1700,44 @@ namespace ts {
    * @param node The EntityName to clone.
    * @param parent The parent for the cloned node.
    */
-  export function cloneEntityName(node: EntityName, parent?: Node): EntityName {
-    const clone = cloneNode(node, node, node.flags, parent);
+  def cloneEntityName(node: EntityName, parent?: Node): EntityName {
+    val clone = cloneNode(node, node, node.flags, parent)
     if (isQualifiedName(clone)) {
-      const { left, right } = clone;
-      clone.left = cloneEntityName(left, clone);
-      clone.right = cloneNode(right, right, right.flags, parent);
+      val { left, right } = clone
+      clone.left = cloneEntityName(left, clone)
+      clone.right = cloneNode(right, right, right.flags, parent)
     }
 
-    return clone;
+    return clone
   }
 
-  export function isQualifiedName(node: Node): node is QualifiedName {
-    return node.kind === SyntaxKind.QualifiedName;
+  def isQualifiedName(node: Node): node is QualifiedName {
+    return node.kind == SyntaxKind.QualifiedName
   }
 
-  export function nodeIsSynthesized(node: Node): boolean {
-    return node.pos === -1;
+  def nodeIsSynthesized(node: Node): Boolean {
+    return node.pos == -1
   }
 
-  export function createSynthesizedNode(kind: SyntaxKind, startsOnNewLine?: boolean): Node {
-    const node = <SynthesizedNode>createNode(kind, /* pos */ -1, /* end */ -1);
-    node.startsOnNewLine = startsOnNewLine;
-    return node;
+  def createSynthesizedNode(kind: SyntaxKind, startsOnNewLine?: Boolean): Node {
+    val node = <SynthesizedNode>createNode(kind, /* pos */ -1, /* end */ -1)
+    node.startsOnNewLine = startsOnNewLine
+    return node
   }
 
-  export function createSynthesizedNodeArray(): NodeArray<any> {
-    const array = <NodeArray<any>>[];
-    array.pos = -1;
-    array.end = -1;
-    return array;
+  def createSynthesizedNodeArray(): NodeArray<any> {
+    val array = <NodeArray<any>>[]
+    array.pos = -1
+    array.end = -1
+    return array
   }
 
-  export function createDiagnosticCollection(): DiagnosticCollection {
-    let nonFileDiagnostics: Diagnostic[] = [];
-    const fileDiagnostics: Map<Diagnostic[]> = {};
+  def createDiagnosticCollection(): DiagnosticCollection {
+    var nonFileDiagnostics: Diagnostic[] = []
+    val fileDiagnostics: Map<Diagnostic[]> = {}
 
-    let diagnosticsModified = false;
-    let modificationCount = 0;
+    var diagnosticsModified = false
+    var modificationCount = 0
 
     return {
       add,
@@ -1745,78 +1745,78 @@ namespace ts {
       getDiagnostics,
       getModificationCount,
       reattachFileDiagnostics
-    };
-
-    function getModificationCount() {
-      return modificationCount;
     }
 
-    function reattachFileDiagnostics(newFile: SourceFile): void {
+    def getModificationCount() {
+      return modificationCount
+    }
+
+    def reattachFileDiagnostics(newFile: SourceFile): void {
       if (!hasProperty(fileDiagnostics, newFile.fileName)) {
-        return;
+        return
       }
 
-      for (const diagnostic of fileDiagnostics[newFile.fileName]) {
-        diagnostic.file = newFile;
+      for (val diagnostic of fileDiagnostics[newFile.fileName]) {
+        diagnostic.file = newFile
       }
     }
 
-    function add(diagnostic: Diagnostic): void {
-      let diagnostics: Diagnostic[];
+    def add(diagnostic: Diagnostic): void {
+      var diagnostics: Diagnostic[]
       if (diagnostic.file) {
-        diagnostics = fileDiagnostics[diagnostic.file.fileName];
+        diagnostics = fileDiagnostics[diagnostic.file.fileName]
         if (!diagnostics) {
-          diagnostics = [];
-          fileDiagnostics[diagnostic.file.fileName] = diagnostics;
+          diagnostics = []
+          fileDiagnostics[diagnostic.file.fileName] = diagnostics
         }
       }
       else {
-        diagnostics = nonFileDiagnostics;
+        diagnostics = nonFileDiagnostics
       }
 
-      diagnostics.push(diagnostic);
-      diagnosticsModified = true;
-      modificationCount++;
+      diagnostics.push(diagnostic)
+      diagnosticsModified = true
+      modificationCount++
     }
 
-    function getGlobalDiagnostics(): Diagnostic[] {
-      sortAndDeduplicate();
-      return nonFileDiagnostics;
+    def getGlobalDiagnostics(): Diagnostic[] {
+      sortAndDeduplicate()
+      return nonFileDiagnostics
     }
 
-    function getDiagnostics(fileName?: string): Diagnostic[] {
-      sortAndDeduplicate();
+    def getDiagnostics(fileName?: String): Diagnostic[] {
+      sortAndDeduplicate()
       if (fileName) {
-        return fileDiagnostics[fileName] || [];
+        return fileDiagnostics[fileName] || []
       }
 
-      const allDiagnostics: Diagnostic[] = [];
-      function pushDiagnostic(d: Diagnostic) {
-        allDiagnostics.push(d);
+      val allDiagnostics: Diagnostic[] = []
+      def pushDiagnostic(d: Diagnostic) {
+        allDiagnostics.push(d)
       }
 
-      forEach(nonFileDiagnostics, pushDiagnostic);
+      forEach(nonFileDiagnostics, pushDiagnostic)
 
-      for (const key in fileDiagnostics) {
+      for (val key in fileDiagnostics) {
         if (hasProperty(fileDiagnostics, key)) {
-          forEach(fileDiagnostics[key], pushDiagnostic);
+          forEach(fileDiagnostics[key], pushDiagnostic)
         }
       }
 
-      return sortAndDeduplicateDiagnostics(allDiagnostics);
+      return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
 
-    function sortAndDeduplicate() {
+    def sortAndDeduplicate() {
       if (!diagnosticsModified) {
-        return;
+        return
       }
 
-      diagnosticsModified = false;
-      nonFileDiagnostics = sortAndDeduplicateDiagnostics(nonFileDiagnostics);
+      diagnosticsModified = false
+      nonFileDiagnostics = sortAndDeduplicateDiagnostics(nonFileDiagnostics)
 
-      for (const key in fileDiagnostics) {
+      for (val key in fileDiagnostics) {
         if (hasProperty(fileDiagnostics, key)) {
-          fileDiagnostics[key] = sortAndDeduplicateDiagnostics(fileDiagnostics[key]);
+          fileDiagnostics[key] = sortAndDeduplicateDiagnostics(fileDiagnostics[key])
         }
       }
     }
@@ -1827,8 +1827,8 @@ namespace ts {
   // the language service. These characters should be escaped when printing, and if any characters are added,
   // the map below must be updated. Note that this regexp *does not* include the 'delete' character.
   // There is no reason for this other than that JSON.stringify does not handle it either.
-  const escapedCharsRegExp = /[\\\"\u0000-\u001f\t\v\f\b\r\n\u2028\u2029\u0085]/g;
-  const escapedCharsMap: Map<string> = {
+  val escapedCharsRegExp = /[\\\"\u0000-\u001f\t\v\f\b\r\n\u2028\u2029\u0085]/g
+  val escapedCharsMap: Map<String> = {
     "\0": "\\0",
     "\t": "\\t",
     "\v": "\\v",
@@ -1841,7 +1841,7 @@ namespace ts {
     "\u2028": "\\u2028", // lineSeparator
     "\u2029": "\\u2029", // paragraphSeparator
     "\u0085": "\\u0085"  // nextLine
-  };
+  }
 
 
   /**
@@ -1849,123 +1849,123 @@ namespace ts {
    * but augmented for a few select characters (e.g. lineSeparator, paragraphSeparator, nextLine)
    * Note that this doesn't actually wrap the input in double quotes.
    */
-  export function escapeString(s: string): string {
-    s = escapedCharsRegExp.test(s) ? s.replace(escapedCharsRegExp, getReplacement) : s;
+  def escapeString(s: String): String {
+    s = escapedCharsRegExp.test(s) ? s.replace(escapedCharsRegExp, getReplacement) : s
 
-    return s;
+    return s
 
-    function getReplacement(c: string) {
-      return escapedCharsMap[c] || get16BitUnicodeEscapeSequence(c.charCodeAt(0));
+    def getReplacement(c: String) {
+      return escapedCharsMap[c] || get16BitUnicodeEscapeSequence(c.charCodeAt(0))
     }
   }
 
-  export function isIntrinsicJsxName(name: string) {
-    const ch = name.substr(0, 1);
-    return ch.toLowerCase() === ch;
+  def isIntrinsicJsxName(name: String) {
+    val ch = name.substr(0, 1)
+    return ch.toLowerCase() == ch
   }
 
-  function get16BitUnicodeEscapeSequence(charCode: number): string {
-    const hexCharCode = charCode.toString(16).toUpperCase();
-    const paddedHexCode = ("0000" + hexCharCode).slice(-4);
-    return "\\u" + paddedHexCode;
+  def get16BitUnicodeEscapeSequence(charCode: Int): String {
+    val hexCharCode = charCode.toString(16).toUpperCase()
+    val paddedHexCode = ("0000" + hexCharCode).slice(-4)
+    return "\\u" + paddedHexCode
   }
 
-  const nonAsciiCharacters = /[^\u0000-\u007F]/g;
-  export function escapeNonAsciiCharacters(s: string): string {
+  val nonAsciiCharacters = /[^\u0000-\u007F]/g
+  def escapeNonAsciiCharacters(s: String): String {
     // Replace non-ASCII characters with '\uNNNN' escapes if any exist.
-    // Otherwise just return the original string.
+    // Otherwise just return the original String.
     return nonAsciiCharacters.test(s) ?
       s.replace(nonAsciiCharacters, c => get16BitUnicodeEscapeSequence(c.charCodeAt(0))) :
-      s;
+      s
   }
 
-  export interface EmitTextWriter {
-    write(s: string): void;
-    writeTextOfNode(text: string, node: Node): void;
-    writeLine(): void;
-    increaseIndent(): void;
-    decreaseIndent(): void;
-    getText(): string;
-    rawWrite(s: string): void;
-    writeLiteral(s: string): void;
-    getTextPos(): number;
-    getLine(): number;
-    getColumn(): number;
-    getIndent(): number;
-    reset(): void;
+  interface EmitTextWriter {
+    write(s: String): void
+    writeTextOfNode(text: String, node: Node): void
+    writeLine(): void
+    increaseIndent(): void
+    decreaseIndent(): void
+    getText(): String
+    rawWrite(s: String): void
+    writeLiteral(s: String): void
+    getTextPos(): Int
+    getLine(): Int
+    getColumn(): Int
+    getIndent(): Int
+    reset(): void
   }
 
-  const indentStrings: string[] = ["", "  "];
-  export function getIndentString(level: number) {
-    if (indentStrings[level] === undefined) {
-      indentStrings[level] = getIndentString(level - 1) + indentStrings[1];
+  val indentStrings: String[] = ["", "  "]
+  def getIndentString(level: Int) {
+    if (indentStrings[level] == undefined) {
+      indentStrings[level] = getIndentString(level - 1) + indentStrings[1]
     }
-    return indentStrings[level];
+    return indentStrings[level]
   }
 
-  export function getIndentSize() {
-    return indentStrings[1].length;
+  def getIndentSize() {
+    return indentStrings[1].length
   }
 
-  export function createTextWriter(newLine: String): EmitTextWriter {
-    let output: string;
-    let indent: number;
-    let lineStart: boolean;
-    let lineCount: number;
-    let linePos: number;
+  def createTextWriter(newLine: String): EmitTextWriter {
+    var output: String
+    var indent: Int
+    var lineStart: Boolean
+    var lineCount: Int
+    var linePos: Int
 
-    function write(s: string) {
+    def write(s: String) {
       if (s && s.length) {
         if (lineStart) {
-          output += getIndentString(indent);
-          lineStart = false;
+          output += getIndentString(indent)
+          lineStart = false
         }
-        output += s;
+        output += s
       }
     }
 
-    function reset(): void {
-      output = "";
-      indent = 0;
-      lineStart = true;
-      lineCount = 0;
-      linePos = 0;
+    def reset(): void {
+      output = ""
+      indent = 0
+      lineStart = true
+      lineCount = 0
+      linePos = 0
     }
 
-    function rawWrite(s: string) {
-      if (s !== undefined) {
+    def rawWrite(s: String) {
+      if (s != undefined) {
         if (lineStart) {
-          lineStart = false;
+          lineStart = false
         }
-        output += s;
+        output += s
       }
     }
 
-    function writeLiteral(s: string) {
+    def writeLiteral(s: String) {
       if (s && s.length) {
-        write(s);
-        const lineStartsOfS = computeLineStarts(s);
+        write(s)
+        val lineStartsOfS = computeLineStarts(s)
         if (lineStartsOfS.length > 1) {
-          lineCount = lineCount + lineStartsOfS.length - 1;
-          linePos = output.length - s.length + lastOrUndefined(lineStartsOfS);
+          lineCount = lineCount + lineStartsOfS.length - 1
+          linePos = output.length - s.length + lastOrUndefined(lineStartsOfS)
         }
       }
     }
 
-    function writeLine() {
+    def writeLine() {
       if (!lineStart) {
-        output += newLine;
-        lineCount++;
-        linePos = output.length;
-        lineStart = true;
+        output += newLine
+        lineCount++
+        linePos = output.length
+        lineStart = true
       }
     }
 
-    function writeTextOfNode(text: string, node: Node) {
-      write(getTextOfNodeFromSourceText(text, node));
+    def writeTextOfNode(text: String, node: Node) {
+      write(getTextOfNodeFromSourceText(text, node))
     }
 
-    reset();
+    reset()
 
     return {
       write,
@@ -1981,316 +1981,316 @@ namespace ts {
       getColumn: () => lineStart ? indent * getIndentSize() + 1 : output.length - linePos + 1,
       getText: () => output,
       reset
-    };
+    }
   }
 
   /**
    * Resolves a local path to a path which is absolute to the base of the emit
    */
-  export function getExternalModuleNameFromPath(host: EmitHost, fileName: string): string {
-    const getCanonicalFileName = (f: string) => host.getCanonicalFileName(f);
-    const dir = toPath(host.getCommonSourceDirectory(), host.getCurrentDirectory(), getCanonicalFileName);
-    const filePath = getNormalizedAbsolutePath(fileName, host.getCurrentDirectory());
-    const relativePath = getRelativePathToDirectoryOrUrl(dir, filePath, dir, getCanonicalFileName, /*isAbsolutePathAnUrl*/ false);
-    return removeFileExtension(relativePath);
+  def getExternalModuleNameFromPath(host: EmitHost, fileName: String): String {
+    val getCanonicalFileName = (f: String) => host.getCanonicalFileName(f)
+    val dir = toPath(host.getCommonSourceDirectory(), host.getCurrentDirectory(), getCanonicalFileName)
+    val filePath = getNormalizedAbsolutePath(fileName, host.getCurrentDirectory())
+    val relativePath = getRelativePathToDirectoryOrUrl(dir, filePath, dir, getCanonicalFileName, /*isAbsolutePathAnUrl*/ false)
+    return removeFileExtension(relativePath)
   }
 
-  export function getOwnEmitOutputFilePath(sourceFile: SourceFile, host: EmitHost, extension: string) {
-    const compilerOptions = host.getCompilerOptions();
-    let emitOutputFilePathWithoutExtension: string;
+  def getOwnEmitOutputFilePath(sourceFile: SourceFile, host: EmitHost, extension: String) {
+    val compilerOptions = host.getCompilerOptions()
+    var emitOutputFilePathWithoutExtension: String
     if (compilerOptions.outDir) {
-      emitOutputFilePathWithoutExtension = removeFileExtension(getSourceFilePathInNewDir(sourceFile, host, compilerOptions.outDir));
+      emitOutputFilePathWithoutExtension = removeFileExtension(getSourceFilePathInNewDir(sourceFile, host, compilerOptions.outDir))
     }
     else {
-      emitOutputFilePathWithoutExtension = removeFileExtension(sourceFile.fileName);
+      emitOutputFilePathWithoutExtension = removeFileExtension(sourceFile.fileName)
     }
 
-    return emitOutputFilePathWithoutExtension + extension;
+    return emitOutputFilePathWithoutExtension + extension
   }
 
-  export function getEmitScriptTarget(compilerOptions: CompilerOptions) {
-    return compilerOptions.target || ScriptTarget.ES3;
+  def getEmitScriptTarget(compilerOptions: CompilerOptions) {
+    return compilerOptions.target || ScriptTarget.ES3
   }
 
-  export function getEmitModuleKind(compilerOptions: CompilerOptions) {
-    return typeof compilerOptions.module === "number" ?
+  def getEmitModuleKind(compilerOptions: CompilerOptions) {
+    return typeof compilerOptions.module == "Int" ?
       compilerOptions.module :
-      getEmitScriptTarget(compilerOptions) === ScriptTarget.ES6 ? ModuleKind.ES6 : ModuleKind.CommonJS;
+      getEmitScriptTarget(compilerOptions) == ScriptTarget.ES6 ? ModuleKind.ES6 : ModuleKind.CommonJS
   }
 
-  export interface EmitFileNames {
-    jsFilePath: string;
-    sourceMapFilePath: string;
-    declarationFilePath: string;
+  interface EmitFileNames {
+    jsFilePath: String
+    sourceMapFilePath: String
+    declarationFilePath: String
   }
 
-  export function forEachExpectedEmitFile(host: EmitHost,
-    action: (emitFileNames: EmitFileNames, sourceFiles: SourceFile[], isBundledEmit: boolean) => void,
+  def forEachExpectedEmitFile(host: EmitHost,
+    action: (emitFileNames: EmitFileNames, sourceFiles: SourceFile[], isBundledEmit: Boolean) => void,
     targetSourceFile?: SourceFile) {
-    const options = host.getCompilerOptions();
+    val options = host.getCompilerOptions()
     // Emit on each source file
     if (options.outFile || options.out) {
-      onBundledEmit(host);
+      onBundledEmit(host)
     }
     else {
-      const sourceFiles = targetSourceFile === undefined ? host.getSourceFiles() : [targetSourceFile];
-      for (const sourceFile of sourceFiles) {
+      val sourceFiles = targetSourceFile == undefined ? host.getSourceFiles() : [targetSourceFile]
+      for (val sourceFile of sourceFiles) {
         if (!isDeclarationFile(sourceFile)) {
-          onSingleFileEmit(host, sourceFile);
+          onSingleFileEmit(host, sourceFile)
         }
       }
     }
 
-    function onSingleFileEmit(host: EmitHost, sourceFile: SourceFile) {
+    def onSingleFileEmit(host: EmitHost, sourceFile: SourceFile) {
       // JavaScript files are always LanguageVariant.JSX, as JSX syntax is allowed in .js files also.
       // So for JavaScript files, '.jsx' is only emitted if the input was '.jsx', and JsxEmit.Preserve.
       // For TypeScript, the only time to emit with a '.jsx' extension, is on JSX input, and JsxEmit.Preserve
-      let extension = ".js";
-      if (options.jsx === JsxEmit.Preserve) {
+      var extension = ".js"
+      if (options.jsx == JsxEmit.Preserve) {
         if (isSourceFileJavaScript(sourceFile)) {
           if (fileExtensionIs(sourceFile.fileName, ".jsx")) {
-            extension = ".jsx";
+            extension = ".jsx"
           }
         }
-        else if (sourceFile.languageVariant === LanguageVariant.JSX) {
+        else if (sourceFile.languageVariant == LanguageVariant.JSX) {
           // TypeScript source file preserving JSX syntax
-          extension = ".jsx";
+          extension = ".jsx"
         }
       }
-      const jsFilePath = getOwnEmitOutputFilePath(sourceFile, host, extension);
-      const emitFileNames: EmitFileNames = {
+      val jsFilePath = getOwnEmitOutputFilePath(sourceFile, host, extension)
+      val emitFileNames: EmitFileNames = {
         jsFilePath,
         sourceMapFilePath: getSourceMapFilePath(jsFilePath, options),
         declarationFilePath: !isSourceFileJavaScript(sourceFile) ? getDeclarationEmitFilePath(jsFilePath, options) : undefined
-      };
-      action(emitFileNames, [sourceFile], /*isBundledEmit*/false);
+      }
+      action(emitFileNames, [sourceFile], /*isBundledEmit*/false)
     }
 
-    function onBundledEmit(host: EmitHost) {
+    def onBundledEmit(host: EmitHost) {
       // Can emit only sources that are not declaration file and are either non module code or module with --module or --target es6 specified
-      const bundledSources = filter(host.getSourceFiles(),
+      val bundledSources = filter(host.getSourceFiles(),
         sourceFile => !isDeclarationFile(sourceFile) && // Not a declaration file
           (!isExternalModule(sourceFile) || // non module file
             (getEmitModuleKind(options) && isExternalModule(sourceFile)))); // module that can emit - note falsy value from getEmitModuleKind means the module kind that shouldn't be emitted
       if (bundledSources.length) {
-        const jsFilePath = options.outFile || options.out;
-        const emitFileNames: EmitFileNames = {
+        val jsFilePath = options.outFile || options.out
+        val emitFileNames: EmitFileNames = {
           jsFilePath,
           sourceMapFilePath: getSourceMapFilePath(jsFilePath, options),
           declarationFilePath: getDeclarationEmitFilePath(jsFilePath, options)
-        };
-        action(emitFileNames, bundledSources, /*isBundledEmit*/true);
+        }
+        action(emitFileNames, bundledSources, /*isBundledEmit*/true)
       }
     }
 
-    function getSourceMapFilePath(jsFilePath: string, options: CompilerOptions) {
-      return options.sourceMap ? jsFilePath + ".map" : undefined;
+    def getSourceMapFilePath(jsFilePath: String, options: CompilerOptions) {
+      return options.sourceMap ? jsFilePath + ".map" : undefined
     }
 
-    function getDeclarationEmitFilePath(jsFilePath: string, options: CompilerOptions) {
-      return options.declaration ? removeFileExtension(jsFilePath) + ".d.ts" : undefined;
+    def getDeclarationEmitFilePath(jsFilePath: String, options: CompilerOptions) {
+      return options.declaration ? removeFileExtension(jsFilePath) + ".d.ts" : undefined
     }
   }
 
-  export function getSourceFilePathInNewDir(sourceFile: SourceFile, host: EmitHost, newDirPath: string) {
-    let sourceFilePath = getNormalizedAbsolutePath(sourceFile.fileName, host.getCurrentDirectory());
-    sourceFilePath = sourceFilePath.replace(host.getCommonSourceDirectory(), "");
-    return combinePaths(newDirPath, sourceFilePath);
+  def getSourceFilePathInNewDir(sourceFile: SourceFile, host: EmitHost, newDirPath: String) {
+    var sourceFilePath = getNormalizedAbsolutePath(sourceFile.fileName, host.getCurrentDirectory())
+    sourceFilePath = sourceFilePath.replace(host.getCommonSourceDirectory(), "")
+    return combinePaths(newDirPath, sourceFilePath)
   }
 
-  export function writeFile(host: EmitHost, diagnostics: DiagnosticCollection, fileName: string, data: string, writeByteOrderMark: boolean) {
+  def writeFile(host: EmitHost, diagnostics: DiagnosticCollection, fileName: String, data: String, writeByteOrderMark: Boolean) {
     host.writeFile(fileName, data, writeByteOrderMark, hostErrorMessage => {
-      diagnostics.add(createCompilerDiagnostic(Diagnostics.Could_not_write_file_0_Colon_1, fileName, hostErrorMessage));
-    });
+      diagnostics.add(createCompilerDiagnostic(Diagnostics.Could_not_write_file_0_Colon_1, fileName, hostErrorMessage))
+    })
   }
 
-  export function getLineOfLocalPosition(currentSourceFile: SourceFile, pos: number) {
-    return getLineAndCharacterOfPosition(currentSourceFile, pos).line;
+  def getLineOfLocalPosition(currentSourceFile: SourceFile, pos: Int) {
+    return getLineAndCharacterOfPosition(currentSourceFile, pos).line
   }
 
-  export function getLineOfLocalPositionFromLineMap(lineMap: number[], pos: number) {
-    return computeLineAndCharacterOfPosition(lineMap, pos).line;
+  def getLineOfLocalPositionFromLineMap(lineMap: Int[], pos: Int) {
+    return computeLineAndCharacterOfPosition(lineMap, pos).line
   }
 
-  export function getFirstConstructorWithBody(node: ClassLikeDeclaration): ConstructorDeclaration {
+  def getFirstConstructorWithBody(node: ClassLikeDeclaration): ConstructorDeclaration {
     return forEach(node.members, member => {
-      if (member.kind === SyntaxKind.Constructor && nodeIsPresent((<ConstructorDeclaration>member).body)) {
-        return <ConstructorDeclaration>member;
+      if (member.kind == SyntaxKind.Constructor && nodeIsPresent((<ConstructorDeclaration>member).body)) {
+        return <ConstructorDeclaration>member
       }
-    });
+    })
   }
 
-  export function getSetAccessorTypeAnnotationNode(accessor: AccessorDeclaration): TypeNode {
-    return accessor && accessor.parameters.length > 0 && accessor.parameters[0].type;
+  def getSetAccessorTypeAnnotationNode(accessor: AccessorDeclaration): TypeNode {
+    return accessor && accessor.parameters.length > 0 && accessor.parameters[0].type
   }
 
-  export function getAllAccessorDeclarations(declarations: NodeArray<Declaration>, accessor: AccessorDeclaration) {
-    let firstAccessor: AccessorDeclaration;
-    let secondAccessor: AccessorDeclaration;
-    let getAccessor: AccessorDeclaration;
-    let setAccessor: AccessorDeclaration;
+  def getAllAccessorDeclarations(declarations: NodeArray<Declaration>, accessor: AccessorDeclaration) {
+    var firstAccessor: AccessorDeclaration
+    var secondAccessor: AccessorDeclaration
+    var getAccessor: AccessorDeclaration
+    var setAccessor: AccessorDeclaration
     if (hasDynamicName(accessor)) {
-      firstAccessor = accessor;
-      if (accessor.kind === SyntaxKind.GetAccessor) {
-        getAccessor = accessor;
+      firstAccessor = accessor
+      if (accessor.kind == SyntaxKind.GetAccessor) {
+        getAccessor = accessor
       }
-      else if (accessor.kind === SyntaxKind.SetAccessor) {
-        setAccessor = accessor;
+      else if (accessor.kind == SyntaxKind.SetAccessor) {
+        setAccessor = accessor
       }
       else {
-        Debug.fail("Accessor has wrong kind");
+        Debug.fail("Accessor has wrong kind")
       }
     }
     else {
       forEach(declarations, (member: Declaration) => {
-        if ((member.kind === SyntaxKind.GetAccessor || member.kind === SyntaxKind.SetAccessor)
-          && (member.flags & NodeFlags.Static) === (accessor.flags & NodeFlags.Static)) {
-          const memberName = getPropertyNameForPropertyNameNode(member.name);
-          const accessorName = getPropertyNameForPropertyNameNode(accessor.name);
-          if (memberName === accessorName) {
+        if ((member.kind == SyntaxKind.GetAccessor || member.kind == SyntaxKind.SetAccessor)
+          && (member.flags & NodeFlags.Static) == (accessor.flags & NodeFlags.Static)) {
+          val memberName = getPropertyNameForPropertyNameNode(member.name)
+          val accessorName = getPropertyNameForPropertyNameNode(accessor.name)
+          if (memberName == accessorName) {
             if (!firstAccessor) {
-              firstAccessor = <AccessorDeclaration>member;
+              firstAccessor = <AccessorDeclaration>member
             }
             else if (!secondAccessor) {
-              secondAccessor = <AccessorDeclaration>member;
+              secondAccessor = <AccessorDeclaration>member
             }
 
-            if (member.kind === SyntaxKind.GetAccessor && !getAccessor) {
-              getAccessor = <AccessorDeclaration>member;
+            if (member.kind == SyntaxKind.GetAccessor && !getAccessor) {
+              getAccessor = <AccessorDeclaration>member
             }
 
-            if (member.kind === SyntaxKind.SetAccessor && !setAccessor) {
-              setAccessor = <AccessorDeclaration>member;
+            if (member.kind == SyntaxKind.SetAccessor && !setAccessor) {
+              setAccessor = <AccessorDeclaration>member
             }
           }
         }
-      });
+      })
     }
     return {
       firstAccessor,
       secondAccessor,
       getAccessor,
       setAccessor
-    };
-  }
-
-  export function emitNewLineBeforeLeadingComments(lineMap: number[], writer: EmitTextWriter, node: TextRange, leadingComments: CommentRange[]) {
-    // If the leading comments start on different line than the start of node, write new line
-    if (leadingComments && leadingComments.length && node.pos !== leadingComments[0].pos &&
-      getLineOfLocalPositionFromLineMap(lineMap, node.pos) !== getLineOfLocalPositionFromLineMap(lineMap, leadingComments[0].pos)) {
-      writer.writeLine();
     }
   }
 
-  export function emitComments(text: string, lineMap: number[], writer: EmitTextWriter, comments: CommentRange[], trailingSeparator: boolean, newLine: string,
-    writeComment: (text: string, lineMap: number[], writer: EmitTextWriter, comment: CommentRange, newLine: string) => void) {
-    let emitLeadingSpace = !trailingSeparator;
+  def emitNewLineBeforeLeadingComments(lineMap: Int[], writer: EmitTextWriter, node: TextRange, leadingComments: CommentRange[]) {
+    // If the leading comments start on different line than the start of node, write new line
+    if (leadingComments && leadingComments.length && node.pos != leadingComments[0].pos &&
+      getLineOfLocalPositionFromLineMap(lineMap, node.pos) != getLineOfLocalPositionFromLineMap(lineMap, leadingComments[0].pos)) {
+      writer.writeLine()
+    }
+  }
+
+  def emitComments(text: String, lineMap: Int[], writer: EmitTextWriter, comments: CommentRange[], trailingSeparator: Boolean, newLine: String,
+    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => void) {
+    var emitLeadingSpace = !trailingSeparator
     forEach(comments, comment => {
       if (emitLeadingSpace) {
-        writer.write(" ");
-        emitLeadingSpace = false;
+        writer.write(" ")
+        emitLeadingSpace = false
       }
-      writeComment(text, lineMap, writer, comment, newLine);
+      writeComment(text, lineMap, writer, comment, newLine)
       if (comment.hasTrailingNewLine) {
-        writer.writeLine();
+        writer.writeLine()
       }
       else if (trailingSeparator) {
-        writer.write(" ");
+        writer.write(" ")
       }
       else {
         // Emit leading space to separate comment during next comment emit
-        emitLeadingSpace = true;
+        emitLeadingSpace = true
       }
-    });
+    })
   }
 
   /**
-   * Detached comment is a comment at the top of file or function body that is separated from
+   * Detached comment is a comment at the top of file or def body that is separated from
    * the next statement by space.
    */
-  export function emitDetachedComments(text: string, lineMap: number[], writer: EmitTextWriter,
-    writeComment: (text: string, lineMap: number[], writer: EmitTextWriter, comment: CommentRange, newLine: string) => void,
-    node: TextRange, newLine: string, removeComments: boolean) {
-    let leadingComments: CommentRange[];
-    let currentDetachedCommentInfo: {nodePos: number, detachedCommentEndPos: number};
+  def emitDetachedComments(text: String, lineMap: Int[], writer: EmitTextWriter,
+    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => void,
+    node: TextRange, newLine: String, removeComments: Boolean) {
+    var leadingComments: CommentRange[]
+    var currentDetachedCommentInfo: {nodePos: Int, detachedCommentEndPos: Int}
     if (removeComments) {
       // removeComments is true, only reserve pinned comment at the top of file
       // For example:
       //    /*! Pinned Comment */
       //
-      //    var x = 10;
-      if (node.pos === 0) {
-        leadingComments = filter(getLeadingCommentRanges(text, node.pos), isPinnedComment);
+      //    var x = 10
+      if (node.pos == 0) {
+        leadingComments = filter(getLeadingCommentRanges(text, node.pos), isPinnedComment)
       }
     }
     else {
       // removeComments is false, just get detached as normal and bypass the process to filter comment
-      leadingComments = getLeadingCommentRanges(text, node.pos);
+      leadingComments = getLeadingCommentRanges(text, node.pos)
     }
 
     if (leadingComments) {
-      const detachedComments: CommentRange[] = [];
-      let lastComment: CommentRange;
+      val detachedComments: CommentRange[] = []
+      var lastComment: CommentRange
 
-      for (const comment of leadingComments) {
+      for (val comment of leadingComments) {
         if (lastComment) {
-          const lastCommentLine = getLineOfLocalPositionFromLineMap(lineMap, lastComment.end);
-          const commentLine = getLineOfLocalPositionFromLineMap(lineMap, comment.pos);
+          val lastCommentLine = getLineOfLocalPositionFromLineMap(lineMap, lastComment.end)
+          val commentLine = getLineOfLocalPositionFromLineMap(lineMap, comment.pos)
 
           if (commentLine >= lastCommentLine + 2) {
             // There was a blank line between the last comment and this comment.  This
             // comment is not part of the copyright comments.  Return what we have so
             // far.
-            break;
+            break
           }
         }
 
-        detachedComments.push(comment);
-        lastComment = comment;
+        detachedComments.push(comment)
+        lastComment = comment
       }
 
       if (detachedComments.length) {
         // All comments look like they could have been part of the copyright header.  Make
         // sure there is at least one blank line between it and the node.  If not, it's not
         // a copyright header.
-        const lastCommentLine = getLineOfLocalPositionFromLineMap(lineMap, lastOrUndefined(detachedComments).end);
-        const nodeLine = getLineOfLocalPositionFromLineMap(lineMap, skipTrivia(text, node.pos));
+        val lastCommentLine = getLineOfLocalPositionFromLineMap(lineMap, lastOrUndefined(detachedComments).end)
+        val nodeLine = getLineOfLocalPositionFromLineMap(lineMap, skipTrivia(text, node.pos))
         if (nodeLine >= lastCommentLine + 2) {
           // Valid detachedComments
-          emitNewLineBeforeLeadingComments(lineMap, writer, node, leadingComments);
-          emitComments(text, lineMap, writer, detachedComments, /*trailingSeparator*/ true, newLine, writeComment);
-          currentDetachedCommentInfo = { nodePos: node.pos, detachedCommentEndPos: lastOrUndefined(detachedComments).end };
+          emitNewLineBeforeLeadingComments(lineMap, writer, node, leadingComments)
+          emitComments(text, lineMap, writer, detachedComments, /*trailingSeparator*/ true, newLine, writeComment)
+          currentDetachedCommentInfo = { nodePos: node.pos, detachedCommentEndPos: lastOrUndefined(detachedComments).end }
         }
       }
     }
 
-    return currentDetachedCommentInfo;
+    return currentDetachedCommentInfo
 
-    function isPinnedComment(comment: CommentRange) {
-      return text.charCodeAt(comment.pos + 1) === CharacterCodes.asterisk &&
-        text.charCodeAt(comment.pos + 2) === CharacterCodes.exclamation;
+    def isPinnedComment(comment: CommentRange) {
+      return text.charCodeAt(comment.pos + 1) == CharacterCodes.asterisk &&
+        text.charCodeAt(comment.pos + 2) == CharacterCodes.exclamation
     }
 
   }
 
-  export function writeCommentRange(text: string, lineMap: number[], writer: EmitTextWriter, comment: CommentRange, newLine: string) {
-    if (text.charCodeAt(comment.pos + 1) === CharacterCodes.asterisk) {
-      const firstCommentLineAndCharacter = computeLineAndCharacterOfPosition(lineMap, comment.pos);
-      const lineCount = lineMap.length;
-      let firstCommentLineIndent: number;
-      for (let pos = comment.pos, currentLine = firstCommentLineAndCharacter.line; pos < comment.end; currentLine++) {
-        const nextLineStart = (currentLine + 1) === lineCount
+  def writeCommentRange(text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) {
+    if (text.charCodeAt(comment.pos + 1) == CharacterCodes.asterisk) {
+      val firstCommentLineAndCharacter = computeLineAndCharacterOfPosition(lineMap, comment.pos)
+      val lineCount = lineMap.length
+      var firstCommentLineIndent: Int
+      for (var pos = comment.pos, currentLine = firstCommentLineAndCharacter.line; pos < comment.end; currentLine++) {
+        val nextLineStart = (currentLine + 1) == lineCount
           ? text.length + 1
-          : lineMap[currentLine + 1];
+          : lineMap[currentLine + 1]
 
-        if (pos !== comment.pos) {
+        if (pos != comment.pos) {
           // If we are not emitting first line, we need to write the spaces to adjust the alignment
-          if (firstCommentLineIndent === undefined) {
-            firstCommentLineIndent = calculateIndent(text, lineMap[firstCommentLineAndCharacter.line], comment.pos);
+          if (firstCommentLineIndent == undefined) {
+            firstCommentLineIndent = calculateIndent(text, lineMap[firstCommentLineAndCharacter.line], comment.pos)
           }
 
-          // These are number of spaces writer is going to write at current indent
-          const currentWriterIndentSpacing = writer.getIndent() * getIndentSize();
+          // These are Int of spaces writer is going to write at current indent
+          val currentWriterIndentSpacing = writer.getIndent() * getIndentSize()
 
           // Number of spaces we want to be writing
           // eg: Assume writer indent
@@ -2306,88 +2306,88 @@ namespace ts {
           //      More right indented comment */          --4 = 8 - 4 + 11
           //   class c { }
           // }
-          const spacesToEmit = currentWriterIndentSpacing - firstCommentLineIndent + calculateIndent(text, pos, nextLineStart);
+          val spacesToEmit = currentWriterIndentSpacing - firstCommentLineIndent + calculateIndent(text, pos, nextLineStart)
           if (spacesToEmit > 0) {
-            let numberOfSingleSpacesToEmit = spacesToEmit % getIndentSize();
-            const indentSizeSpaceString = getIndentString((spacesToEmit - numberOfSingleSpacesToEmit) / getIndentSize());
+            var numberOfSingleSpacesToEmit = spacesToEmit % getIndentSize()
+            val indentSizeSpaceString = getIndentString((spacesToEmit - numberOfSingleSpacesToEmit) / getIndentSize())
 
-            // Write indent size string ( in eg 1: = "", 2: "" , 3: string with 8 spaces 4: string with 12 spaces
-            writer.rawWrite(indentSizeSpaceString);
+            // Write indent size String ( in eg 1: = "", 2: "" , 3: String with 8 spaces 4: String with 12 spaces
+            writer.rawWrite(indentSizeSpaceString)
 
             // Emit the single spaces (in eg: 1: 3 spaces, 2: 2 spaces, 3: 1 space, 4: 3 spaces)
             while (numberOfSingleSpacesToEmit) {
-              writer.rawWrite(" ");
-              numberOfSingleSpacesToEmit--;
+              writer.rawWrite(" ")
+              numberOfSingleSpacesToEmit--
             }
           }
           else {
-            // No spaces to emit write empty string
-            writer.rawWrite("");
+            // No spaces to emit write empty String
+            writer.rawWrite("")
           }
         }
 
         // Write the comment line text
-        writeTrimmedCurrentLine(text, comment, writer, newLine, pos, nextLineStart);
+        writeTrimmedCurrentLine(text, comment, writer, newLine, pos, nextLineStart)
 
-        pos = nextLineStart;
+        pos = nextLineStart
       }
     }
     else {
       // Single line comment of style //....
-      writer.write(text.substring(comment.pos, comment.end));
+      writer.write(text.substring(comment.pos, comment.end))
     }
   }
 
-  function writeTrimmedCurrentLine(text: string, comment: CommentRange, writer: EmitTextWriter, newLine: string, pos: number, nextLineStart: number) {
-    const end = Math.min(comment.end, nextLineStart - 1);
-    const currentLineText = text.substring(pos, end).replace(/^\s+|\s+$/g, "");
+  def writeTrimmedCurrentLine(text: String, comment: CommentRange, writer: EmitTextWriter, newLine: String, pos: Int, nextLineStart: Int) {
+    val end = Math.min(comment.end, nextLineStart - 1)
+    val currentLineText = text.substring(pos, end).replace(/^\s+|\s+$/g, "")
     if (currentLineText) {
       // trimmed forward and ending spaces text
-      writer.write(currentLineText);
-      if (end !== comment.end) {
-        writer.writeLine();
+      writer.write(currentLineText)
+      if (end != comment.end) {
+        writer.writeLine()
       }
     }
     else {
-      // Empty string - make sure we write empty line
-      writer.writeLiteral(newLine);
+      // Empty String - make sure we write empty line
+      writer.writeLiteral(newLine)
     }
   }
 
-  function calculateIndent(text: string, pos: number, end: number) {
-    let currentLineIndent = 0;
+  def calculateIndent(text: String, pos: Int, end: Int) {
+    var currentLineIndent = 0
     for (; pos < end && isWhiteSpace(text.charCodeAt(pos)); pos++) {
-      if (text.charCodeAt(pos) === CharacterCodes.tab) {
+      if (text.charCodeAt(pos) == CharacterCodes.tab) {
         // Tabs = TabSize = indent size and go to next tabStop
-        currentLineIndent += getIndentSize() - (currentLineIndent % getIndentSize());
+        currentLineIndent += getIndentSize() - (currentLineIndent % getIndentSize())
       }
       else {
         // Single space
-        currentLineIndent++;
+        currentLineIndent++
       }
     }
 
-    return currentLineIndent;
+    return currentLineIndent
   }
 
-  export function modifierToFlag(token: SyntaxKind): NodeFlags {
+  def modifierToFlag(token: SyntaxKind): NodeFlags {
     switch (token) {
-      case SyntaxKind.StaticKeyword: return NodeFlags.Static;
-      case SyntaxKind.PublicKeyword: return NodeFlags.Public;
-      case SyntaxKind.ProtectedKeyword: return NodeFlags.Protected;
-      case SyntaxKind.PrivateKeyword: return NodeFlags.Private;
-      case SyntaxKind.AbstractKeyword: return NodeFlags.Abstract;
-      case SyntaxKind.ExportKeyword: return NodeFlags.Export;
-      case SyntaxKind.DeclareKeyword: return NodeFlags.Ambient;
-      case SyntaxKind.ConstKeyword: return NodeFlags.Const;
-      case SyntaxKind.DefaultKeyword: return NodeFlags.Default;
-      case SyntaxKind.AsyncKeyword: return NodeFlags.Async;
-      case SyntaxKind.ReadonlyKeyword: return NodeFlags.Readonly;
+      case SyntaxKind.StaticKeyword: return NodeFlags.Static
+      case SyntaxKind.PublicKeyword: return NodeFlags.Public
+      case SyntaxKind.ProtectedKeyword: return NodeFlags.Protected
+      case SyntaxKind.PrivateKeyword: return NodeFlags.Private
+      case SyntaxKind.AbstractKeyword: return NodeFlags.Abstract
+      case SyntaxKind.ExportKeyword: return NodeFlags.Export
+      case SyntaxKind.DeclareKeyword: return NodeFlags.Ambient
+      case SyntaxKind.ConstKeyword: return NodeFlags.Const
+      case SyntaxKind.DefaultKeyword: return NodeFlags.Default
+      case SyntaxKind.AsyncKeyword: return NodeFlags.Async
+      case SyntaxKind.ReadonlyKeyword: return NodeFlags.Readonly
     }
-    return 0;
+    return 0
   }
 
-  export function isLeftHandSideExpression(expr: Expression): boolean {
+  def isLeftHandSideExpression(expr: Expression): Boolean {
     if (expr) {
       switch (expr.kind) {
         case SyntaxKind.PropertyAccessExpression:
@@ -2413,337 +2413,337 @@ namespace ts {
         case SyntaxKind.ThisKeyword:
         case SyntaxKind.TrueKeyword:
         case SyntaxKind.SuperKeyword:
-          return true;
+          return true
       }
     }
 
-    return false;
+    return false
   }
 
-  export function isAssignmentOperator(token: SyntaxKind): boolean {
-    return token >= SyntaxKind.FirstAssignment && token <= SyntaxKind.LastAssignment;
+  def isAssignmentOperator(token: SyntaxKind): Boolean {
+    return token >= SyntaxKind.FirstAssignment && token <= SyntaxKind.LastAssignment
   }
 
-  export function isExpressionWithTypeArgumentsInClassExtendsClause(node: Node): boolean {
-    return node.kind === SyntaxKind.ExpressionWithTypeArguments &&
-      (<HeritageClause>node.parent).token === SyntaxKind.ExtendsKeyword &&
-      isClassLike(node.parent.parent);
+  def isExpressionWithTypeArgumentsInClassExtendsClause(node: Node): Boolean {
+    return node.kind == SyntaxKind.ExpressionWithTypeArguments &&
+      (<HeritageClause>node.parent).token == SyntaxKind.ExtendsKeyword &&
+      isClassLike(node.parent.parent)
   }
 
   // Returns false if this heritage clause element's expression contains something unsupported
   // (i.e. not a name or dotted name).
-  export function isSupportedExpressionWithTypeArguments(node: ExpressionWithTypeArguments): boolean {
-    return isSupportedExpressionWithTypeArgumentsRest(node.expression);
+  def isSupportedExpressionWithTypeArguments(node: ExpressionWithTypeArguments): Boolean {
+    return isSupportedExpressionWithTypeArgumentsRest(node.expression)
   }
 
-  function isSupportedExpressionWithTypeArgumentsRest(node: Expression): boolean {
-    if (node.kind === SyntaxKind.Identifier) {
-      return true;
+  def isSupportedExpressionWithTypeArgumentsRest(node: Expression): Boolean {
+    if (node.kind == SyntaxKind.Identifier) {
+      return true
     }
     else if (isPropertyAccessExpression(node)) {
-      return isSupportedExpressionWithTypeArgumentsRest(node.expression);
+      return isSupportedExpressionWithTypeArgumentsRest(node.expression)
     }
     else {
-      return false;
+      return false
     }
   }
 
-  export function isRightSideOfQualifiedNameOrPropertyAccess(node: Node) {
-    return (node.parent.kind === SyntaxKind.QualifiedName && (<QualifiedName>node.parent).right === node) ||
-      (node.parent.kind === SyntaxKind.PropertyAccessExpression && (<PropertyAccessExpression>node.parent).name === node);
+  def isRightSideOfQualifiedNameOrPropertyAccess(node: Node) {
+    return (node.parent.kind == SyntaxKind.QualifiedName && (<QualifiedName>node.parent).right == node) ||
+      (node.parent.kind == SyntaxKind.PropertyAccessExpression && (<PropertyAccessExpression>node.parent).name == node)
   }
 
-  export function isEmptyObjectLiteralOrArrayLiteral(expression: Node): boolean {
-    const kind = expression.kind;
-    if (kind === SyntaxKind.ObjectLiteralExpression) {
-      return (<ObjectLiteralExpression>expression).properties.length === 0;
+  def isEmptyObjectLiteralOrArrayLiteral(expression: Node): Boolean {
+    val kind = expression.kind
+    if (kind == SyntaxKind.ObjectLiteralExpression) {
+      return (<ObjectLiteralExpression>expression).properties.length == 0
     }
-    if (kind === SyntaxKind.ArrayLiteralExpression) {
-      return (<ArrayLiteralExpression>expression).elements.length === 0;
+    if (kind == SyntaxKind.ArrayLiteralExpression) {
+      return (<ArrayLiteralExpression>expression).elements.length == 0
     }
-    return false;
+    return false
   }
 
-  export function getLocalSymbolForExportDefault(symbol: Symbol) {
-    return symbol && symbol.valueDeclaration && (symbol.valueDeclaration.flags & NodeFlags.Default) ? symbol.valueDeclaration.localSymbol : undefined;
+  def getLocalSymbolForExportDefault(symbol: Symbol) {
+    return symbol && symbol.valueDeclaration && (symbol.valueDeclaration.flags & NodeFlags.Default) ? symbol.valueDeclaration.localSymbol : undefined
   }
 
-  export function hasJavaScriptFileExtension(fileName: string) {
-    return forEach(supportedJavascriptExtensions, extension => fileExtensionIs(fileName, extension));
+  def hasJavaScriptFileExtension(fileName: String) {
+    return forEach(supportedJavascriptExtensions, extension => fileExtensionIs(fileName, extension))
   }
 
   /**
    * Replace each instance of non-ascii characters by one, two, three, or four escape sequences
    * representing the UTF-8 encoding of the character, and return the expanded char code list.
    */
-  function getExpandedCharCodes(input: string): number[] {
-    const output: number[] = [];
-    const length = input.length;
+  def getExpandedCharCodes(input: String): Int[] {
+    val output: Int[] = []
+    val length = input.length
 
-    for (let i = 0; i < length; i++) {
-      const charCode = input.charCodeAt(i);
+    for (var i = 0; i < length; i++) {
+      val charCode = input.charCodeAt(i)
 
       // handel utf8
       if (charCode < 0x80) {
-        output.push(charCode);
+        output.push(charCode)
       }
       else if (charCode < 0x800) {
-        output.push((charCode >> 6) | 0B11000000);
-        output.push((charCode & 0B00111111) | 0B10000000);
+        output.push((charCode >> 6) | 0B11000000)
+        output.push((charCode & 0B00111111) | 0B10000000)
       }
       else if (charCode < 0x10000) {
-        output.push((charCode >> 12) | 0B11100000);
-        output.push(((charCode >> 6) & 0B00111111) | 0B10000000);
-        output.push((charCode & 0B00111111) | 0B10000000);
+        output.push((charCode >> 12) | 0B11100000)
+        output.push(((charCode >> 6) & 0B00111111) | 0B10000000)
+        output.push((charCode & 0B00111111) | 0B10000000)
       }
       else if (charCode < 0x20000) {
-        output.push((charCode >> 18) | 0B11110000);
-        output.push(((charCode >> 12) & 0B00111111) | 0B10000000);
-        output.push(((charCode >> 6) & 0B00111111) | 0B10000000);
-        output.push((charCode & 0B00111111) | 0B10000000);
+        output.push((charCode >> 18) | 0B11110000)
+        output.push(((charCode >> 12) & 0B00111111) | 0B10000000)
+        output.push(((charCode >> 6) & 0B00111111) | 0B10000000)
+        output.push((charCode & 0B00111111) | 0B10000000)
       }
       else {
-        Debug.assert(false, "Unexpected code point");
+        Debug.assert(false, "Unexpected code point")
       }
     }
 
-    return output;
+    return output
   }
 
   /**
-   * Serialize an object graph into a JSON string. This is intended only for use on an acyclic graph
+   * Serialize an object graph into a JSON String. This is intended only for use on an acyclic graph
    * as the fallback implementation does not check for circular references by default.
    */
-  export const stringify: (value: any) => string = typeof JSON !== "undefined" && JSON.stringify
+  val stringify: (value: any) => String = typeof JSON != "undefined" && JSON.stringify
     ? JSON.stringify
-    : stringifyFallback;
+    : stringifyFallback
 
   /**
-   * Serialize an object graph into a JSON string.
+   * Serialize an object graph into a JSON String.
    */
-  function stringifyFallback(value: any): string {
-    // JSON.stringify returns `undefined` here, instead of the string "undefined".
-    return value === undefined ? undefined : stringifyValue(value);
+  def stringifyFallback(value: any): String {
+    // JSON.stringify returns `undefined` here, instead of the String "undefined".
+    return value == undefined ? undefined : stringifyValue(value)
   }
 
-  function stringifyValue(value: any): string {
-    return typeof value === "string" ? `"${escapeString(value)}"`
-       : typeof value === "number" ? isFinite(value) ? String(value) : "null"
-       : typeof value === "boolean" ? value ? "true" : "false"
-       : typeof value === "object" && value ? isArray(value) ? cycleCheck(stringifyArray, value) : cycleCheck(stringifyObject, value)
-       : /*fallback*/ "null";
+  def stringifyValue(value: any): String {
+    return typeof value == "String" ? `"${escapeString(value)}"`
+       : typeof value == "Int" ? isFinite(value) ? String(value) : "null"
+       : typeof value == "Boolean" ? value ? "true" : "false"
+       : typeof value == "object" && value ? isArray(value) ? cycleCheck(stringifyArray, value) : cycleCheck(stringifyObject, value)
+       : /*fallback*/ "null"
   }
 
-  function cycleCheck(cb: (value: any) => string, value: any) {
-    Debug.assert(!value.hasOwnProperty("__cycle"), "Converting circular structure to JSON");
-    value.__cycle = true;
-    const result = cb(value);
-    delete value.__cycle;
-    return result;
+  def cycleCheck(cb: (value: any) => String, value: any) {
+    Debug.assert(!value.hasOwnProperty("__cycle"), "Converting circular structure to JSON")
+    value.__cycle = true
+    val result = cb(value)
+    delete value.__cycle
+    return result
   }
 
-  function stringifyArray(value: any) {
-    return `[${reduceLeft(value, stringifyElement, "")}]`;
+  def stringifyArray(value: any) {
+    return `[${reduceLeft(value, stringifyElement, "")}]`
   }
 
-  function stringifyElement(memo: string, value: any) {
-    return (memo ? memo + "," : memo) + stringifyValue(value);
+  def stringifyElement(memo: String, value: any) {
+    return (memo ? memo + "," : memo) + stringifyValue(value)
   }
 
-  function stringifyObject(value: any) {
-    return `{${reduceProperties(value, stringifyProperty, "")}}`;
+  def stringifyObject(value: any) {
+    return `{${reduceProperties(value, stringifyProperty, "")}}`
   }
 
-  function stringifyProperty(memo: string, value: any, key: string) {
-    return value === undefined || typeof value === "function" || key === "__cycle" ? memo
-       : (memo ? memo + "," : memo) + `"${escapeString(key)}":${stringifyValue(value)}`;
+  def stringifyProperty(memo: String, value: any, key: String) {
+    return value == undefined || typeof value == "def" || key == "__cycle" ? memo
+       : (memo ? memo + "," : memo) + `"${escapeString(key)}":${stringifyValue(value)}`
   }
 
-  const base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  val base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 
   /**
-   * Converts a string to a base-64 encoded ASCII string.
+   * Converts a String to a base-64 encoded ASCII String.
    */
-  export function convertToBase64(input: string): string {
-    let result = "";
-    const charCodes = getExpandedCharCodes(input);
-    let i = 0;
-    const length = charCodes.length;
-    let byte1: number, byte2: number, byte3: number, byte4: number;
+  def convertToBase64(input: String): String {
+    var result = ""
+    val charCodes = getExpandedCharCodes(input)
+    var i = 0
+    val length = charCodes.length
+    var byte1: Int, byte2: Int, byte3: Int, byte4: Int
 
     while (i < length) {
       // Convert every 6-bits in the input 3 character points
       // into a base64 digit
-      byte1 = charCodes[i] >> 2;
-      byte2 = (charCodes[i] & 0B00000011) << 4 | charCodes[i + 1] >> 4;
-      byte3 = (charCodes[i + 1] & 0B00001111) << 2 | charCodes[i + 2] >> 6;
-      byte4 = charCodes[i + 2] & 0B00111111;
+      byte1 = charCodes[i] >> 2
+      byte2 = (charCodes[i] & 0B00000011) << 4 | charCodes[i + 1] >> 4
+      byte3 = (charCodes[i + 1] & 0B00001111) << 2 | charCodes[i + 2] >> 6
+      byte4 = charCodes[i + 2] & 0B00111111
 
       // We are out of characters in the input, set the extra
       // digits to 64 (padding character).
       if (i + 1 >= length) {
-        byte3 = byte4 = 64;
+        byte3 = byte4 = 64
       }
       else if (i + 2 >= length) {
-        byte4 = 64;
+        byte4 = 64
       }
 
       // Write to the output
-      result += base64Digits.charAt(byte1) + base64Digits.charAt(byte2) + base64Digits.charAt(byte3) + base64Digits.charAt(byte4);
+      result += base64Digits.charAt(byte1) + base64Digits.charAt(byte2) + base64Digits.charAt(byte3) + base64Digits.charAt(byte4)
 
-      i += 3;
+      i += 3
     }
 
-    return result;
+    return result
   }
 
-  export function convertToRelativePath(absoluteOrRelativePath: string, basePath: string, getCanonicalFileName: (path: string) => string): string {
+  def convertToRelativePath(absoluteOrRelativePath: String, basePath: String, getCanonicalFileName: (path: String) => String): String {
     return !isRootedDiskPath(absoluteOrRelativePath)
       ? absoluteOrRelativePath
-      : getRelativePathToDirectoryOrUrl(basePath, absoluteOrRelativePath, basePath, getCanonicalFileName, /* isAbsolutePathAnUrl */ false);
+      : getRelativePathToDirectoryOrUrl(basePath, absoluteOrRelativePath, basePath, getCanonicalFileName, /* isAbsolutePathAnUrl */ false)
   }
 
-  const carriageReturnLineFeed = "\r\n";
-  const lineFeed = "\n";
-  export function getNewLineCharacter(options: CompilerOptions): string {
-    if (options.newLine === NewLineKind.CarriageReturnLineFeed) {
-      return carriageReturnLineFeed;
+  val carriageReturnLineFeed = "\r\n"
+  val lineFeed = "\n"
+  def getNewLineCharacter(options: CompilerOptions): String {
+    if (options.newLine == NewLineKind.CarriageReturnLineFeed) {
+      return carriageReturnLineFeed
     }
-    else if (options.newLine === NewLineKind.LineFeed) {
-      return lineFeed;
+    else if (options.newLine == NewLineKind.LineFeed) {
+      return lineFeed
     }
     else if (sys) {
-      return sys.newLine;
+      return sys.newLine
     }
-    return carriageReturnLineFeed;
+    return carriageReturnLineFeed
   }
 }
 
-namespace ts {
-  export function getDefaultLibFileName(options: CompilerOptions): string {
-    return options.target === ScriptTarget.ES6 ? "lib.es6.d.ts" : "lib.d.ts";
+package ts {
+  def getDefaultLibFileName(options: CompilerOptions): String {
+    return options.target == ScriptTarget.ES6 ? "lib.es6.d.ts" : "lib.d.ts"
   }
 
-  export function textSpanEnd(span: TextSpan) {
-    return span.start + span.length;
+  def textSpanEnd(span: TextSpan) {
+    return span.start + span.length
   }
 
-  export function textSpanIsEmpty(span: TextSpan) {
-    return span.length === 0;
+  def textSpanIsEmpty(span: TextSpan) {
+    return span.length == 0
   }
 
-  export function textSpanContainsPosition(span: TextSpan, position: number) {
-    return position >= span.start && position < textSpanEnd(span);
+  def textSpanContainsPosition(span: TextSpan, position: Int) {
+    return position >= span.start && position < textSpanEnd(span)
   }
 
   // Returns true if 'span' contains 'other'.
-  export function textSpanContainsTextSpan(span: TextSpan, other: TextSpan) {
-    return other.start >= span.start && textSpanEnd(other) <= textSpanEnd(span);
+  def textSpanContainsTextSpan(span: TextSpan, other: TextSpan) {
+    return other.start >= span.start && textSpanEnd(other) <= textSpanEnd(span)
   }
 
-  export function textSpanOverlapsWith(span: TextSpan, other: TextSpan) {
-    const overlapStart = Math.max(span.start, other.start);
-    const overlapEnd = Math.min(textSpanEnd(span), textSpanEnd(other));
-    return overlapStart < overlapEnd;
+  def textSpanOverlapsWith(span: TextSpan, other: TextSpan) {
+    val overlapStart = Math.max(span.start, other.start)
+    val overlapEnd = Math.min(textSpanEnd(span), textSpanEnd(other))
+    return overlapStart < overlapEnd
   }
 
-  export function textSpanOverlap(span1: TextSpan, span2: TextSpan) {
-    const overlapStart = Math.max(span1.start, span2.start);
-    const overlapEnd = Math.min(textSpanEnd(span1), textSpanEnd(span2));
+  def textSpanOverlap(span1: TextSpan, span2: TextSpan) {
+    val overlapStart = Math.max(span1.start, span2.start)
+    val overlapEnd = Math.min(textSpanEnd(span1), textSpanEnd(span2))
     if (overlapStart < overlapEnd) {
-      return createTextSpanFromBounds(overlapStart, overlapEnd);
+      return createTextSpanFromBounds(overlapStart, overlapEnd)
     }
-    return undefined;
+    return undefined
   }
 
-  export function textSpanIntersectsWithTextSpan(span: TextSpan, other: TextSpan) {
-    return other.start <= textSpanEnd(span) && textSpanEnd(other) >= span.start;
+  def textSpanIntersectsWithTextSpan(span: TextSpan, other: TextSpan) {
+    return other.start <= textSpanEnd(span) && textSpanEnd(other) >= span.start
   }
 
-  export function textSpanIntersectsWith(span: TextSpan, start: number, length: number) {
-    const end = start + length;
-    return start <= textSpanEnd(span) && end >= span.start;
+  def textSpanIntersectsWith(span: TextSpan, start: Int, length: Int) {
+    val end = start + length
+    return start <= textSpanEnd(span) && end >= span.start
   }
 
-  export function decodedTextSpanIntersectsWith(start1: number, length1: number, start2: number, length2: number) {
-    const end1 = start1 + length1;
-    const end2 = start2 + length2;
-    return start2 <= end1 && end2 >= start1;
+  def decodedTextSpanIntersectsWith(start1: Int, length1: Int, start2: Int, length2: Int) {
+    val end1 = start1 + length1
+    val end2 = start2 + length2
+    return start2 <= end1 && end2 >= start1
   }
 
-  export function textSpanIntersectsWithPosition(span: TextSpan, position: number) {
-    return position <= textSpanEnd(span) && position >= span.start;
+  def textSpanIntersectsWithPosition(span: TextSpan, position: Int) {
+    return position <= textSpanEnd(span) && position >= span.start
   }
 
-  export function textSpanIntersection(span1: TextSpan, span2: TextSpan) {
-    const intersectStart = Math.max(span1.start, span2.start);
-    const intersectEnd = Math.min(textSpanEnd(span1), textSpanEnd(span2));
+  def textSpanIntersection(span1: TextSpan, span2: TextSpan) {
+    val intersectStart = Math.max(span1.start, span2.start)
+    val intersectEnd = Math.min(textSpanEnd(span1), textSpanEnd(span2))
     if (intersectStart <= intersectEnd) {
-      return createTextSpanFromBounds(intersectStart, intersectEnd);
+      return createTextSpanFromBounds(intersectStart, intersectEnd)
     }
-    return undefined;
+    return undefined
   }
 
-  export function createTextSpan(start: number, length: number): TextSpan {
+  def createTextSpan(start: Int, length: Int): TextSpan {
     if (start < 0) {
-      throw new Error("start < 0");
+      throw new Error("start < 0")
     }
     if (length < 0) {
-      throw new Error("length < 0");
+      throw new Error("length < 0")
     }
 
-    return { start, length };
+    return { start, length }
   }
 
-  export function createTextSpanFromBounds(start: number, end: number) {
-    return createTextSpan(start, end - start);
+  def createTextSpanFromBounds(start: Int, end: Int) {
+    return createTextSpan(start, end - start)
   }
 
-  export function textChangeRangeNewSpan(range: TextChangeRange) {
-    return createTextSpan(range.span.start, range.newLength);
+  def textChangeRangeNewSpan(range: TextChangeRange) {
+    return createTextSpan(range.span.start, range.newLength)
   }
 
-  export function textChangeRangeIsUnchanged(range: TextChangeRange) {
-    return textSpanIsEmpty(range.span) && range.newLength === 0;
+  def textChangeRangeIsUnchanged(range: TextChangeRange) {
+    return textSpanIsEmpty(range.span) && range.newLength == 0
   }
 
-  export function createTextChangeRange(span: TextSpan, newLength: number): TextChangeRange {
+  def createTextChangeRange(span: TextSpan, newLength: Int): TextChangeRange {
     if (newLength < 0) {
-      throw new Error("newLength < 0");
+      throw new Error("newLength < 0")
     }
 
-    return { span, newLength };
+    return { span, newLength }
   }
 
-  export let unchangedTextChangeRange = createTextChangeRange(createTextSpan(0, 0), 0);
+  var unchangedTextChangeRange = createTextChangeRange(createTextSpan(0, 0), 0)
 
   /**
    * Called to merge all the changes that occurred across several versions of a script snapshot
    * into a single change.  i.e. if a user keeps making successive edits to a script we will
    * have a text change from V1 to V2, V2 to V3, ..., Vn.
    *
-   * This function will then merge those changes into a single change range valid between V1 and
+   * This def will then merge those changes into a single change range valid between V1 and
    * Vn.
    */
-  export function collapseTextChangeRangesAcrossMultipleVersions(changes: TextChangeRange[]): TextChangeRange {
-    if (changes.length === 0) {
-      return unchangedTextChangeRange;
+  def collapseTextChangeRangesAcrossMultipleVersions(changes: TextChangeRange[]): TextChangeRange {
+    if (changes.length == 0) {
+      return unchangedTextChangeRange
     }
 
-    if (changes.length === 1) {
-      return changes[0];
+    if (changes.length == 1) {
+      return changes[0]
     }
 
     // We change from talking about { { oldStart, oldLength }, newLength } to { oldStart, oldEnd, newEnd }
     // as it makes things much easier to reason about.
-    const change0 = changes[0];
+    val change0 = changes[0]
 
-    let oldStartN = change0.span.start;
-    let oldEndN = textSpanEnd(change0.span);
-    let newEndN = oldStartN + change0.newLength;
+    var oldStartN = change0.span.start
+    var oldEndN = textSpanEnd(change0.span)
+    var newEndN = oldStartN + change0.newLength
 
-    for (let i = 1; i < changes.length; i++) {
-      const nextChange = changes[i];
+    for (var i = 1; i < changes.length; i++) {
+      val nextChange = changes[i]
 
       // Consider the following case:
       // i.e. two edits.  The first represents the text change range { { 10, 50 }, 30 }.  i.e. The span starting
@@ -2825,33 +2825,33 @@ namespace ts {
       //    newEnd3  : Max(newEnd2, newEnd2 + (newEnd1 - oldEnd2))
       // }
 
-      const oldStart1 = oldStartN;
-      const oldEnd1 = oldEndN;
-      const newEnd1 = newEndN;
+      val oldStart1 = oldStartN
+      val oldEnd1 = oldEndN
+      val newEnd1 = newEndN
 
-      const oldStart2 = nextChange.span.start;
-      const oldEnd2 = textSpanEnd(nextChange.span);
-      const newEnd2 = oldStart2 + nextChange.newLength;
+      val oldStart2 = nextChange.span.start
+      val oldEnd2 = textSpanEnd(nextChange.span)
+      val newEnd2 = oldStart2 + nextChange.newLength
 
-      oldStartN = Math.min(oldStart1, oldStart2);
-      oldEndN = Math.max(oldEnd1, oldEnd1 + (oldEnd2 - newEnd1));
-      newEndN = Math.max(newEnd2, newEnd2 + (newEnd1 - oldEnd2));
+      oldStartN = Math.min(oldStart1, oldStart2)
+      oldEndN = Math.max(oldEnd1, oldEnd1 + (oldEnd2 - newEnd1))
+      newEndN = Math.max(newEnd2, newEnd2 + (newEnd1 - oldEnd2))
     }
 
-    return createTextChangeRange(createTextSpanFromBounds(oldStartN, oldEndN), /*newLength:*/ newEndN - oldStartN);
+    return createTextChangeRange(createTextSpanFromBounds(oldStartN, oldEndN), /*newLength:*/ newEndN - oldStartN)
   }
 
-  export function getTypeParameterOwner(d: Declaration): Declaration {
-    if (d && d.kind === SyntaxKind.TypeParameter) {
-      for (let current: Node = d; current; current = current.parent) {
-        if (isFunctionLike(current) || isClassLike(current) || current.kind === SyntaxKind.InterfaceDeclaration) {
-          return <Declaration>current;
+  def getTypeParameterOwner(d: Declaration): Declaration {
+    if (d && d.kind == SyntaxKind.TypeParameter) {
+      for (var current: Node = d; current; current = current.parent) {
+        if (isFunctionLike(current) || isClassLike(current) || current.kind == SyntaxKind.InterfaceDeclaration) {
+          return <Declaration>current
         }
       }
     }
   }
 
-  export function isParameterPropertyDeclaration(node: ParameterDeclaration): boolean {
-    return node.flags & NodeFlags.AccessibilityModifier && node.parent.kind === SyntaxKind.Constructor && isClassLike(node.parent.parent);
+  def isParameterPropertyDeclaration(node: ParameterDeclaration): Boolean {
+    return node.flags & NodeFlags.AccessibilityModifier && node.parent.kind == SyntaxKind.Constructor && isClassLike(node.parent.parent)
   }
 }

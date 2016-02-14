@@ -2,73 +2,73 @@
 /// <reference path="parser.ts"/>
 
 /* @internal */
-namespace ts {
-  export let bindTime = 0;
+package ts {
+  var bindTime = 0
 
-  export const enum ModuleInstanceState {
+  val enum ModuleInstanceState {
     NonInstantiated = 0,
     Instantiated = 1,
     ConstEnumOnly = 2
   }
 
-  const enum Reachability {
+  val enum Reachability {
     Uninitialized     = 1 << 0,
     Reachable       = 1 << 1,
     Unreachable     = 1 << 2,
     ReportedUnreachable = 1 << 3
   }
 
-  function or(state1: Reachability, state2: Reachability): Reachability {
+  def or(state1: Reachability, state2: Reachability): Reachability {
     return (state1 | state2) & Reachability.Reachable
       ? Reachability.Reachable
       : (state1 & state2) & Reachability.ReportedUnreachable
         ? Reachability.ReportedUnreachable
-        : Reachability.Unreachable;
+        : Reachability.Unreachable
   }
 
-  export function getModuleInstanceState(node: Node): ModuleInstanceState {
+  def getModuleInstanceState(node: Node): ModuleInstanceState {
     // A module is uninstantiated if it contains only
     // 1. interface declarations, type alias declarations
-    if (node.kind === SyntaxKind.InterfaceDeclaration || node.kind === SyntaxKind.TypeAliasDeclaration) {
-      return ModuleInstanceState.NonInstantiated;
+    if (node.kind == SyntaxKind.InterfaceDeclaration || node.kind == SyntaxKind.TypeAliasDeclaration) {
+      return ModuleInstanceState.NonInstantiated
     }
-    // 2. const enum declarations
+    // 2. val enum declarations
     else if (isConstEnumDeclaration(node)) {
-      return ModuleInstanceState.ConstEnumOnly;
+      return ModuleInstanceState.ConstEnumOnly
     }
     // 3. non-exported import declarations
-    else if ((node.kind === SyntaxKind.ImportDeclaration || node.kind === SyntaxKind.ImportEqualsDeclaration) && !(node.flags & NodeFlags.Export)) {
-      return ModuleInstanceState.NonInstantiated;
+    else if ((node.kind == SyntaxKind.ImportDeclaration || node.kind == SyntaxKind.ImportEqualsDeclaration) && !(node.flags & NodeFlags.Export)) {
+      return ModuleInstanceState.NonInstantiated
     }
     // 4. other uninstantiated module declarations.
-    else if (node.kind === SyntaxKind.ModuleBlock) {
-      let state = ModuleInstanceState.NonInstantiated;
+    else if (node.kind == SyntaxKind.ModuleBlock) {
+      var state = ModuleInstanceState.NonInstantiated
       forEachChild(node, n => {
         switch (getModuleInstanceState(n)) {
           case ModuleInstanceState.NonInstantiated:
             // child is non-instantiated - continue searching
-            return false;
+            return false
           case ModuleInstanceState.ConstEnumOnly:
-            // child is const enum only - record state and continue searching
-            state = ModuleInstanceState.ConstEnumOnly;
-            return false;
+            // child is val enum only - record state and continue searching
+            state = ModuleInstanceState.ConstEnumOnly
+            return false
           case ModuleInstanceState.Instantiated:
             // child is instantiated - record state and stop
-            state = ModuleInstanceState.Instantiated;
-            return true;
+            state = ModuleInstanceState.Instantiated
+            return true
         }
-      });
-      return state;
+      })
+      return state
     }
-    else if (node.kind === SyntaxKind.ModuleDeclaration) {
-      return getModuleInstanceState((<ModuleDeclaration>node).body);
+    else if (node.kind == SyntaxKind.ModuleDeclaration) {
+      return getModuleInstanceState((<ModuleDeclaration>node).body)
     }
     else {
-      return ModuleInstanceState.Instantiated;
+      return ModuleInstanceState.Instantiated
     }
   }
 
-  const enum ContainerFlags {
+  val enum ContainerFlags {
     // The current node is not a container, and no container manipulation should happen before
     // recursing into it.
     None = 0,
@@ -93,178 +93,178 @@ namespace ts {
     IsContainerWithLocals = IsContainer | HasLocals
   }
 
-  const binder = createBinder();
+  val binder = createBinder()
 
-  export function bindSourceFile(file: SourceFile, options: CompilerOptions) {
-    const start = new Date().getTime();
-    binder(file, options);
-    bindTime += new Date().getTime() - start;
+  def bindSourceFile(file: SourceFile, options: CompilerOptions) {
+    val start = new Date().getTime()
+    binder(file, options)
+    bindTime += new Date().getTime() - start
   }
 
-  function createBinder(): (file: SourceFile, options: CompilerOptions) => void {
-    let file: SourceFile;
-    let options: CompilerOptions;
-    let parent: Node;
-    let container: Node;
-    let blockScopeContainer: Node;
-    let lastContainer: Node;
-    let seenThisKeyword: boolean;
+  def createBinder(): (file: SourceFile, options: CompilerOptions) => void {
+    var file: SourceFile
+    var options: CompilerOptions
+    var parent: Node
+    var container: Node
+    var blockScopeContainer: Node
+    var lastContainer: Node
+    var seenThisKeyword: Boolean
 
     // state used by reachability checks
-    let hasExplicitReturn: boolean;
-    let currentReachabilityState: Reachability;
-    let labelStack: Reachability[];
-    let labelIndexMap: Map<number>;
-    let implicitLabels: number[];
+    var hasExplicitReturn: Boolean
+    var currentReachabilityState: Reachability
+    var labelStack: Reachability[]
+    var labelIndexMap: Map<Int>
+    var implicitLabels: Int[]
 
     // state used for emit helpers
-    let hasClassExtends: boolean;
-    let hasAsyncFunctions: boolean;
-    let hasDecorators: boolean;
-    let hasParameterDecorators: boolean;
+    var hasClassExtends: Boolean
+    var hasAsyncFunctions: Boolean
+    var hasDecorators: Boolean
+    var hasParameterDecorators: Boolean
 
     // If this file is an external module, then it is automatically in strict-mode according to
     // ES6.  If it is not an external module, then we'll determine if it is in strict mode or
-    // not depending on if we see "use strict" in certain places (or if we hit a class/namespace).
-    let inStrictMode: boolean;
+    // not depending on if we see "use strict" in certain places (or if we hit a class/package).
+    var inStrictMode: Boolean
 
-    let symbolCount = 0;
-    let Symbol: { new (flags: SymbolFlags, name: string): Symbol };
-    let classifiableNames: Map<string>;
+    var symbolCount = 0
+    var Symbol: { new (flags: SymbolFlags, name: String): Symbol }
+    var classifiableNames: Map<String>
 
-    function bindSourceFile(f: SourceFile, opts: CompilerOptions) {
-      file = f;
-      options = opts;
-      inStrictMode = !!file.externalModuleIndicator;
-      classifiableNames = {};
+    def bindSourceFile(f: SourceFile, opts: CompilerOptions) {
+      file = f
+      options = opts
+      inStrictMode = !!file.externalModuleIndicator
+      classifiableNames = {}
 
-      Symbol = objectAllocator.getSymbolConstructor();
+      Symbol = objectAllocator.getSymbolConstructor()
 
       if (!file.locals) {
-        bind(file);
-        file.symbolCount = symbolCount;
-        file.classifiableNames = classifiableNames;
+        bind(file)
+        file.symbolCount = symbolCount
+        file.classifiableNames = classifiableNames
       }
 
-      file = undefined;
-      options = undefined;
-      parent = undefined;
-      container = undefined;
-      blockScopeContainer = undefined;
-      lastContainer = undefined;
-      seenThisKeyword = false;
-      hasExplicitReturn = false;
-      labelStack = undefined;
-      labelIndexMap = undefined;
-      implicitLabels = undefined;
-      hasClassExtends = false;
-      hasAsyncFunctions = false;
-      hasDecorators = false;
-      hasParameterDecorators = false;
+      file = undefined
+      options = undefined
+      parent = undefined
+      container = undefined
+      blockScopeContainer = undefined
+      lastContainer = undefined
+      seenThisKeyword = false
+      hasExplicitReturn = false
+      labelStack = undefined
+      labelIndexMap = undefined
+      implicitLabels = undefined
+      hasClassExtends = false
+      hasAsyncFunctions = false
+      hasDecorators = false
+      hasParameterDecorators = false
     }
 
-    return bindSourceFile;
+    return bindSourceFile
 
-    function createSymbol(flags: SymbolFlags, name: string): Symbol {
-      symbolCount++;
-      return new Symbol(flags, name);
+    def createSymbol(flags: SymbolFlags, name: String): Symbol {
+      symbolCount++
+      return new Symbol(flags, name)
     }
 
-    function addDeclarationToSymbol(symbol: Symbol, node: Declaration, symbolFlags: SymbolFlags) {
-      symbol.flags |= symbolFlags;
+    def addDeclarationToSymbol(symbol: Symbol, node: Declaration, symbolFlags: SymbolFlags) {
+      symbol.flags |= symbolFlags
 
-      node.symbol = symbol;
+      node.symbol = symbol
 
       if (!symbol.declarations) {
-        symbol.declarations = [];
+        symbol.declarations = []
       }
-      symbol.declarations.push(node);
+      symbol.declarations.push(node)
 
       if (symbolFlags & SymbolFlags.HasExports && !symbol.exports) {
-        symbol.exports = {};
+        symbol.exports = {}
       }
 
       if (symbolFlags & SymbolFlags.HasMembers && !symbol.members) {
-        symbol.members = {};
+        symbol.members = {}
       }
 
       if (symbolFlags & SymbolFlags.Value) {
-        const valueDeclaration = symbol.valueDeclaration;
+        val valueDeclaration = symbol.valueDeclaration
         if (!valueDeclaration ||
-          (valueDeclaration.kind !== node.kind && valueDeclaration.kind === SyntaxKind.ModuleDeclaration)) {
+          (valueDeclaration.kind != node.kind && valueDeclaration.kind == SyntaxKind.ModuleDeclaration)) {
           // other kinds of value declarations take precedence over modules
-          symbol.valueDeclaration = node;
+          symbol.valueDeclaration = node
         }
     }
     }
 
     // Should not be called on a declaration with a computed property name,
     // unless it is a well known Symbol.
-    function getDeclarationName(node: Declaration): string {
+    def getDeclarationName(node: Declaration): String {
       if (node.name) {
         if (isAmbientModule(node)) {
-          return isGlobalScopeAugmentation(<ModuleDeclaration>node) ? "__global" : `"${(<LiteralExpression>node.name).text}"`;
+          return isGlobalScopeAugmentation(<ModuleDeclaration>node) ? "__global" : `"${(<LiteralExpression>node.name).text}"`
         }
-        if (node.name.kind === SyntaxKind.ComputedPropertyName) {
-          const nameExpression = (<ComputedPropertyName>node.name).expression;
-          // treat computed property names where expression is string/numeric literal as just string/numeric literal
+        if (node.name.kind == SyntaxKind.ComputedPropertyName) {
+          val nameExpression = (<ComputedPropertyName>node.name).expression
+          // treat computed property names where expression is String/numeric literal as just String/numeric literal
           if (isStringOrNumericLiteral(nameExpression.kind)) {
-            return (<LiteralExpression>nameExpression).text;
+            return (<LiteralExpression>nameExpression).text
           }
 
-          Debug.assert(isWellKnownSymbolSyntactically(nameExpression));
-          return getPropertyNameForKnownSymbolName((<PropertyAccessExpression>nameExpression).name.text);
+          Debug.assert(isWellKnownSymbolSyntactically(nameExpression))
+          return getPropertyNameForKnownSymbolName((<PropertyAccessExpression>nameExpression).name.text)
         }
-        return (<Identifier | LiteralExpression>node.name).text;
+        return (<Identifier | LiteralExpression>node.name).text
       }
       switch (node.kind) {
         case SyntaxKind.Constructor:
-          return "__constructor";
+          return "__constructor"
         case SyntaxKind.FunctionType:
         case SyntaxKind.CallSignature:
-          return "__call";
+          return "__call"
         case SyntaxKind.ConstructorType:
         case SyntaxKind.ConstructSignature:
-          return "__new";
+          return "__new"
         case SyntaxKind.IndexSignature:
-          return "__index";
+          return "__index"
         case SyntaxKind.ExportDeclaration:
-          return "__export";
+          return "__export"
         case SyntaxKind.ExportAssignment:
-          return (<ExportAssignment>node).isExportEquals ? "export=" : "default";
+          return (<ExportAssignment>node).isExportEquals ? "export=" : "default"
         case SyntaxKind.BinaryExpression:
           switch (getSpecialPropertyAssignmentKind(node)) {
             case SpecialPropertyAssignmentKind.ModuleExports:
               // module.exports = ...
-              return "export=";
+              return "export="
             case SpecialPropertyAssignmentKind.ExportsProperty:
             case SpecialPropertyAssignmentKind.ThisProperty:
               // exports.x = ... or this.y = ...
-              return ((node as BinaryExpression).left as PropertyAccessExpression).name.text;
+              return ((node as BinaryExpression).left as PropertyAccessExpression).name.text
             case SpecialPropertyAssignmentKind.PrototypeProperty:
               // className.prototype.methodName = ...
-              return (((node as BinaryExpression).left as PropertyAccessExpression).expression as PropertyAccessExpression).name.text;
+              return (((node as BinaryExpression).left as PropertyAccessExpression).expression as PropertyAccessExpression).name.text
           }
-          Debug.fail("Unknown binary declaration kind");
-          break;
+          Debug.fail("Unknown binary declaration kind")
+          break
 
         case SyntaxKind.FunctionDeclaration:
         case SyntaxKind.ClassDeclaration:
-          return node.flags & NodeFlags.Default ? "default" : undefined;
+          return node.flags & NodeFlags.Default ? "default" : undefined
         case SyntaxKind.JSDocFunctionType:
-          return isJSDocConstructSignature(node) ? "__new" : "__call";
+          return isJSDocConstructSignature(node) ? "__new" : "__call"
         case SyntaxKind.Parameter:
-          // Parameters with names are handled at the top of this function.  Parameters
+          // Parameters with names are handled at the top of this def.  Parameters
           // without names can only come from JSDocFunctionTypes.
-          Debug.assert(node.parent.kind === SyntaxKind.JSDocFunctionType);
-          let functionType = <JSDocFunctionType>node.parent;
-          let index = indexOf(functionType.parameters, node);
-          return "p" + index;
+          Debug.assert(node.parent.kind == SyntaxKind.JSDocFunctionType)
+          var functionType = <JSDocFunctionType>node.parent
+          var index = indexOf(functionType.parameters, node)
+          return "p" + index
       }
     }
 
-    function getDisplayName(node: Declaration): string {
-      return node.name ? declarationNameToString(node.name) : getDeclarationName(node);
+    def getDisplayName(node: Declaration): String {
+      return node.name ? declarationNameToString(node.name) : getDeclarationName(node)
     }
 
     /**
@@ -275,15 +275,15 @@ namespace ts {
      * @param includes - The SymbolFlags that node has in addition to its declaration type (eg: export, ambient, etc.)
      * @param excludes - The flags which node cannot be declared alongside in a symbol table. Used to report forbidden declarations.
      */
-    function declareSymbol(symbolTable: SymbolTable, parent: Symbol, node: Declaration, includes: SymbolFlags, excludes: SymbolFlags): Symbol {
-      Debug.assert(!hasDynamicName(node));
+    def declareSymbol(symbolTable: SymbolTable, parent: Symbol, node: Declaration, includes: SymbolFlags, excludes: SymbolFlags): Symbol {
+      Debug.assert(!hasDynamicName(node))
 
-      const isDefaultExport = node.flags & NodeFlags.Default;
-      // The exported symbol for an export default function/class node is always named "default"
-      const name = isDefaultExport && parent ? "default" : getDeclarationName(node);
+      val isDefaultExport = node.flags & NodeFlags.Default
+      // The exported symbol for an default def/class node is always named "default"
+      val name = isDefaultExport && parent ? "default" : getDeclarationName(node)
 
-      let symbol: Symbol;
-      if (name !== undefined) {
+      var symbol: Symbol
+      if (name != undefined) {
 
         // Check and see if the symbol table already has a symbol with this name.  If not,
         // create a new symbol with this name and add it to the table.  Note that we don't
@@ -305,60 +305,60 @@ namespace ts {
         // just add this node into the declarations list of the symbol.
         symbol = hasProperty(symbolTable, name)
           ? symbolTable[name]
-          : (symbolTable[name] = createSymbol(SymbolFlags.None, name));
+          : (symbolTable[name] = createSymbol(SymbolFlags.None, name))
 
         if (name && (includes & SymbolFlags.Classifiable)) {
-          classifiableNames[name] = name;
+          classifiableNames[name] = name
         }
 
         if (symbol.flags & excludes) {
           if (node.name) {
-            node.name.parent = node;
+            node.name.parent = node
           }
 
           // Report errors every position with duplicate declaration
           // Report errors on previous encountered declarations
-          let message = symbol.flags & SymbolFlags.BlockScopedVariable
+          var message = symbol.flags & SymbolFlags.BlockScopedVariable
             ? Diagnostics.Cannot_redeclare_block_scoped_variable_0
-            : Diagnostics.Duplicate_identifier_0;
+            : Diagnostics.Duplicate_identifier_0
 
           forEach(symbol.declarations, declaration => {
             if (declaration.flags & NodeFlags.Default) {
-              message = Diagnostics.A_module_cannot_have_multiple_default_exports;
+              message = Diagnostics.A_module_cannot_have_multiple_default_exports
             }
-          });
+          })
 
           forEach(symbol.declarations, declaration => {
-            file.bindDiagnostics.push(createDiagnosticForNode(declaration.name || declaration, message, getDisplayName(declaration)));
-          });
-          file.bindDiagnostics.push(createDiagnosticForNode(node.name || node, message, getDisplayName(node)));
+            file.bindDiagnostics.push(createDiagnosticForNode(declaration.name || declaration, message, getDisplayName(declaration)))
+          })
+          file.bindDiagnostics.push(createDiagnosticForNode(node.name || node, message, getDisplayName(node)))
 
-          symbol = createSymbol(SymbolFlags.None, name);
+          symbol = createSymbol(SymbolFlags.None, name)
         }
       }
       else {
-        symbol = createSymbol(SymbolFlags.None, "__missing");
+        symbol = createSymbol(SymbolFlags.None, "__missing")
       }
 
-      addDeclarationToSymbol(symbol, node, includes);
-      symbol.parent = parent;
+      addDeclarationToSymbol(symbol, node, includes)
+      symbol.parent = parent
 
-      return symbol;
+      return symbol
     }
 
-    function declareModuleMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol {
-      const hasExportModifier = getCombinedNodeFlags(node) & NodeFlags.Export;
+    def declareModuleMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol {
+      val hasExportModifier = getCombinedNodeFlags(node) & NodeFlags.Export
       if (symbolFlags & SymbolFlags.Alias) {
-        if (node.kind === SyntaxKind.ExportSpecifier || (node.kind === SyntaxKind.ImportEqualsDeclaration && hasExportModifier)) {
-          return declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes);
+        if (node.kind == SyntaxKind.ExportSpecifier || (node.kind == SyntaxKind.ImportEqualsDeclaration && hasExportModifier)) {
+          return declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
         }
         else {
-          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes);
+          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes)
         }
       }
       else {
         // Exported module members are given 2 symbols: A local symbol that is classified with an ExportValue,
-        // ExportType, or ExportContainer flag, and an associated export symbol with all the correct flags set
+        // ExportType, or ExportContainer flag, and an associated symbol with all the correct flags set
         // on it. There are 2 main reasons:
         //
         //   1. We treat locals and exports of the same name as mutually exclusive within a container.
@@ -366,7 +366,7 @@ namespace ts {
         //    with the same name in the same container.
         //    TODO: Make this a more specific error and decouple it from the exclusion logic.
         //   2. When we checkIdentifier in the checker, we set its resolved symbol to the local symbol,
-        //    but return the export symbol (by calling getExportSymbolOfValueSymbolIfExported). That way
+        //    but return the symbol (by calling getExportSymbolOfValueSymbolIfExported). That way
         //    when the emitter comes back to it, it knows not to qualify the name if it was found in a containing scope.
 
         // NOTE: Nested ambient modules always should go to to 'locals' table to prevent their automatic merge
@@ -374,34 +374,34 @@ namespace ts {
         //     and this case is specially handled. Module augmentations should only be merged with original module definition
         //     and should never be merged directly with other augmentation, and the latter case would be possible if automatic merge is allowed.
         if (!isAmbientModule(node) && (hasExportModifier || container.flags & NodeFlags.ExportContext)) {
-          const exportKind =
+          val exportKind =
             (symbolFlags & SymbolFlags.Value ? SymbolFlags.ExportValue : 0) |
             (symbolFlags & SymbolFlags.Type ? SymbolFlags.ExportType : 0) |
-            (symbolFlags & SymbolFlags.Namespace ? SymbolFlags.ExportNamespace : 0);
-          const local = declareSymbol(container.locals, undefined, node, exportKind, symbolExcludes);
-          local.exportSymbol = declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes);
-          node.localSymbol = local;
-          return local;
+            (symbolFlags & SymbolFlags.Namespace ? SymbolFlags.ExportNamespace : 0)
+          val local = declareSymbol(container.locals, undefined, node, exportKind, symbolExcludes)
+          local.exportSymbol = declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
+          node.localSymbol = local
+          return local
         }
         else {
-          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes);
+          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes)
         }
       }
     }
 
     // All container nodes are kept on a linked list in declaration order. This list is used by
-    // the getLocalNameOfContainer function in the type checker to validate that the local name
+    // the getLocalNameOfContainer def in the type checker to validate that the local name
     // used for a container is unique.
-    function bindChildren(node: Node) {
+    def bindChildren(node: Node) {
       // Before we recurse into a node's children, we first save the existing parent, container
       // and block-container.  Then after we pop out of processing the children, we restore
       // these saved values.
-      const saveParent = parent;
-      const saveContainer = container;
-      const savedBlockScopeContainer = blockScopeContainer;
+      val saveParent = parent
+      val saveContainer = container
+      val savedBlockScopeContainer = blockScopeContainer
 
       // This node will now be set as the parent of all of its children as we recurse into them.
-      parent = node;
+      parent = node
 
       // Depending on what kind of node this is, we may have to adjust the current container
       // and block-container.   If the current node is a container, then it is automatically
@@ -420,315 +420,315 @@ namespace ts {
       // reusing a node from a previous compilation, that node may have had 'locals' created
       // for it.  We must clear this so we don't accidentally move any stale data forward from
       // a previous compilation.
-      const containerFlags = getContainerFlags(node);
+      val containerFlags = getContainerFlags(node)
       if (containerFlags & ContainerFlags.IsContainer) {
-        container = blockScopeContainer = node;
+        container = blockScopeContainer = node
 
         if (containerFlags & ContainerFlags.HasLocals) {
-          container.locals = {};
+          container.locals = {}
         }
 
-        addToContainerChain(container);
+        addToContainerChain(container)
       }
       else if (containerFlags & ContainerFlags.IsBlockScopedContainer) {
-        blockScopeContainer = node;
-        blockScopeContainer.locals = undefined;
+        blockScopeContainer = node
+        blockScopeContainer.locals = undefined
       }
 
-      let savedReachabilityState: Reachability;
-      let savedLabelStack: Reachability[];
-      let savedLabels: Map<number>;
-      let savedImplicitLabels: number[];
-      let savedHasExplicitReturn: boolean;
+      var savedReachabilityState: Reachability
+      var savedLabelStack: Reachability[]
+      var savedLabels: Map<Int>
+      var savedImplicitLabels: Int[]
+      var savedHasExplicitReturn: Boolean
 
-      const kind = node.kind;
-      let flags = node.flags;
+      val kind = node.kind
+      var flags = node.flags
 
       // reset all reachability check related flags on node (for incremental scenarios)
-      flags &= ~NodeFlags.ReachabilityCheckFlags;
+      flags &= ~NodeFlags.ReachabilityCheckFlags
 
       // reset all emit helper flags on node (for incremental scenarios)
-      flags &= ~NodeFlags.EmitHelperFlags;
+      flags &= ~NodeFlags.EmitHelperFlags
 
-      if (kind === SyntaxKind.InterfaceDeclaration) {
-        seenThisKeyword = false;
+      if (kind == SyntaxKind.InterfaceDeclaration) {
+        seenThisKeyword = false
       }
 
-      const saveState = kind === SyntaxKind.SourceFile || kind === SyntaxKind.ModuleBlock || isFunctionLikeKind(kind);
+      val saveState = kind == SyntaxKind.SourceFile || kind == SyntaxKind.ModuleBlock || isFunctionLikeKind(kind)
       if (saveState) {
-        savedReachabilityState = currentReachabilityState;
-        savedLabelStack = labelStack;
-        savedLabels = labelIndexMap;
-        savedImplicitLabels = implicitLabels;
-        savedHasExplicitReturn = hasExplicitReturn;
+        savedReachabilityState = currentReachabilityState
+        savedLabelStack = labelStack
+        savedLabels = labelIndexMap
+        savedImplicitLabels = implicitLabels
+        savedHasExplicitReturn = hasExplicitReturn
 
-        currentReachabilityState = Reachability.Reachable;
-        hasExplicitReturn = false;
-        labelStack = labelIndexMap = implicitLabels = undefined;
+        currentReachabilityState = Reachability.Reachable
+        hasExplicitReturn = false
+        labelStack = labelIndexMap = implicitLabels = undefined
       }
 
       if (isInJavaScriptFile(node) && node.jsDocComment) {
-        bind(node.jsDocComment);
+        bind(node.jsDocComment)
       }
 
-      bindReachableStatement(node);
+      bindReachableStatement(node)
 
-      if (currentReachabilityState === Reachability.Reachable && isFunctionLikeKind(kind) && nodeIsPresent((<FunctionLikeDeclaration>node).body)) {
-        flags |= NodeFlags.HasImplicitReturn;
+      if (currentReachabilityState == Reachability.Reachable && isFunctionLikeKind(kind) && nodeIsPresent((<FunctionLikeDeclaration>node).body)) {
+        flags |= NodeFlags.HasImplicitReturn
         if (hasExplicitReturn) {
-          flags |= NodeFlags.HasExplicitReturn;
+          flags |= NodeFlags.HasExplicitReturn
         }
       }
 
-      if (kind === SyntaxKind.InterfaceDeclaration) {
-        flags = seenThisKeyword ? flags | NodeFlags.ContainsThis : flags & ~NodeFlags.ContainsThis;
+      if (kind == SyntaxKind.InterfaceDeclaration) {
+        flags = seenThisKeyword ? flags | NodeFlags.ContainsThis : flags & ~NodeFlags.ContainsThis
       }
 
-      if (kind === SyntaxKind.SourceFile) {
+      if (kind == SyntaxKind.SourceFile) {
         if (hasClassExtends) {
-          flags |= NodeFlags.HasClassExtends;
+          flags |= NodeFlags.HasClassExtends
         }
         if (hasDecorators) {
-          flags |= NodeFlags.HasDecorators;
+          flags |= NodeFlags.HasDecorators
         }
         if (hasParameterDecorators) {
-          flags |= NodeFlags.HasParamDecorators;
+          flags |= NodeFlags.HasParamDecorators
         }
         if (hasAsyncFunctions) {
-          flags |= NodeFlags.HasAsyncFunctions;
+          flags |= NodeFlags.HasAsyncFunctions
         }
       }
 
-      node.flags = flags;
+      node.flags = flags
 
       if (saveState) {
-        hasExplicitReturn = savedHasExplicitReturn;
-        currentReachabilityState = savedReachabilityState;
-        labelStack = savedLabelStack;
-        labelIndexMap = savedLabels;
-        implicitLabels = savedImplicitLabels;
+        hasExplicitReturn = savedHasExplicitReturn
+        currentReachabilityState = savedReachabilityState
+        labelStack = savedLabelStack
+        labelIndexMap = savedLabels
+        implicitLabels = savedImplicitLabels
       }
 
-      container = saveContainer;
-      parent = saveParent;
-      blockScopeContainer = savedBlockScopeContainer;
+      container = saveContainer
+      parent = saveParent
+      blockScopeContainer = savedBlockScopeContainer
     }
 
     /**
      * Returns true if node and its subnodes were successfully traversed.
      * Returning false means that node was not examined and caller needs to dive into the node himself.
      */
-    function bindReachableStatement(node: Node): void {
+    def bindReachableStatement(node: Node): void {
       if (checkUnreachable(node)) {
-        forEachChild(node, bind);
-        return;
+        forEachChild(node, bind)
+        return
       }
 
       switch (node.kind) {
         case SyntaxKind.WhileStatement:
-          bindWhileStatement(<WhileStatement>node);
-          break;
+          bindWhileStatement(<WhileStatement>node)
+          break
         case SyntaxKind.DoStatement:
-          bindDoStatement(<DoStatement>node);
-          break;
+          bindDoStatement(<DoStatement>node)
+          break
         case SyntaxKind.ForStatement:
-          bindForStatement(<ForStatement>node);
-          break;
+          bindForStatement(<ForStatement>node)
+          break
         case SyntaxKind.ForInStatement:
         case SyntaxKind.ForOfStatement:
-          bindForInOrForOfStatement(<ForInStatement | ForOfStatement>node);
-          break;
+          bindForInOrForOfStatement(<ForInStatement | ForOfStatement>node)
+          break
         case SyntaxKind.IfStatement:
-          bindIfStatement(<IfStatement>node);
-          break;
+          bindIfStatement(<IfStatement>node)
+          break
         case SyntaxKind.ReturnStatement:
         case SyntaxKind.ThrowStatement:
-          bindReturnOrThrow(<ReturnStatement | ThrowStatement>node);
-          break;
+          bindReturnOrThrow(<ReturnStatement | ThrowStatement>node)
+          break
         case SyntaxKind.BreakStatement:
         case SyntaxKind.ContinueStatement:
-          bindBreakOrContinueStatement(<BreakOrContinueStatement>node);
-          break;
+          bindBreakOrContinueStatement(<BreakOrContinueStatement>node)
+          break
         case SyntaxKind.TryStatement:
-          bindTryStatement(<TryStatement>node);
-          break;
+          bindTryStatement(<TryStatement>node)
+          break
         case SyntaxKind.SwitchStatement:
-          bindSwitchStatement(<SwitchStatement>node);
-          break;
+          bindSwitchStatement(<SwitchStatement>node)
+          break
         case SyntaxKind.CaseBlock:
-          bindCaseBlock(<CaseBlock>node);
-          break;
+          bindCaseBlock(<CaseBlock>node)
+          break
         case SyntaxKind.LabeledStatement:
-          bindLabeledStatement(<LabeledStatement>node);
-          break;
+          bindLabeledStatement(<LabeledStatement>node)
+          break
         default:
-          forEachChild(node, bind);
-          break;
+          forEachChild(node, bind)
+          break
       }
     }
 
-    function bindWhileStatement(n: WhileStatement): void {
-      const preWhileState =
-        n.expression.kind === SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState;
-      const postWhileState =
-        n.expression.kind === SyntaxKind.TrueKeyword ? Reachability.Unreachable : currentReachabilityState;
+    def bindWhileStatement(n: WhileStatement): void {
+      val preWhileState =
+        n.expression.kind == SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState
+      val postWhileState =
+        n.expression.kind == SyntaxKind.TrueKeyword ? Reachability.Unreachable : currentReachabilityState
 
       // bind expressions (don't affect reachability)
-      bind(n.expression);
+      bind(n.expression)
 
-      currentReachabilityState = preWhileState;
-      const postWhileLabel = pushImplicitLabel();
-      bind(n.statement);
-      popImplicitLabel(postWhileLabel, postWhileState);
+      currentReachabilityState = preWhileState
+      val postWhileLabel = pushImplicitLabel()
+      bind(n.statement)
+      popImplicitLabel(postWhileLabel, postWhileState)
     }
 
-    function bindDoStatement(n: DoStatement): void {
-      const preDoState = currentReachabilityState;
+    def bindDoStatement(n: DoStatement): void {
+      val preDoState = currentReachabilityState
 
-      const postDoLabel = pushImplicitLabel();
-      bind(n.statement);
-      const postDoState = n.expression.kind === SyntaxKind.TrueKeyword ? Reachability.Unreachable : preDoState;
-      popImplicitLabel(postDoLabel, postDoState);
+      val postDoLabel = pushImplicitLabel()
+      bind(n.statement)
+      val postDoState = n.expression.kind == SyntaxKind.TrueKeyword ? Reachability.Unreachable : preDoState
+      popImplicitLabel(postDoLabel, postDoState)
 
       // bind expressions (don't affect reachability)
-      bind(n.expression);
+      bind(n.expression)
     }
 
-    function bindForStatement(n: ForStatement): void {
-      const preForState = currentReachabilityState;
-      const postForLabel = pushImplicitLabel();
+    def bindForStatement(n: ForStatement): void {
+      val preForState = currentReachabilityState
+      val postForLabel = pushImplicitLabel()
 
       // bind expressions (don't affect reachability)
-      bind(n.initializer);
-      bind(n.condition);
-      bind(n.incrementor);
+      bind(n.initializer)
+      bind(n.condition)
+      bind(n.incrementor)
 
-      bind(n.statement);
+      bind(n.statement)
 
       // for statement is considered infinite when it condition is either omitted or is true keyword
       // - for(..;;..)
       // - for(..;true;..)
-      const isInfiniteLoop = (!n.condition || n.condition.kind === SyntaxKind.TrueKeyword);
-      const postForState = isInfiniteLoop ? Reachability.Unreachable : preForState;
-      popImplicitLabel(postForLabel, postForState);
+      val isInfiniteLoop = (!n.condition || n.condition.kind == SyntaxKind.TrueKeyword)
+      val postForState = isInfiniteLoop ? Reachability.Unreachable : preForState
+      popImplicitLabel(postForLabel, postForState)
     }
 
-    function bindForInOrForOfStatement(n: ForInStatement | ForOfStatement): void {
-      const preStatementState = currentReachabilityState;
-      const postStatementLabel = pushImplicitLabel();
+    def bindForInOrForOfStatement(n: ForInStatement | ForOfStatement): void {
+      val preStatementState = currentReachabilityState
+      val postStatementLabel = pushImplicitLabel()
 
       // bind expressions (don't affect reachability)
-      bind(n.initializer);
-      bind(n.expression);
+      bind(n.initializer)
+      bind(n.expression)
 
-      bind(n.statement);
-      popImplicitLabel(postStatementLabel, preStatementState);
+      bind(n.statement)
+      popImplicitLabel(postStatementLabel, preStatementState)
     }
 
-    function bindIfStatement(n: IfStatement): void {
+    def bindIfStatement(n: IfStatement): void {
       // denotes reachability state when entering 'thenStatement' part of the if statement:
       // i.e. if condition is false then thenStatement is unreachable
-      const ifTrueState = n.expression.kind === SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState;
+      val ifTrueState = n.expression.kind == SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState
       // denotes reachability state when entering 'elseStatement':
       // i.e. if condition is true then elseStatement is unreachable
-      const ifFalseState = n.expression.kind === SyntaxKind.TrueKeyword ? Reachability.Unreachable : currentReachabilityState;
+      val ifFalseState = n.expression.kind == SyntaxKind.TrueKeyword ? Reachability.Unreachable : currentReachabilityState
 
-      currentReachabilityState = ifTrueState;
+      currentReachabilityState = ifTrueState
 
       // bind expression (don't affect reachability)
-      bind(n.expression);
+      bind(n.expression)
 
-      bind(n.thenStatement);
+      bind(n.thenStatement)
       if (n.elseStatement) {
-        const preElseState = currentReachabilityState;
-        currentReachabilityState = ifFalseState;
-        bind(n.elseStatement);
-        currentReachabilityState = or(currentReachabilityState, preElseState);
+        val preElseState = currentReachabilityState
+        currentReachabilityState = ifFalseState
+        bind(n.elseStatement)
+        currentReachabilityState = or(currentReachabilityState, preElseState)
       }
       else {
-        currentReachabilityState = or(currentReachabilityState, ifFalseState);
+        currentReachabilityState = or(currentReachabilityState, ifFalseState)
       }
     }
 
-    function bindReturnOrThrow(n: ReturnStatement | ThrowStatement): void {
+    def bindReturnOrThrow(n: ReturnStatement | ThrowStatement): void {
       // bind expression (don't affect reachability)
-      bind(n.expression);
-      if (n.kind === SyntaxKind.ReturnStatement) {
-        hasExplicitReturn = true;
+      bind(n.expression)
+      if (n.kind == SyntaxKind.ReturnStatement) {
+        hasExplicitReturn = true
       }
-      currentReachabilityState = Reachability.Unreachable;
+      currentReachabilityState = Reachability.Unreachable
     }
 
-    function bindBreakOrContinueStatement(n: BreakOrContinueStatement): void {
+    def bindBreakOrContinueStatement(n: BreakOrContinueStatement): void {
       // call bind on label (don't affect reachability)
-      bind(n.label);
+      bind(n.label)
       // for continue case touch label so it will be marked a used
-      const isValidJump = jumpToLabel(n.label, n.kind === SyntaxKind.BreakStatement ? currentReachabilityState : Reachability.Unreachable);
+      val isValidJump = jumpToLabel(n.label, n.kind == SyntaxKind.BreakStatement ? currentReachabilityState : Reachability.Unreachable)
       if (isValidJump) {
-        currentReachabilityState = Reachability.Unreachable;
+        currentReachabilityState = Reachability.Unreachable
       }
     }
 
-    function bindTryStatement(n: TryStatement): void {
+    def bindTryStatement(n: TryStatement): void {
       // catch\finally blocks has the same reachability as try block
-      const preTryState = currentReachabilityState;
-      bind(n.tryBlock);
-      const postTryState = currentReachabilityState;
+      val preTryState = currentReachabilityState
+      bind(n.tryBlock)
+      val postTryState = currentReachabilityState
 
-      currentReachabilityState = preTryState;
-      bind(n.catchClause);
-      const postCatchState = currentReachabilityState;
+      currentReachabilityState = preTryState
+      bind(n.catchClause)
+      val postCatchState = currentReachabilityState
 
-      currentReachabilityState = preTryState;
-      bind(n.finallyBlock);
+      currentReachabilityState = preTryState
+      bind(n.finallyBlock)
 
       // post catch/finally state is reachable if
       // - post try state is reachable - control flow can fall out of try block
       // - post catch state is reachable - control flow can fall out of catch block
-      currentReachabilityState = or(postTryState, postCatchState);
+      currentReachabilityState = or(postTryState, postCatchState)
     }
 
-    function bindSwitchStatement(n: SwitchStatement): void {
-      const preSwitchState = currentReachabilityState;
-      const postSwitchLabel = pushImplicitLabel();
+    def bindSwitchStatement(n: SwitchStatement): void {
+      val preSwitchState = currentReachabilityState
+      val postSwitchLabel = pushImplicitLabel()
 
       // bind expression (don't affect reachability)
-      bind(n.expression);
+      bind(n.expression)
 
-      bind(n.caseBlock);
+      bind(n.caseBlock)
 
-      const hasDefault = forEach(n.caseBlock.clauses, c => c.kind === SyntaxKind.DefaultClause);
+      val hasDefault = forEach(n.caseBlock.clauses, c => c.kind == SyntaxKind.DefaultClause)
 
       // post switch state is unreachable if switch is exhaustive (has a default case ) and does not have fallthrough from the last case
-      const postSwitchState = hasDefault && currentReachabilityState !== Reachability.Reachable ? Reachability.Unreachable : preSwitchState;
+      val postSwitchState = hasDefault && currentReachabilityState != Reachability.Reachable ? Reachability.Unreachable : preSwitchState
 
-      popImplicitLabel(postSwitchLabel, postSwitchState);
+      popImplicitLabel(postSwitchLabel, postSwitchState)
     }
 
-    function bindCaseBlock(n: CaseBlock): void {
-      const startState = currentReachabilityState;
+    def bindCaseBlock(n: CaseBlock): void {
+      val startState = currentReachabilityState
 
-      for (const clause of n.clauses) {
-        currentReachabilityState = startState;
-        bind(clause);
-        if (clause.statements.length && currentReachabilityState === Reachability.Reachable && options.noFallthroughCasesInSwitch) {
-          errorOnFirstToken(clause, Diagnostics.Fallthrough_case_in_switch);
+      for (val clause of n.clauses) {
+        currentReachabilityState = startState
+        bind(clause)
+        if (clause.statements.length && currentReachabilityState == Reachability.Reachable && options.noFallthroughCasesInSwitch) {
+          errorOnFirstToken(clause, Diagnostics.Fallthrough_case_in_switch)
         }
       }
     }
 
-    function bindLabeledStatement(n: LabeledStatement): void {
+    def bindLabeledStatement(n: LabeledStatement): void {
       // call bind on label (don't affect reachability)
-      bind(n.label);
+      bind(n.label)
 
-      const ok = pushNamedLabel(n.label);
-      bind(n.statement);
+      val ok = pushNamedLabel(n.label)
+      bind(n.statement)
       if (ok) {
-        popNamedLabel(n.label, currentReachabilityState);
+        popNamedLabel(n.label, currentReachabilityState)
       }
     }
 
-    function getContainerFlags(node: Node): ContainerFlags {
+    def getContainerFlags(node: Node): ContainerFlags {
       switch (node.kind) {
         case SyntaxKind.ClassExpression:
         case SyntaxKind.ClassDeclaration:
@@ -737,7 +737,7 @@ namespace ts {
         case SyntaxKind.ObjectLiteralExpression:
         case SyntaxKind.TypeLiteral:
         case SyntaxKind.JSDocRecordType:
-          return ContainerFlags.IsContainer;
+          return ContainerFlags.IsContainer
 
         case SyntaxKind.CallSignature:
         case SyntaxKind.ConstructSignature:
@@ -755,69 +755,69 @@ namespace ts {
         case SyntaxKind.ModuleDeclaration:
         case SyntaxKind.SourceFile:
         case SyntaxKind.TypeAliasDeclaration:
-          return ContainerFlags.IsContainerWithLocals;
+          return ContainerFlags.IsContainerWithLocals
 
         case SyntaxKind.CatchClause:
         case SyntaxKind.ForStatement:
         case SyntaxKind.ForInStatement:
         case SyntaxKind.ForOfStatement:
         case SyntaxKind.CaseBlock:
-          return ContainerFlags.IsBlockScopedContainer;
+          return ContainerFlags.IsBlockScopedContainer
 
         case SyntaxKind.Block:
-          // do not treat blocks directly inside a function as a block-scoped-container.
-          // Locals that reside in this block should go to the function locals. Otherwise 'x'
+          // do not treat blocks directly inside a def as a block-scoped-container.
+          // Locals that reside in this block should go to the def locals. Otherwise 'x'
           // would not appear to be a redeclaration of a block scoped local in the following
           // example:
           //
-          //    function foo() {
-          //      var x;
-          //      let x;
+          //    def foo() {
+          //      var x
+          //      var x
           //    }
           //
-          // If we placed 'var x' into the function locals and 'let x' into the locals of
+          // If we placed 'var x' into the def locals and 'var x' into the locals of
           // the block, then there would be no collision.
           //
           // By not creating a new block-scoped-container here, we ensure that both 'var x'
-          // and 'let x' go into the Function-container's locals, and we do get a collision
+          // and 'var x' go into the Function-container's locals, and we do get a collision
           // conflict.
-          return isFunctionLike(node.parent) ? ContainerFlags.None : ContainerFlags.IsBlockScopedContainer;
+          return isFunctionLike(node.parent) ? ContainerFlags.None : ContainerFlags.IsBlockScopedContainer
       }
 
-      return ContainerFlags.None;
+      return ContainerFlags.None
     }
 
-    function addToContainerChain(next: Node) {
+    def addToContainerChain(next: Node) {
       if (lastContainer) {
-        lastContainer.nextContainer = next;
+        lastContainer.nextContainer = next
       }
 
-      lastContainer = next;
+      lastContainer = next
     }
 
-    function declareSymbolAndAddToSymbolTable(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): void {
-      // Just call this directly so that the return type of this function stays "void".
-      declareSymbolAndAddToSymbolTableWorker(node, symbolFlags, symbolExcludes);
+    def declareSymbolAndAddToSymbolTable(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): void {
+      // Just call this directly so that the return type of this def stays "void".
+      declareSymbolAndAddToSymbolTableWorker(node, symbolFlags, symbolExcludes)
     }
 
-    function declareSymbolAndAddToSymbolTableWorker(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol {
+    def declareSymbolAndAddToSymbolTableWorker(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol {
       switch (container.kind) {
         // Modules, source files, and classes need specialized handling for how their
         // members are declared (for example, a member of a class will go into a specific
         // symbol table depending on if it is static or not). We defer to specialized
         // handlers to take care of declaring these child members.
         case SyntaxKind.ModuleDeclaration:
-          return declareModuleMember(node, symbolFlags, symbolExcludes);
+          return declareModuleMember(node, symbolFlags, symbolExcludes)
 
         case SyntaxKind.SourceFile:
-          return declareSourceFileMember(node, symbolFlags, symbolExcludes);
+          return declareSourceFileMember(node, symbolFlags, symbolExcludes)
 
         case SyntaxKind.ClassExpression:
         case SyntaxKind.ClassDeclaration:
-          return declareClassMember(node, symbolFlags, symbolExcludes);
+          return declareClassMember(node, symbolFlags, symbolExcludes)
 
         case SyntaxKind.EnumDeclaration:
-          return declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes);
+          return declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
 
         case SyntaxKind.TypeLiteral:
         case SyntaxKind.ObjectLiteralExpression:
@@ -828,7 +828,7 @@ namespace ts {
           // container, and are never in scope otherwise (even inside the body of the
           // object / type / interface declaring them). An exception is type parameters,
           // which are in scope without qualification (similar to 'locals').
-          return declareSymbol(container.symbol.members, container.symbol, node, symbolFlags, symbolExcludes);
+          return declareSymbol(container.symbol.members, container.symbol, node, symbolFlags, symbolExcludes)
 
         case SyntaxKind.FunctionType:
         case SyntaxKind.ConstructorType:
@@ -851,110 +851,110 @@ namespace ts {
           // their container in the tree.  To accomplish this, we simply add their declared
           // symbol to the 'locals' of the container.  These symbols can then be found as
           // the type checker walks up the containers, checking them for matching names.
-          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes);
+          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes)
       }
     }
 
-    function declareClassMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def declareClassMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
       return node.flags & NodeFlags.Static
         ? declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
-        : declareSymbol(container.symbol.members, container.symbol, node, symbolFlags, symbolExcludes);
+        : declareSymbol(container.symbol.members, container.symbol, node, symbolFlags, symbolExcludes)
     }
 
-    function declareSourceFileMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def declareSourceFileMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
       return isExternalModule(file)
         ? declareModuleMember(node, symbolFlags, symbolExcludes)
-        : declareSymbol(file.locals, undefined, node, symbolFlags, symbolExcludes);
+        : declareSymbol(file.locals, undefined, node, symbolFlags, symbolExcludes)
     }
 
-    function hasExportDeclarations(node: ModuleDeclaration | SourceFile): boolean {
-      const body = node.kind === SyntaxKind.SourceFile ? node : (<ModuleDeclaration>node).body;
-      if (body.kind === SyntaxKind.SourceFile || body.kind === SyntaxKind.ModuleBlock) {
-        for (const stat of (<Block>body).statements) {
-          if (stat.kind === SyntaxKind.ExportDeclaration || stat.kind === SyntaxKind.ExportAssignment) {
-            return true;
+    def hasExportDeclarations(node: ModuleDeclaration | SourceFile): Boolean {
+      val body = node.kind == SyntaxKind.SourceFile ? node : (<ModuleDeclaration>node).body
+      if (body.kind == SyntaxKind.SourceFile || body.kind == SyntaxKind.ModuleBlock) {
+        for (val stat of (<Block>body).statements) {
+          if (stat.kind == SyntaxKind.ExportDeclaration || stat.kind == SyntaxKind.ExportAssignment) {
+            return true
           }
         }
       }
-      return false;
+      return false
     }
 
-    function setExportContextFlag(node: ModuleDeclaration | SourceFile) {
-      // A declaration source file or ambient module declaration that contains no export declarations (but possibly regular
-      // declarations with export modifiers) is an export context in which declarations are implicitly exported.
+    def setExportContextFlag(node: ModuleDeclaration | SourceFile) {
+      // A declaration source file or ambient module declaration that contains no declarations (but possibly regular
+      // declarations with modifiers) is an context in which declarations are implicitly exported.
       if (isInAmbientContext(node) && !hasExportDeclarations(node)) {
-        node.flags |= NodeFlags.ExportContext;
+        node.flags |= NodeFlags.ExportContext
       }
       else {
-        node.flags &= ~NodeFlags.ExportContext;
+        node.flags &= ~NodeFlags.ExportContext
       }
     }
 
-    function bindModuleDeclaration(node: ModuleDeclaration) {
-      setExportContextFlag(node);
+    def bindModuleDeclaration(node: ModuleDeclaration) {
+      setExportContextFlag(node)
       if (isAmbientModule(node)) {
         if (node.flags & NodeFlags.Export) {
-          errorOnFirstToken(node, Diagnostics.export_modifier_cannot_be_applied_to_ambient_modules_and_module_augmentations_since_they_are_always_visible);
+          errorOnFirstToken(node, Diagnostics.export_modifier_cannot_be_applied_to_ambient_modules_and_module_augmentations_since_they_are_always_visible)
         }
-        declareSymbolAndAddToSymbolTable(node, SymbolFlags.ValueModule, SymbolFlags.ValueModuleExcludes);
+        declareSymbolAndAddToSymbolTable(node, SymbolFlags.ValueModule, SymbolFlags.ValueModuleExcludes)
       }
       else {
-        const state = getModuleInstanceState(node);
-        if (state === ModuleInstanceState.NonInstantiated) {
-          declareSymbolAndAddToSymbolTable(node, SymbolFlags.NamespaceModule, SymbolFlags.NamespaceModuleExcludes);
+        val state = getModuleInstanceState(node)
+        if (state == ModuleInstanceState.NonInstantiated) {
+          declareSymbolAndAddToSymbolTable(node, SymbolFlags.NamespaceModule, SymbolFlags.NamespaceModuleExcludes)
         }
         else {
-          declareSymbolAndAddToSymbolTable(node, SymbolFlags.ValueModule, SymbolFlags.ValueModuleExcludes);
+          declareSymbolAndAddToSymbolTable(node, SymbolFlags.ValueModule, SymbolFlags.ValueModuleExcludes)
           if (node.symbol.flags & (SymbolFlags.Function | SymbolFlags.Class | SymbolFlags.RegularEnum)) {
-            // if module was already merged with some function, class or non-const enum
-            // treat is a non-const-enum-only
-            node.symbol.constEnumOnlyModule = false;
+            // if module was already merged with some def, class or non-val enum
+            // treat is a non-val-enum-only
+            node.symbol.constEnumOnlyModule = false
           }
           else {
-            const currentModuleIsConstEnumOnly = state === ModuleInstanceState.ConstEnumOnly;
-            if (node.symbol.constEnumOnlyModule === undefined) {
+            val currentModuleIsConstEnumOnly = state == ModuleInstanceState.ConstEnumOnly
+            if (node.symbol.constEnumOnlyModule == undefined) {
               // non-merged case - use the current state
-              node.symbol.constEnumOnlyModule = currentModuleIsConstEnumOnly;
+              node.symbol.constEnumOnlyModule = currentModuleIsConstEnumOnly
             }
             else {
-              // merged case: module is const enum only if all its pieces are non-instantiated or const enum
-              node.symbol.constEnumOnlyModule = node.symbol.constEnumOnlyModule && currentModuleIsConstEnumOnly;
+              // merged case: module is val enum only if all its pieces are non-instantiated or val enum
+              node.symbol.constEnumOnlyModule = node.symbol.constEnumOnlyModule && currentModuleIsConstEnumOnly
             }
           }
         }
       }
     }
 
-    function bindFunctionOrConstructorType(node: SignatureDeclaration): void {
-      // For a given function symbol "<...>(...) => T" we want to generate a symbol identical
+    def bindFunctionOrConstructorType(node: SignatureDeclaration): void {
+      // For a given def symbol "<...>(...) => T" we want to generate a symbol identical
       // to the one we would get for: { <...>(...): T }
       //
-      // We do that by making an anonymous type literal symbol, and then setting the function
+      // We do that by making an anonymous type literal symbol, and then setting the def
       // symbol as its sole member. To the rest of the system, this symbol will be  indistinguishable
       // from an actual type literal symbol you would have gotten had you used the long form.
-      const symbol = createSymbol(SymbolFlags.Signature, getDeclarationName(node));
-      addDeclarationToSymbol(symbol, node, SymbolFlags.Signature);
+      val symbol = createSymbol(SymbolFlags.Signature, getDeclarationName(node))
+      addDeclarationToSymbol(symbol, node, SymbolFlags.Signature)
 
-      const typeLiteralSymbol = createSymbol(SymbolFlags.TypeLiteral, "__type");
-      addDeclarationToSymbol(typeLiteralSymbol, node, SymbolFlags.TypeLiteral);
-      typeLiteralSymbol.members = { [symbol.name]: symbol };
+      val typeLiteralSymbol = createSymbol(SymbolFlags.TypeLiteral, "__type")
+      addDeclarationToSymbol(typeLiteralSymbol, node, SymbolFlags.TypeLiteral)
+      typeLiteralSymbol.members = { [symbol.name]: symbol }
     }
 
-    function bindObjectLiteralExpression(node: ObjectLiteralExpression) {
-      const enum ElementKind {
+    def bindObjectLiteralExpression(node: ObjectLiteralExpression) {
+      val enum ElementKind {
         Property = 1,
         Accessor = 2
       }
 
       if (inStrictMode) {
-        const seen: Map<ElementKind> = {};
+        val seen: Map<ElementKind> = {}
 
-        for (const prop of node.properties) {
-          if (prop.name.kind !== SyntaxKind.Identifier) {
-            continue;
+        for (val prop of node.properties) {
+          if (prop.name.kind != SyntaxKind.Identifier) {
+            continue
           }
 
-          const identifier = <Identifier>prop.name;
+          val identifier = <Identifier>prop.name
 
           // ECMA-262 11.1.5 Object Initializer
           // If previous is not undefined then throw a SyntaxError exception if any of the following conditions are true
@@ -964,59 +964,59 @@ namespace ts {
           //  c.IsAccessorDescriptor(previous) is true and IsDataDescriptor(propId.descriptor) is true.
           //  d.IsAccessorDescriptor(previous) is true and IsAccessorDescriptor(propId.descriptor) is true
           // and either both previous and propId.descriptor have[[Get]] fields or both previous and propId.descriptor have[[Set]] fields
-          const currentKind = prop.kind === SyntaxKind.PropertyAssignment || prop.kind === SyntaxKind.ShorthandPropertyAssignment || prop.kind === SyntaxKind.MethodDeclaration
+          val currentKind = prop.kind == SyntaxKind.PropertyAssignment || prop.kind == SyntaxKind.ShorthandPropertyAssignment || prop.kind == SyntaxKind.MethodDeclaration
             ? ElementKind.Property
-            : ElementKind.Accessor;
+            : ElementKind.Accessor
 
-          const existingKind = seen[identifier.text];
+          val existingKind = seen[identifier.text]
           if (!existingKind) {
-            seen[identifier.text] = currentKind;
-            continue;
+            seen[identifier.text] = currentKind
+            continue
           }
 
-          if (currentKind === ElementKind.Property && existingKind === ElementKind.Property) {
-            const span = getErrorSpanForNode(file, identifier);
+          if (currentKind == ElementKind.Property && existingKind == ElementKind.Property) {
+            val span = getErrorSpanForNode(file, identifier)
             file.bindDiagnostics.push(createFileDiagnostic(file, span.start, span.length,
-              Diagnostics.An_object_literal_cannot_have_multiple_properties_with_the_same_name_in_strict_mode));
+              Diagnostics.An_object_literal_cannot_have_multiple_properties_with_the_same_name_in_strict_mode))
           }
         }
       }
 
-      return bindAnonymousDeclaration(node, SymbolFlags.ObjectLiteral, "__object");
+      return bindAnonymousDeclaration(node, SymbolFlags.ObjectLiteral, "__object")
     }
 
-    function bindAnonymousDeclaration(node: Declaration, symbolFlags: SymbolFlags, name: string) {
-      const symbol = createSymbol(symbolFlags, name);
-      addDeclarationToSymbol(symbol, node, symbolFlags);
+    def bindAnonymousDeclaration(node: Declaration, symbolFlags: SymbolFlags, name: String) {
+      val symbol = createSymbol(symbolFlags, name)
+      addDeclarationToSymbol(symbol, node, symbolFlags)
     }
 
-    function bindBlockScopedDeclaration(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def bindBlockScopedDeclaration(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
       switch (blockScopeContainer.kind) {
         case SyntaxKind.ModuleDeclaration:
-          declareModuleMember(node, symbolFlags, symbolExcludes);
-          break;
+          declareModuleMember(node, symbolFlags, symbolExcludes)
+          break
         case SyntaxKind.SourceFile:
           if (isExternalModule(<SourceFile>container)) {
-            declareModuleMember(node, symbolFlags, symbolExcludes);
-            break;
+            declareModuleMember(node, symbolFlags, symbolExcludes)
+            break
           }
         // fall through.
         default:
           if (!blockScopeContainer.locals) {
-            blockScopeContainer.locals = {};
-            addToContainerChain(blockScopeContainer);
+            blockScopeContainer.locals = {}
+            addToContainerChain(blockScopeContainer)
           }
-          declareSymbol(blockScopeContainer.locals, undefined, node, symbolFlags, symbolExcludes);
+          declareSymbol(blockScopeContainer.locals, undefined, node, symbolFlags, symbolExcludes)
       }
     }
 
-    function bindBlockScopedVariableDeclaration(node: Declaration) {
-      bindBlockScopedDeclaration(node, SymbolFlags.BlockScopedVariable, SymbolFlags.BlockScopedVariableExcludes);
+    def bindBlockScopedVariableDeclaration(node: Declaration) {
+      bindBlockScopedDeclaration(node, SymbolFlags.BlockScopedVariable, SymbolFlags.BlockScopedVariableExcludes)
     }
 
     // The binder visits every node in the syntax tree so it is a convenient place to perform a single localized
     // check for reserved words used as identifiers in strict mode code.
-    function checkStrictModeIdentifier(node: Identifier) {
+    def checkStrictModeIdentifier(node: Identifier) {
       if (inStrictMode &&
         node.originalKeywordKind >= SyntaxKind.FirstFutureReservedWord &&
         node.originalKeywordKind <= SyntaxKind.LastFutureReservedWord &&
@@ -1025,141 +1025,141 @@ namespace ts {
         // Report error only if there are no parse errors in file
         if (!file.parseDiagnostics.length) {
           file.bindDiagnostics.push(createDiagnosticForNode(node,
-            getStrictModeIdentifierMessage(node), declarationNameToString(node)));
+            getStrictModeIdentifierMessage(node), declarationNameToString(node)))
         }
       }
     }
 
-    function getStrictModeIdentifierMessage(node: Node) {
+    def getStrictModeIdentifierMessage(node: Node) {
       // Provide specialized messages to help the user understand why we think they're in
       // strict mode.
       if (getContainingClass(node)) {
-        return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode_Class_definitions_are_automatically_in_strict_mode;
+        return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode_Class_definitions_are_automatically_in_strict_mode
       }
 
       if (file.externalModuleIndicator) {
-        return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode_Modules_are_automatically_in_strict_mode;
+        return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode_Modules_are_automatically_in_strict_mode
       }
 
-      return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode;
+      return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode
     }
 
-    function checkStrictModeBinaryExpression(node: BinaryExpression) {
+    def checkStrictModeBinaryExpression(node: BinaryExpression) {
       if (inStrictMode && isLeftHandSideExpression(node.left) && isAssignmentOperator(node.operatorToken.kind)) {
         // ECMA 262 (Annex C) The identifier eval or arguments may not appear as the LeftHandSideExpression of an
         // Assignment operator(11.13) or of a PostfixExpression(11.3)
-        checkStrictModeEvalOrArguments(node, <Identifier>node.left);
+        checkStrictModeEvalOrArguments(node, <Identifier>node.left)
       }
     }
 
-    function checkStrictModeCatchClause(node: CatchClause) {
+    def checkStrictModeCatchClause(node: CatchClause) {
       // It is a SyntaxError if a TryStatement with a Catch occurs within strict code and the Identifier of the
       // Catch production is eval or arguments
       if (inStrictMode && node.variableDeclaration) {
-        checkStrictModeEvalOrArguments(node, node.variableDeclaration.name);
+        checkStrictModeEvalOrArguments(node, node.variableDeclaration.name)
       }
     }
 
-    function checkStrictModeDeleteExpression(node: DeleteExpression) {
+    def checkStrictModeDeleteExpression(node: DeleteExpression) {
       // Grammar checking
-      if (inStrictMode && node.expression.kind === SyntaxKind.Identifier) {
+      if (inStrictMode && node.expression.kind == SyntaxKind.Identifier) {
         // When a delete operator occurs within strict mode code, a SyntaxError is thrown if its
-        // UnaryExpression is a direct reference to a variable, function argument, or function name
-        const span = getErrorSpanForNode(file, node.expression);
-        file.bindDiagnostics.push(createFileDiagnostic(file, span.start, span.length, Diagnostics.delete_cannot_be_called_on_an_identifier_in_strict_mode));
+        // UnaryExpression is a direct reference to a variable, def argument, or def name
+        val span = getErrorSpanForNode(file, node.expression)
+        file.bindDiagnostics.push(createFileDiagnostic(file, span.start, span.length, Diagnostics.delete_cannot_be_called_on_an_identifier_in_strict_mode))
       }
     }
 
-    function isEvalOrArgumentsIdentifier(node: Node): boolean {
-      return node.kind === SyntaxKind.Identifier &&
-        ((<Identifier>node).text === "eval" || (<Identifier>node).text === "arguments");
+    def isEvalOrArgumentsIdentifier(node: Node): Boolean {
+      return node.kind == SyntaxKind.Identifier &&
+        ((<Identifier>node).text == "eval" || (<Identifier>node).text == "arguments")
     }
 
-    function checkStrictModeEvalOrArguments(contextNode: Node, name: Node) {
-      if (name && name.kind === SyntaxKind.Identifier) {
-        const identifier = <Identifier>name;
+    def checkStrictModeEvalOrArguments(contextNode: Node, name: Node) {
+      if (name && name.kind == SyntaxKind.Identifier) {
+        val identifier = <Identifier>name
         if (isEvalOrArgumentsIdentifier(identifier)) {
           // We check first if the name is inside class declaration or class expression; if so give explicit message
           // otherwise report generic error message.
-          const span = getErrorSpanForNode(file, name);
+          val span = getErrorSpanForNode(file, name)
           file.bindDiagnostics.push(createFileDiagnostic(file, span.start, span.length,
-            getStrictModeEvalOrArgumentsMessage(contextNode), identifier.text));
+            getStrictModeEvalOrArgumentsMessage(contextNode), identifier.text))
         }
       }
     }
 
-    function getStrictModeEvalOrArgumentsMessage(node: Node) {
+    def getStrictModeEvalOrArgumentsMessage(node: Node) {
       // Provide specialized messages to help the user understand why we think they're in
       // strict mode.
       if (getContainingClass(node)) {
-        return Diagnostics.Invalid_use_of_0_Class_definitions_are_automatically_in_strict_mode;
+        return Diagnostics.Invalid_use_of_0_Class_definitions_are_automatically_in_strict_mode
       }
 
       if (file.externalModuleIndicator) {
-        return Diagnostics.Invalid_use_of_0_Modules_are_automatically_in_strict_mode;
+        return Diagnostics.Invalid_use_of_0_Modules_are_automatically_in_strict_mode
       }
 
-      return Diagnostics.Invalid_use_of_0_in_strict_mode;
+      return Diagnostics.Invalid_use_of_0_in_strict_mode
     }
 
-    function checkStrictModeFunctionName(node: FunctionLikeDeclaration) {
+    def checkStrictModeFunctionName(node: FunctionLikeDeclaration) {
       if (inStrictMode) {
         // It is a SyntaxError if the identifier eval or arguments appears within a FormalParameterList of a strict mode FunctionDeclaration or FunctionExpression (13.1))
-        checkStrictModeEvalOrArguments(node, node.name);
+        checkStrictModeEvalOrArguments(node, node.name)
       }
     }
 
-    function checkStrictModeNumericLiteral(node: LiteralExpression) {
+    def checkStrictModeNumericLiteral(node: LiteralExpression) {
       if (inStrictMode && node.isOctalLiteral) {
-        file.bindDiagnostics.push(createDiagnosticForNode(node, Diagnostics.Octal_literals_are_not_allowed_in_strict_mode));
+        file.bindDiagnostics.push(createDiagnosticForNode(node, Diagnostics.Octal_literals_are_not_allowed_in_strict_mode))
       }
     }
 
-    function checkStrictModePostfixUnaryExpression(node: PostfixUnaryExpression) {
+    def checkStrictModePostfixUnaryExpression(node: PostfixUnaryExpression) {
       // Grammar checking
       // The identifier eval or arguments may not appear as the LeftHandSideExpression of an
       // Assignment operator(11.13) or of a PostfixExpression(11.3) or as the UnaryExpression
       // operated upon by a Prefix Increment(11.4.4) or a Prefix Decrement(11.4.5) operator.
       if (inStrictMode) {
-        checkStrictModeEvalOrArguments(node, <Identifier>node.operand);
+        checkStrictModeEvalOrArguments(node, <Identifier>node.operand)
       }
     }
 
-    function checkStrictModePrefixUnaryExpression(node: PrefixUnaryExpression) {
+    def checkStrictModePrefixUnaryExpression(node: PrefixUnaryExpression) {
       // Grammar checking
       if (inStrictMode) {
-        if (node.operator === SyntaxKind.PlusPlusToken || node.operator === SyntaxKind.MinusMinusToken) {
-          checkStrictModeEvalOrArguments(node, <Identifier>node.operand);
+        if (node.operator == SyntaxKind.PlusPlusToken || node.operator == SyntaxKind.MinusMinusToken) {
+          checkStrictModeEvalOrArguments(node, <Identifier>node.operand)
         }
       }
     }
 
-    function checkStrictModeWithStatement(node: WithStatement) {
+    def checkStrictModeWithStatement(node: WithStatement) {
       // Grammar checking for withStatement
       if (inStrictMode) {
-        errorOnFirstToken(node, Diagnostics.with_statements_are_not_allowed_in_strict_mode);
+        errorOnFirstToken(node, Diagnostics.with_statements_are_not_allowed_in_strict_mode)
       }
     }
 
-    function errorOnFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any) {
-      const span = getSpanOfTokenAtPosition(file, node.pos);
-      file.bindDiagnostics.push(createFileDiagnostic(file, span.start, span.length, message, arg0, arg1, arg2));
+    def errorOnFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any) {
+      val span = getSpanOfTokenAtPosition(file, node.pos)
+      file.bindDiagnostics.push(createFileDiagnostic(file, span.start, span.length, message, arg0, arg1, arg2))
     }
 
-    function getDestructuringParameterName(node: Declaration) {
-      return "__" + indexOf((<SignatureDeclaration>node.parent).parameters, node);
+    def getDestructuringParameterName(node: Declaration) {
+      return "__" + indexOf((<SignatureDeclaration>node.parent).parameters, node)
     }
 
-    function bind(node: Node): void {
+    def bind(node: Node): void {
       if (!node) {
-        return;
+        return
       }
 
-      node.parent = parent;
+      node.parent = parent
 
-      const savedInStrictMode = inStrictMode;
+      val savedInStrictMode = inStrictMode
       if (!savedInStrictMode) {
-        updateStrictMode(node);
+        updateStrictMode(node)
       }
 
       // First we bind declaration nodes to a symbol if possible.  We'll both create a symbol
@@ -1172,125 +1172,125 @@ namespace ts {
       //
       // However, not all symbols will end up in any of these tables.  'Anonymous' symbols
       // (like TypeLiterals for example) will not be put in any table.
-      bindWorker(node);
+      bindWorker(node)
 
       // Then we recurse into the children of the node to bind them as well.  For certain
       // symbols we do specialized work when we recurse.  For example, we'll keep track of
       // the current 'container' node when it changes.  This helps us know which symbol table
       // a local should go into for example.
-      bindChildren(node);
+      bindChildren(node)
 
-      inStrictMode = savedInStrictMode;
+      inStrictMode = savedInStrictMode
     }
 
-    function updateStrictMode(node: Node) {
+    def updateStrictMode(node: Node) {
       switch (node.kind) {
         case SyntaxKind.SourceFile:
         case SyntaxKind.ModuleBlock:
-          updateStrictModeStatementList((<SourceFile | ModuleBlock>node).statements);
-          return;
+          updateStrictModeStatementList((<SourceFile | ModuleBlock>node).statements)
+          return
         case SyntaxKind.Block:
           if (isFunctionLike(node.parent)) {
-            updateStrictModeStatementList((<Block>node).statements);
+            updateStrictModeStatementList((<Block>node).statements)
           }
-          return;
+          return
         case SyntaxKind.ClassDeclaration:
         case SyntaxKind.ClassExpression:
           // All classes are automatically in strict mode in ES6.
-          inStrictMode = true;
-          return;
+          inStrictMode = true
+          return
       }
     }
 
-    function updateStrictModeStatementList(statements: NodeArray<Statement>) {
-      for (const statement of statements) {
+    def updateStrictModeStatementList(statements: NodeArray<Statement>) {
+      for (val statement of statements) {
         if (!isPrologueDirective(statement)) {
-          return;
+          return
         }
 
         if (isUseStrictPrologueDirective(<ExpressionStatement>statement)) {
-          inStrictMode = true;
-          return;
+          inStrictMode = true
+          return
         }
       }
     }
 
     /// Should be called only on prologue directives (isPrologueDirective(node) should be true)
-    function isUseStrictPrologueDirective(node: ExpressionStatement): boolean {
-      const nodeText = getTextOfNodeFromSourceText(file.text, node.expression);
+    def isUseStrictPrologueDirective(node: ExpressionStatement): Boolean {
+      val nodeText = getTextOfNodeFromSourceText(file.text, node.expression)
 
       // Note: the node text must be exactly "use strict" or 'use strict'.  It is not ok for the
-      // string to contain unicode escapes (as per ES5).
-      return nodeText === "\"use strict\"" || nodeText === "'use strict'";
+      // String to contain unicode escapes (as per ES5).
+      return nodeText == "\"use strict\"" || nodeText == "'use strict'"
     }
 
-    function bindWorker(node: Node) {
+    def bindWorker(node: Node) {
       switch (node.kind) {
         /* Strict mode checks */
         case SyntaxKind.Identifier:
-          return checkStrictModeIdentifier(<Identifier>node);
+          return checkStrictModeIdentifier(<Identifier>node)
         case SyntaxKind.BinaryExpression:
           if (isInJavaScriptFile(node)) {
-            const specialKind = getSpecialPropertyAssignmentKind(node);
+            val specialKind = getSpecialPropertyAssignmentKind(node)
             switch (specialKind) {
               case SpecialPropertyAssignmentKind.ExportsProperty:
-                bindExportsPropertyAssignment(<BinaryExpression>node);
-                break;
+                bindExportsPropertyAssignment(<BinaryExpression>node)
+                break
               case SpecialPropertyAssignmentKind.ModuleExports:
-                bindModuleExportsAssignment(<BinaryExpression>node);
-                break;
+                bindModuleExportsAssignment(<BinaryExpression>node)
+                break
               case SpecialPropertyAssignmentKind.PrototypeProperty:
-                bindPrototypePropertyAssignment(<BinaryExpression>node);
-                break;
+                bindPrototypePropertyAssignment(<BinaryExpression>node)
+                break
               case SpecialPropertyAssignmentKind.ThisProperty:
-                bindThisPropertyAssignment(<BinaryExpression>node);
-                break;
+                bindThisPropertyAssignment(<BinaryExpression>node)
+                break
               case SpecialPropertyAssignmentKind.None:
                 // Nothing to do
-                break;
+                break
               default:
-                Debug.fail("Unknown special property assignment kind");
+                Debug.fail("Unknown special property assignment kind")
             }
           }
-          return checkStrictModeBinaryExpression(<BinaryExpression>node);
+          return checkStrictModeBinaryExpression(<BinaryExpression>node)
         case SyntaxKind.CatchClause:
-          return checkStrictModeCatchClause(<CatchClause>node);
+          return checkStrictModeCatchClause(<CatchClause>node)
         case SyntaxKind.DeleteExpression:
-          return checkStrictModeDeleteExpression(<DeleteExpression>node);
+          return checkStrictModeDeleteExpression(<DeleteExpression>node)
         case SyntaxKind.NumericLiteral:
-          return checkStrictModeNumericLiteral(<LiteralExpression>node);
+          return checkStrictModeNumericLiteral(<LiteralExpression>node)
         case SyntaxKind.PostfixUnaryExpression:
-          return checkStrictModePostfixUnaryExpression(<PostfixUnaryExpression>node);
+          return checkStrictModePostfixUnaryExpression(<PostfixUnaryExpression>node)
         case SyntaxKind.PrefixUnaryExpression:
-          return checkStrictModePrefixUnaryExpression(<PrefixUnaryExpression>node);
+          return checkStrictModePrefixUnaryExpression(<PrefixUnaryExpression>node)
         case SyntaxKind.WithStatement:
-          return checkStrictModeWithStatement(<WithStatement>node);
+          return checkStrictModeWithStatement(<WithStatement>node)
         case SyntaxKind.ThisType:
-          seenThisKeyword = true;
-          return;
+          seenThisKeyword = true
+          return
         case SyntaxKind.TypePredicate:
-          return checkTypePredicate(node as TypePredicateNode);
+          return checkTypePredicate(node as TypePredicateNode)
         case SyntaxKind.TypeParameter:
-          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.TypeParameter, SymbolFlags.TypeParameterExcludes);
+          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.TypeParameter, SymbolFlags.TypeParameterExcludes)
         case SyntaxKind.Parameter:
-          return bindParameter(<ParameterDeclaration>node);
+          return bindParameter(<ParameterDeclaration>node)
         case SyntaxKind.VariableDeclaration:
         case SyntaxKind.BindingElement:
-          return bindVariableDeclarationOrBindingElement(<VariableDeclaration | BindingElement>node);
+          return bindVariableDeclarationOrBindingElement(<VariableDeclaration | BindingElement>node)
         case SyntaxKind.PropertyDeclaration:
         case SyntaxKind.PropertySignature:
         case SyntaxKind.JSDocRecordMember:
-          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.Property | ((<PropertyDeclaration>node).questionToken ? SymbolFlags.Optional : SymbolFlags.None), SymbolFlags.PropertyExcludes);
+          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.Property | ((<PropertyDeclaration>node).questionToken ? SymbolFlags.Optional : SymbolFlags.None), SymbolFlags.PropertyExcludes)
         case SyntaxKind.PropertyAssignment:
         case SyntaxKind.ShorthandPropertyAssignment:
-          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.Property, SymbolFlags.PropertyExcludes);
+          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.Property, SymbolFlags.PropertyExcludes)
         case SyntaxKind.EnumMember:
-          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.EnumMember, SymbolFlags.EnumMemberExcludes);
+          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.EnumMember, SymbolFlags.EnumMemberExcludes)
 
         case SyntaxKind.CallSignature:
         case SyntaxKind.ConstructSignature:
         case SyntaxKind.IndexSignature:
-          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Signature, SymbolFlags.None);
+          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Signature, SymbolFlags.None)
         case SyntaxKind.MethodDeclaration:
         case SyntaxKind.MethodSignature:
           // If this is an ObjectLiteralExpression method, then it sits in the same space
@@ -1298,207 +1298,207 @@ namespace ts {
           // so that it will conflict with any other object literal members with the same
           // name.
           return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.Method | ((<MethodDeclaration>node).questionToken ? SymbolFlags.Optional : SymbolFlags.None),
-            isObjectLiteralMethod(node) ? SymbolFlags.PropertyExcludes : SymbolFlags.MethodExcludes);
+            isObjectLiteralMethod(node) ? SymbolFlags.PropertyExcludes : SymbolFlags.MethodExcludes)
         case SyntaxKind.FunctionDeclaration:
-          return bindFunctionDeclaration(<FunctionDeclaration>node);
+          return bindFunctionDeclaration(<FunctionDeclaration>node)
         case SyntaxKind.Constructor:
-          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Constructor, /*symbolExcludes:*/ SymbolFlags.None);
+          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Constructor, /*symbolExcludes:*/ SymbolFlags.None)
         case SyntaxKind.GetAccessor:
-          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.GetAccessor, SymbolFlags.GetAccessorExcludes);
+          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.GetAccessor, SymbolFlags.GetAccessorExcludes)
         case SyntaxKind.SetAccessor:
-          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.SetAccessor, SymbolFlags.SetAccessorExcludes);
+          return bindPropertyOrMethodOrAccessor(<Declaration>node, SymbolFlags.SetAccessor, SymbolFlags.SetAccessorExcludes)
         case SyntaxKind.FunctionType:
         case SyntaxKind.ConstructorType:
         case SyntaxKind.JSDocFunctionType:
-          return bindFunctionOrConstructorType(<SignatureDeclaration>node);
+          return bindFunctionOrConstructorType(<SignatureDeclaration>node)
         case SyntaxKind.TypeLiteral:
         case SyntaxKind.JSDocRecordType:
-          return bindAnonymousDeclaration(<TypeLiteralNode>node, SymbolFlags.TypeLiteral, "__type");
+          return bindAnonymousDeclaration(<TypeLiteralNode>node, SymbolFlags.TypeLiteral, "__type")
         case SyntaxKind.ObjectLiteralExpression:
-          return bindObjectLiteralExpression(<ObjectLiteralExpression>node);
+          return bindObjectLiteralExpression(<ObjectLiteralExpression>node)
         case SyntaxKind.FunctionExpression:
         case SyntaxKind.ArrowFunction:
-          return bindFunctionExpression(<FunctionExpression>node);
+          return bindFunctionExpression(<FunctionExpression>node)
 
         case SyntaxKind.CallExpression:
           if (isInJavaScriptFile(node)) {
-            bindCallExpression(<CallExpression>node);
+            bindCallExpression(<CallExpression>node)
           }
-          break;
+          break
 
         // Members of classes, interfaces, and modules
         case SyntaxKind.ClassExpression:
         case SyntaxKind.ClassDeclaration:
-          return bindClassLikeDeclaration(<ClassLikeDeclaration>node);
+          return bindClassLikeDeclaration(<ClassLikeDeclaration>node)
         case SyntaxKind.InterfaceDeclaration:
-          return bindBlockScopedDeclaration(<Declaration>node, SymbolFlags.Interface, SymbolFlags.InterfaceExcludes);
+          return bindBlockScopedDeclaration(<Declaration>node, SymbolFlags.Interface, SymbolFlags.InterfaceExcludes)
         case SyntaxKind.TypeAliasDeclaration:
-          return bindBlockScopedDeclaration(<Declaration>node, SymbolFlags.TypeAlias, SymbolFlags.TypeAliasExcludes);
+          return bindBlockScopedDeclaration(<Declaration>node, SymbolFlags.TypeAlias, SymbolFlags.TypeAliasExcludes)
         case SyntaxKind.EnumDeclaration:
-          return bindEnumDeclaration(<EnumDeclaration>node);
+          return bindEnumDeclaration(<EnumDeclaration>node)
         case SyntaxKind.ModuleDeclaration:
-          return bindModuleDeclaration(<ModuleDeclaration>node);
+          return bindModuleDeclaration(<ModuleDeclaration>node)
 
         // Imports and exports
         case SyntaxKind.ImportEqualsDeclaration:
         case SyntaxKind.NamespaceImport:
         case SyntaxKind.ImportSpecifier:
         case SyntaxKind.ExportSpecifier:
-          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Alias, SymbolFlags.AliasExcludes);
+          return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Alias, SymbolFlags.AliasExcludes)
         case SyntaxKind.ImportClause:
-          return bindImportClause(<ImportClause>node);
+          return bindImportClause(<ImportClause>node)
         case SyntaxKind.ExportDeclaration:
-          return bindExportDeclaration(<ExportDeclaration>node);
+          return bindExportDeclaration(<ExportDeclaration>node)
         case SyntaxKind.ExportAssignment:
-          return bindExportAssignment(<ExportAssignment>node);
+          return bindExportAssignment(<ExportAssignment>node)
         case SyntaxKind.SourceFile:
-          return bindSourceFileIfExternalModule();
+          return bindSourceFileIfExternalModule()
       }
     }
 
-    function checkTypePredicate(node: TypePredicateNode) {
-      const { parameterName, type } = node;
-      if (parameterName && parameterName.kind === SyntaxKind.Identifier) {
-        checkStrictModeIdentifier(parameterName as Identifier);
+    def checkTypePredicate(node: TypePredicateNode) {
+      val { parameterName, type } = node
+      if (parameterName && parameterName.kind == SyntaxKind.Identifier) {
+        checkStrictModeIdentifier(parameterName as Identifier)
       }
-      if (parameterName && parameterName.kind === SyntaxKind.ThisType) {
-        seenThisKeyword = true;
+      if (parameterName && parameterName.kind == SyntaxKind.ThisType) {
+        seenThisKeyword = true
       }
-      bind(type);
+      bind(type)
     }
 
-    function bindSourceFileIfExternalModule() {
-      setExportContextFlag(file);
+    def bindSourceFileIfExternalModule() {
+      setExportContextFlag(file)
       if (isExternalModule(file)) {
-        bindSourceFileAsExternalModule();
+        bindSourceFileAsExternalModule()
       }
     }
 
-    function bindSourceFileAsExternalModule() {
-      bindAnonymousDeclaration(file, SymbolFlags.ValueModule, `"${removeFileExtension(file.fileName) }"`);
+    def bindSourceFileAsExternalModule() {
+      bindAnonymousDeclaration(file, SymbolFlags.ValueModule, `"${removeFileExtension(file.fileName) }"`)
     }
 
-    function bindExportAssignment(node: ExportAssignment | BinaryExpression) {
-      const boundExpression = node.kind === SyntaxKind.ExportAssignment ? (<ExportAssignment>node).expression : (<BinaryExpression>node).right;
+    def bindExportAssignment(node: ExportAssignment | BinaryExpression) {
+      val boundExpression = node.kind == SyntaxKind.ExportAssignment ? (<ExportAssignment>node).expression : (<BinaryExpression>node).right
       if (!container.symbol || !container.symbol.exports) {
         // Export assignment in some sort of block construct
-        bindAnonymousDeclaration(node, SymbolFlags.Alias, getDeclarationName(node));
+        bindAnonymousDeclaration(node, SymbolFlags.Alias, getDeclarationName(node))
       }
-      else if (boundExpression.kind === SyntaxKind.Identifier && node.kind === SyntaxKind.ExportAssignment) {
-        // An export default clause with an identifier exports all meanings of that identifier
-        declareSymbol(container.symbol.exports, container.symbol, node, SymbolFlags.Alias, SymbolFlags.PropertyExcludes | SymbolFlags.AliasExcludes);
+      else if (boundExpression.kind == SyntaxKind.Identifier && node.kind == SyntaxKind.ExportAssignment) {
+        // An default clause with an identifier exports all meanings of that identifier
+        declareSymbol(container.symbol.exports, container.symbol, node, SymbolFlags.Alias, SymbolFlags.PropertyExcludes | SymbolFlags.AliasExcludes)
       }
       else {
-        // An export default clause with an expression exports a value
-        declareSymbol(container.symbol.exports, container.symbol, node, SymbolFlags.Property, SymbolFlags.PropertyExcludes | SymbolFlags.AliasExcludes);
+        // An default clause with an expression exports a value
+        declareSymbol(container.symbol.exports, container.symbol, node, SymbolFlags.Property, SymbolFlags.PropertyExcludes | SymbolFlags.AliasExcludes)
       }
     }
 
-    function bindExportDeclaration(node: ExportDeclaration) {
+    def bindExportDeclaration(node: ExportDeclaration) {
       if (!container.symbol || !container.symbol.exports) {
         // Export * in some sort of block construct
-        bindAnonymousDeclaration(node, SymbolFlags.ExportStar, getDeclarationName(node));
+        bindAnonymousDeclaration(node, SymbolFlags.ExportStar, getDeclarationName(node))
       }
       else if (!node.exportClause) {
-        // All export * declarations are collected in an __export symbol
-        declareSymbol(container.symbol.exports, container.symbol, node, SymbolFlags.ExportStar, SymbolFlags.None);
+        // All * declarations are collected in an __export symbol
+        declareSymbol(container.symbol.exports, container.symbol, node, SymbolFlags.ExportStar, SymbolFlags.None)
       }
     }
 
-    function bindImportClause(node: ImportClause) {
+    def bindImportClause(node: ImportClause) {
       if (node.name) {
-        declareSymbolAndAddToSymbolTable(node, SymbolFlags.Alias, SymbolFlags.AliasExcludes);
+        declareSymbolAndAddToSymbolTable(node, SymbolFlags.Alias, SymbolFlags.AliasExcludes)
       }
     }
 
-    function setCommonJsModuleIndicator(node: Node) {
+    def setCommonJsModuleIndicator(node: Node) {
       if (!file.commonJsModuleIndicator) {
-        file.commonJsModuleIndicator = node;
-        bindSourceFileAsExternalModule();
+        file.commonJsModuleIndicator = node
+        bindSourceFileAsExternalModule()
       }
     }
 
-    function bindExportsPropertyAssignment(node: BinaryExpression) {
+    def bindExportsPropertyAssignment(node: BinaryExpression) {
       // When we create a property via 'exports.foo = bar', the 'exports.foo' property access
       // expression is the declaration
-      setCommonJsModuleIndicator(node);
-      declareSymbol(file.symbol.exports, file.symbol, <PropertyAccessExpression>node.left, SymbolFlags.Property | SymbolFlags.Export, SymbolFlags.None);
+      setCommonJsModuleIndicator(node)
+      declareSymbol(file.symbol.exports, file.symbol, <PropertyAccessExpression>node.left, SymbolFlags.Property | SymbolFlags.Export, SymbolFlags.None)
     }
 
-    function bindModuleExportsAssignment(node: BinaryExpression) {
+    def bindModuleExportsAssignment(node: BinaryExpression) {
       // 'module.exports = expr' assignment
-      setCommonJsModuleIndicator(node);
-      bindExportAssignment(node);
+      setCommonJsModuleIndicator(node)
+      bindExportAssignment(node)
     }
 
-    function bindThisPropertyAssignment(node: BinaryExpression) {
+    def bindThisPropertyAssignment(node: BinaryExpression) {
       // Declare a 'member' in case it turns out the container was an ES5 class
-      if (container.kind === SyntaxKind.FunctionExpression || container.kind === SyntaxKind.FunctionDeclaration) {
-        container.symbol.members = container.symbol.members || {};
+      if (container.kind == SyntaxKind.FunctionExpression || container.kind == SyntaxKind.FunctionDeclaration) {
+        container.symbol.members = container.symbol.members || {}
         // It's acceptable for multiple 'this' assignments of the same identifier to occur
-        declareSymbol(container.symbol.members, container.symbol, node, SymbolFlags.Property, SymbolFlags.PropertyExcludes & ~SymbolFlags.Property);
+        declareSymbol(container.symbol.members, container.symbol, node, SymbolFlags.Property, SymbolFlags.PropertyExcludes & ~SymbolFlags.Property)
       }
     }
 
-    function bindPrototypePropertyAssignment(node: BinaryExpression) {
-      // We saw a node of the form 'x.prototype.y = z'. Declare a 'member' y on x if x was a function.
+    def bindPrototypePropertyAssignment(node: BinaryExpression) {
+      // We saw a node of the form 'x.prototype.y = z'. Declare a 'member' y on x if x was a def.
 
-      // Look up the function in the local scope, since prototype assignments should
-      // follow the function declaration
-      const leftSideOfAssignment = node.left as PropertyAccessExpression;
-      const classPrototype = leftSideOfAssignment.expression as PropertyAccessExpression;
-      const constructorFunction = classPrototype.expression as Identifier;
+      // Look up the def in the local scope, since prototype assignments should
+      // follow the def declaration
+      val leftSideOfAssignment = node.left as PropertyAccessExpression
+      val classPrototype = leftSideOfAssignment.expression as PropertyAccessExpression
+      val constructorFunction = classPrototype.expression as Identifier
 
       // Fix up parent pointers since we're going to use these nodes before we bind into them
-      leftSideOfAssignment.parent = node;
-      constructorFunction.parent = classPrototype;
-      classPrototype.parent = leftSideOfAssignment;
+      leftSideOfAssignment.parent = node
+      constructorFunction.parent = classPrototype
+      classPrototype.parent = leftSideOfAssignment
 
-      const funcSymbol = container.locals[constructorFunction.text];
+      val funcSymbol = container.locals[constructorFunction.text]
       if (!funcSymbol || !(funcSymbol.flags & SymbolFlags.Function)) {
-        return;
+        return
       }
 
       // Set up the members collection if it doesn't exist already
       if (!funcSymbol.members) {
-        funcSymbol.members = {};
+        funcSymbol.members = {}
       }
 
       // Declare the method/property
-      declareSymbol(funcSymbol.members, funcSymbol, leftSideOfAssignment, SymbolFlags.Property, SymbolFlags.PropertyExcludes);
+      declareSymbol(funcSymbol.members, funcSymbol, leftSideOfAssignment, SymbolFlags.Property, SymbolFlags.PropertyExcludes)
     }
 
-    function bindCallExpression(node: CallExpression) {
+    def bindCallExpression(node: CallExpression) {
       // We're only inspecting call expressions to detect CommonJS modules, so we can skip
       // this check if we've already seen the module indicator
       if (!file.commonJsModuleIndicator && isRequireCall(node, /*checkArgumentIsStringLiteral*/false)) {
-        setCommonJsModuleIndicator(node);
+        setCommonJsModuleIndicator(node)
       }
     }
 
-    function bindClassLikeDeclaration(node: ClassLikeDeclaration) {
+    def bindClassLikeDeclaration(node: ClassLikeDeclaration) {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
-        if (getClassExtendsHeritageClauseElement(node) !== undefined) {
-          hasClassExtends = true;
+        if (getClassExtendsHeritageClauseElement(node) != undefined) {
+          hasClassExtends = true
         }
         if (nodeIsDecorated(node)) {
-          hasDecorators = true;
+          hasDecorators = true
         }
       }
 
-      if (node.kind === SyntaxKind.ClassDeclaration) {
-        bindBlockScopedDeclaration(node, SymbolFlags.Class, SymbolFlags.ClassExcludes);
+      if (node.kind == SyntaxKind.ClassDeclaration) {
+        bindBlockScopedDeclaration(node, SymbolFlags.Class, SymbolFlags.ClassExcludes)
       }
       else {
-        const bindingName = node.name ? node.name.text : "__class";
-        bindAnonymousDeclaration(node, SymbolFlags.Class, bindingName);
+        val bindingName = node.name ? node.name.text : "__class"
+        bindAnonymousDeclaration(node, SymbolFlags.Class, bindingName)
         // Add name of class expression into the map for semantic classifier
         if (node.name) {
-          classifiableNames[node.name.text] = node.name.text;
+          classifiableNames[node.name.text] = node.name.text
         }
       }
 
-      const symbol = node.symbol;
+      val symbol = node.symbol
 
       // TypeScript 1.0 spec (April 2014): 8.4
       // Every class automatically contains a static property member named 'prototype', the
@@ -1509,32 +1509,32 @@ namespace ts {
       // Note: we check for this here because this class may be merging into a module.  The
       // module might have an exported variable called 'prototype'.  We can't allow that as
       // that would clash with the built-in 'prototype' for the class.
-      const prototypeSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Prototype, "prototype");
+      val prototypeSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Prototype, "prototype")
       if (hasProperty(symbol.exports, prototypeSymbol.name)) {
         if (node.name) {
-          node.name.parent = node;
+          node.name.parent = node
         }
         file.bindDiagnostics.push(createDiagnosticForNode(symbol.exports[prototypeSymbol.name].declarations[0],
-          Diagnostics.Duplicate_identifier_0, prototypeSymbol.name));
+          Diagnostics.Duplicate_identifier_0, prototypeSymbol.name))
       }
-      symbol.exports[prototypeSymbol.name] = prototypeSymbol;
-      prototypeSymbol.parent = symbol;
+      symbol.exports[prototypeSymbol.name] = prototypeSymbol
+      prototypeSymbol.parent = symbol
     }
 
-    function bindEnumDeclaration(node: EnumDeclaration) {
+    def bindEnumDeclaration(node: EnumDeclaration) {
       return isConst(node)
         ? bindBlockScopedDeclaration(node, SymbolFlags.ConstEnum, SymbolFlags.ConstEnumExcludes)
-        : bindBlockScopedDeclaration(node, SymbolFlags.RegularEnum, SymbolFlags.RegularEnumExcludes);
+        : bindBlockScopedDeclaration(node, SymbolFlags.RegularEnum, SymbolFlags.RegularEnumExcludes)
     }
 
-    function bindVariableDeclarationOrBindingElement(node: VariableDeclaration | BindingElement) {
+    def bindVariableDeclarationOrBindingElement(node: VariableDeclaration | BindingElement) {
       if (inStrictMode) {
-        checkStrictModeEvalOrArguments(node, node.name);
+        checkStrictModeEvalOrArguments(node, node.name)
       }
 
       if (!isBindingPattern(node.name)) {
         if (isBlockOrCatchScoped(node)) {
-          bindBlockScopedVariableDeclaration(node);
+          bindBlockScopedVariableDeclaration(node)
         }
         else if (isParameterDeclaration(node)) {
           // It is safe to walk up parent chain to find whether the node is a destructing parameter declaration
@@ -1543,169 +1543,169 @@ namespace ts {
           // If node is a binding element in parameter declaration, we need to use ParameterExcludes.
           // Using ParameterExcludes flag allows the compiler to report an error on duplicate identifiers in Parameter Declaration
           // For example:
-          //    function foo([a,a]) {} // Duplicate Identifier error
-          //    function bar(a,a) {}   // Duplicate Identifier error, parameter declaration in this case is handled in bindParameter
+          //    def foo([a,a]) {} // Duplicate Identifier error
+          //    def bar(a,a) {}   // Duplicate Identifier error, parameter declaration in this case is handled in bindParameter
           //               // which correctly set excluded symbols
-          declareSymbolAndAddToSymbolTable(node, SymbolFlags.FunctionScopedVariable, SymbolFlags.ParameterExcludes);
+          declareSymbolAndAddToSymbolTable(node, SymbolFlags.FunctionScopedVariable, SymbolFlags.ParameterExcludes)
         }
         else {
-          declareSymbolAndAddToSymbolTable(node, SymbolFlags.FunctionScopedVariable, SymbolFlags.FunctionScopedVariableExcludes);
+          declareSymbolAndAddToSymbolTable(node, SymbolFlags.FunctionScopedVariable, SymbolFlags.FunctionScopedVariableExcludes)
         }
       }
     }
 
-    function bindParameter(node: ParameterDeclaration) {
+    def bindParameter(node: ParameterDeclaration) {
       if (!isDeclarationFile(file) &&
         !isInAmbientContext(node) &&
         nodeIsDecorated(node)) {
-        hasDecorators = true;
-        hasParameterDecorators = true;
+        hasDecorators = true
+        hasParameterDecorators = true
       }
 
       if (inStrictMode) {
         // It is a SyntaxError if the identifier eval or arguments appears within a FormalParameterList of a
         // strict mode FunctionLikeDeclaration or FunctionExpression(13.1)
-        checkStrictModeEvalOrArguments(node, node.name);
+        checkStrictModeEvalOrArguments(node, node.name)
       }
 
       if (isBindingPattern(node.name)) {
-        bindAnonymousDeclaration(node, SymbolFlags.FunctionScopedVariable, getDestructuringParameterName(node));
+        bindAnonymousDeclaration(node, SymbolFlags.FunctionScopedVariable, getDestructuringParameterName(node))
       }
       else {
-        declareSymbolAndAddToSymbolTable(node, SymbolFlags.FunctionScopedVariable, SymbolFlags.ParameterExcludes);
+        declareSymbolAndAddToSymbolTable(node, SymbolFlags.FunctionScopedVariable, SymbolFlags.ParameterExcludes)
       }
 
       // If this is a property-parameter, then also declare the property symbol into the
       // containing class.
       if (isParameterPropertyDeclaration(node)) {
-        const classDeclaration = <ClassLikeDeclaration>node.parent.parent;
-        declareSymbol(classDeclaration.symbol.members, classDeclaration.symbol, node, SymbolFlags.Property, SymbolFlags.PropertyExcludes);
+        val classDeclaration = <ClassLikeDeclaration>node.parent.parent
+        declareSymbol(classDeclaration.symbol.members, classDeclaration.symbol, node, SymbolFlags.Property, SymbolFlags.PropertyExcludes)
       }
     }
 
-    function bindFunctionDeclaration(node: FunctionDeclaration) {
+    def bindFunctionDeclaration(node: FunctionDeclaration) {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
         if (isAsyncFunctionLike(node)) {
-          hasAsyncFunctions = true;
+          hasAsyncFunctions = true
         }
       }
 
-      checkStrictModeFunctionName(<FunctionDeclaration>node);
-      return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Function, SymbolFlags.FunctionExcludes);
+      checkStrictModeFunctionName(<FunctionDeclaration>node)
+      return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Function, SymbolFlags.FunctionExcludes)
     }
 
-    function bindFunctionExpression(node: FunctionExpression) {
+    def bindFunctionExpression(node: FunctionExpression) {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
         if (isAsyncFunctionLike(node)) {
-          hasAsyncFunctions = true;
+          hasAsyncFunctions = true
         }
       }
 
-      checkStrictModeFunctionName(<FunctionExpression>node);
-      const bindingName = (<FunctionExpression>node).name ? (<FunctionExpression>node).name.text : "__function";
-      return bindAnonymousDeclaration(<FunctionExpression>node, SymbolFlags.Function, bindingName);
+      checkStrictModeFunctionName(<FunctionExpression>node)
+      val bindingName = (<FunctionExpression>node).name ? (<FunctionExpression>node).name.text : "__function"
+      return bindAnonymousDeclaration(<FunctionExpression>node, SymbolFlags.Function, bindingName)
     }
 
-    function bindPropertyOrMethodOrAccessor(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def bindPropertyOrMethodOrAccessor(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
         if (isAsyncFunctionLike(node)) {
-          hasAsyncFunctions = true;
+          hasAsyncFunctions = true
         }
         if (nodeIsDecorated(node)) {
-          hasDecorators = true;
+          hasDecorators = true
         }
       }
 
       return hasDynamicName(node)
         ? bindAnonymousDeclaration(node, symbolFlags, "__computed")
-        : declareSymbolAndAddToSymbolTable(node, symbolFlags, symbolExcludes);
+        : declareSymbolAndAddToSymbolTable(node, symbolFlags, symbolExcludes)
     }
 
     // reachability checks
 
-    function pushNamedLabel(name: Identifier): boolean {
-      initializeReachabilityStateIfNecessary();
+    def pushNamedLabel(name: Identifier): Boolean {
+      initializeReachabilityStateIfNecessary()
 
       if (hasProperty(labelIndexMap, name.text)) {
-        return false;
+        return false
       }
-      labelIndexMap[name.text] = labelStack.push(Reachability.Uninitialized) - 1;
-      return true;
+      labelIndexMap[name.text] = labelStack.push(Reachability.Uninitialized) - 1
+      return true
     }
 
-    function pushImplicitLabel(): number {
-      initializeReachabilityStateIfNecessary();
+    def pushImplicitLabel(): Int {
+      initializeReachabilityStateIfNecessary()
 
-      const index = labelStack.push(Reachability.Uninitialized) - 1;
-      implicitLabels.push(index);
-      return index;
+      val index = labelStack.push(Reachability.Uninitialized) - 1
+      implicitLabels.push(index)
+      return index
     }
 
-    function popNamedLabel(label: Identifier, outerState: Reachability): void {
-      const index = labelIndexMap[label.text];
-      Debug.assert(index !== undefined);
-      Debug.assert(labelStack.length == index + 1);
+    def popNamedLabel(label: Identifier, outerState: Reachability): void {
+      val index = labelIndexMap[label.text]
+      Debug.assert(index != undefined)
+      Debug.assert(labelStack.length == index + 1)
 
-      labelIndexMap[label.text] = undefined;
+      labelIndexMap[label.text] = undefined
 
-      setCurrentStateAtLabel(labelStack.pop(), outerState, label);
+      setCurrentStateAtLabel(labelStack.pop(), outerState, label)
     }
 
-    function popImplicitLabel(implicitLabelIndex: number, outerState: Reachability): void {
-      if (labelStack.length !== implicitLabelIndex + 1) {
-        Debug.assert(false, `Label stack: ${labelStack.length}, index:${implicitLabelIndex}`);
-      }
-
-      const i = implicitLabels.pop();
-
-      if (implicitLabelIndex !== i) {
-        Debug.assert(false, `i: ${i}, index: ${implicitLabelIndex}`);
+    def popImplicitLabel(implicitLabelIndex: Int, outerState: Reachability): void {
+      if (labelStack.length != implicitLabelIndex + 1) {
+        Debug.assert(false, `Label stack: ${labelStack.length}, index:${implicitLabelIndex}`)
       }
 
-      setCurrentStateAtLabel(labelStack.pop(), outerState, /*name*/ undefined);
+      val i = implicitLabels.pop()
+
+      if (implicitLabelIndex != i) {
+        Debug.assert(false, `i: ${i}, index: ${implicitLabelIndex}`)
+      }
+
+      setCurrentStateAtLabel(labelStack.pop(), outerState, /*name*/ undefined)
     }
 
-    function setCurrentStateAtLabel(innerMergedState: Reachability, outerState: Reachability, label: Identifier): void {
-      if (innerMergedState === Reachability.Uninitialized) {
+    def setCurrentStateAtLabel(innerMergedState: Reachability, outerState: Reachability, label: Identifier): void {
+      if (innerMergedState == Reachability.Uninitialized) {
         if (label && !options.allowUnusedLabels) {
-          file.bindDiagnostics.push(createDiagnosticForNode(label, Diagnostics.Unused_label));
+          file.bindDiagnostics.push(createDiagnosticForNode(label, Diagnostics.Unused_label))
         }
-        currentReachabilityState = outerState;
+        currentReachabilityState = outerState
       }
       else {
-        currentReachabilityState = or(innerMergedState, outerState);
+        currentReachabilityState = or(innerMergedState, outerState)
       }
     }
 
-    function jumpToLabel(label: Identifier, outerState: Reachability): boolean {
-      initializeReachabilityStateIfNecessary();
+    def jumpToLabel(label: Identifier, outerState: Reachability): Boolean {
+      initializeReachabilityStateIfNecessary()
 
-      const index = label ? labelIndexMap[label.text] : lastOrUndefined(implicitLabels);
-      if (index === undefined) {
+      val index = label ? labelIndexMap[label.text] : lastOrUndefined(implicitLabels)
+      if (index == undefined) {
         // reference to unknown label or
         // break/continue used outside of loops
-        return false;
+        return false
       }
-      const stateAtLabel = labelStack[index];
-      labelStack[index] = stateAtLabel === Reachability.Uninitialized ? outerState : or(stateAtLabel, outerState);
-      return true;
+      val stateAtLabel = labelStack[index]
+      labelStack[index] = stateAtLabel == Reachability.Uninitialized ? outerState : or(stateAtLabel, outerState)
+      return true
     }
 
-    function checkUnreachable(node: Node): boolean {
+    def checkUnreachable(node: Node): Boolean {
       switch (currentReachabilityState) {
         case Reachability.Unreachable:
-          const reportError =
+          val reportError =
             // report error on all statements except empty ones
-            (isStatement(node) && node.kind !== SyntaxKind.EmptyStatement) ||
+            (isStatement(node) && node.kind != SyntaxKind.EmptyStatement) ||
             // report error on class declarations
-            node.kind === SyntaxKind.ClassDeclaration ||
-            // report error on instantiated modules or const-enums only modules if preserveConstEnums is set
-            (node.kind === SyntaxKind.ModuleDeclaration && shouldReportErrorOnModuleDeclaration(<ModuleDeclaration>node)) ||
-            // report error on regular enums and const enums if preserveConstEnums is set
-            (node.kind === SyntaxKind.EnumDeclaration && (!isConstEnumDeclaration(node) || options.preserveConstEnums));
+            node.kind == SyntaxKind.ClassDeclaration ||
+            // report error on instantiated modules or val-enums only modules if preserveConstEnums is set
+            (node.kind == SyntaxKind.ModuleDeclaration && shouldReportErrorOnModuleDeclaration(<ModuleDeclaration>node)) ||
+            // report error on regular enums and val enums if preserveConstEnums is set
+            (node.kind == SyntaxKind.EnumDeclaration && (!isConstEnumDeclaration(node) || options.preserveConstEnums))
 
           if (reportError) {
-            currentReachabilityState = Reachability.ReportedUnreachable;
+            currentReachabilityState = Reachability.ReportedUnreachable
 
             // unreachable code is reported if
             // - user has explicitly asked about it AND
@@ -1716,39 +1716,39 @@ namespace ts {
             //   - node is not block scoped variable statement and at least one variable declaration has initializer
             //   Rationale: we don't want to report errors on non-initialized var's since they are hoisted
             //   On the other side we do want to report errors on non-initialized 'lets' because of TDZ
-            const reportUnreachableCode =
+            val reportUnreachableCode =
               !options.allowUnreachableCode &&
               !isInAmbientContext(node) &&
               (
-                node.kind !== SyntaxKind.VariableStatement ||
+                node.kind != SyntaxKind.VariableStatement ||
                 getCombinedNodeFlags((<VariableStatement>node).declarationList) & NodeFlags.BlockScoped ||
                 forEach((<VariableStatement>node).declarationList.declarations, d => d.initializer)
-              );
+              )
 
             if (reportUnreachableCode) {
-              errorOnFirstToken(node, Diagnostics.Unreachable_code_detected);
+              errorOnFirstToken(node, Diagnostics.Unreachable_code_detected)
             }
           }
         case Reachability.ReportedUnreachable:
-          return true;
+          return true
         default:
-          return false;
+          return false
       }
 
-      function shouldReportErrorOnModuleDeclaration(node: ModuleDeclaration): boolean {
-        const instanceState = getModuleInstanceState(node);
-        return instanceState === ModuleInstanceState.Instantiated || (instanceState === ModuleInstanceState.ConstEnumOnly && options.preserveConstEnums);
+      def shouldReportErrorOnModuleDeclaration(node: ModuleDeclaration): Boolean {
+        val instanceState = getModuleInstanceState(node)
+        return instanceState == ModuleInstanceState.Instantiated || (instanceState == ModuleInstanceState.ConstEnumOnly && options.preserveConstEnums)
       }
     }
 
-    function initializeReachabilityStateIfNecessary(): void {
+    def initializeReachabilityStateIfNecessary(): void {
       if (labelIndexMap) {
-        return;
+        return
       }
-      currentReachabilityState = Reachability.Reachable;
-      labelIndexMap = {};
-      labelStack = [];
-      implicitLabels = [];
+      currentReachabilityState = Reachability.Reachable
+      labelIndexMap = {}
+      labelStack = []
+      implicitLabels = []
     }
   }
 }

@@ -4,45 +4,45 @@
 /// <reference path="diagnosticInformationMap.generated.ts"/>
 /// <reference path="scanner.ts"/>
 
-namespace ts {
+package ts {
   /* @internal */
-  export let optionDeclarations: CommandLineOption[] = [
+  var optionDeclarations: CommandLineOption[] = [
     {
       name: "charset",
-      type: "string",
+      type: "String",
     },
     {
       name: "declaration",
       shortName: "d",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Generates_corresponding_d_ts_file,
     },
     {
       name: "diagnostics",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "emitBOM",
-      type: "boolean"
+      type: "Boolean"
     },
     {
       name: "help",
       shortName: "h",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Print_this_message,
     },
     {
       name: "init",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Initializes_a_TypeScript_project_and_creates_a_tsconfig_json_file,
     },
     {
       name: "inlineSourceMap",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "inlineSources",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "jsx",
@@ -56,20 +56,20 @@ namespace ts {
     },
     {
       name: "reactNamespace",
-      type: "string",
+      type: "String",
       description: Diagnostics.Specifies_the_object_invoked_for_createElement_and_spread_when_targeting_react_JSX_emit
     },
     {
       name: "listFiles",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "locale",
-      type: "string",
+      type: "String",
     },
     {
       name: "mapRoot",
-      type: "string",
+      type: "String",
       isFilePath: true,
       description: Diagnostics.Specifies_the_location_where_debugger_should_locate_map_files_instead_of_generated_locations,
       paramType: Diagnostics.LOCATION,
@@ -102,117 +102,117 @@ namespace ts {
     },
     {
       name: "noEmit",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_emit_outputs,
     },
     {
       name: "noEmitHelpers",
-      type: "boolean"
+      type: "Boolean"
     },
     {
       name: "noEmitOnError",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_emit_outputs_if_any_errors_were_reported,
     },
     {
       name: "noImplicitAny",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Raise_error_on_expressions_and_declarations_with_an_implied_any_type,
     },
     {
       name: "noLib",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "noResolve",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "skipDefaultLibCheck",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "out",
-      type: "string",
+      type: "String",
       isFilePath: false, // This is intentionally broken to support compatability with existing tsconfig files
                  // for correct behaviour, please use outFile
       paramType: Diagnostics.FILE,
     },
     {
       name: "outFile",
-      type: "string",
+      type: "String",
       isFilePath: true,
       description: Diagnostics.Concatenate_and_emit_output_to_single_file,
       paramType: Diagnostics.FILE,
     },
     {
       name: "outDir",
-      type: "string",
+      type: "String",
       isFilePath: true,
       description: Diagnostics.Redirect_output_structure_to_the_directory,
       paramType: Diagnostics.DIRECTORY,
     },
     {
       name: "preserveConstEnums",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_erase_const_enum_declarations_in_generated_code
     },
     {
       name: "pretty",
       paramType: Diagnostics.KIND,
       description: Diagnostics.Stylize_errors_and_messages_using_color_and_context_experimental,
-      type: "boolean"
+      type: "Boolean"
     },
     {
       name: "project",
       shortName: "p",
-      type: "string",
+      type: "String",
       isFilePath: true,
       description: Diagnostics.Compile_the_project_in_the_given_directory,
       paramType: Diagnostics.DIRECTORY
     },
     {
       name: "removeComments",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_emit_comments_to_output,
     },
     {
       name: "rootDir",
-      type: "string",
+      type: "String",
       isFilePath: true,
       description: Diagnostics.Specifies_the_root_directory_of_input_files_Use_to_control_the_output_directory_structure_with_outDir,
       paramType: Diagnostics.LOCATION,
     },
     {
       name: "isolatedModules",
-      type: "boolean",
+      type: "Boolean",
     },
     {
       name: "sourceMap",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Generates_corresponding_map_file,
     },
     {
       name: "sourceRoot",
-      type: "string",
+      type: "String",
       isFilePath: true,
       description: Diagnostics.Specifies_the_location_where_debugger_should_locate_TypeScript_files_instead_of_source_locations,
       paramType: Diagnostics.LOCATION,
     },
     {
       name: "suppressExcessPropertyErrors",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Suppress_excess_property_checks_for_object_literals,
       experimental: true
     },
     {
       name: "suppressImplicitAnyIndexErrors",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Suppress_noImplicitAny_errors_for_indexing_objects_lacking_index_signatures,
     },
     {
       name: "stripInternal",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_emit_declarations_for_code_that_has_an_internal_annotation,
       experimental: true
     },
@@ -232,23 +232,23 @@ namespace ts {
     {
       name: "version",
       shortName: "v",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Print_the_compiler_s_version,
     },
     {
       name: "watch",
       shortName: "w",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Watch_input_files,
     },
     {
       name: "experimentalDecorators",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Enables_experimental_support_for_ES7_decorators
     },
     {
       name: "emitDecoratorMetadata",
-      type: "boolean",
+      type: "Boolean",
       experimental: true,
       description: Diagnostics.Enables_experimental_support_for_emitting_type_metadata_for_decorators
     },
@@ -263,32 +263,32 @@ namespace ts {
     },
     {
       name: "allowUnusedLabels",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_report_errors_on_unused_labels
     },
     {
       name: "noImplicitReturns",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Report_error_when_not_all_code_paths_in_function_return_a_value
     },
     {
       name: "noFallthroughCasesInSwitch",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Report_errors_for_fallthrough_cases_in_switch_statement
     },
     {
       name: "allowUnreachableCode",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_report_errors_on_unreachable_code
     },
     {
       name: "forceConsistentCasingInFileNames",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Disallow_inconsistently_cased_references_to_the_same_file
     },
     {
       name: "baseUrl",
-      type: "string",
+      type: "String",
       isFilePath: true,
       description: Diagnostics.Base_directory_to_resolve_non_absolute_module_names
     },
@@ -309,160 +309,160 @@ namespace ts {
     },
     {
       name: "traceModuleResolution",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Enable_tracing_of_the_module_resolution_process
     },
     {
       name: "allowJs",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Allow_javascript_files_to_be_compiled
     },
     {
       name: "allowSyntheticDefaultImports",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Allow_default_imports_from_modules_with_no_default_export_This_does_not_affect_code_emit_just_typechecking
     },
     {
       name: "noImplicitUseStrict",
-      type: "boolean",
+      type: "Boolean",
       description: Diagnostics.Do_not_emit_use_strict_directives_in_module_output
     }
-  ];
+  ]
 
   /* @internal */
-  export interface OptionNameMap {
-    optionNameMap: Map<CommandLineOption>;
-    shortOptionNames: Map<string>;
+  interface OptionNameMap {
+    optionNameMap: Map<CommandLineOption>
+    shortOptionNames: Map<String>
   }
 
-  let optionNameMapCache: OptionNameMap;
+  var optionNameMapCache: OptionNameMap
   /* @internal */
-  export function getOptionNameMap(): OptionNameMap {
+  def getOptionNameMap(): OptionNameMap {
     if (optionNameMapCache) {
-      return optionNameMapCache;
+      return optionNameMapCache
     }
 
-    const optionNameMap: Map<CommandLineOption> = {};
-    const shortOptionNames: Map<string> = {};
+    val optionNameMap: Map<CommandLineOption> = {}
+    val shortOptionNames: Map<String> = {}
     forEach(optionDeclarations, option => {
-      optionNameMap[option.name.toLowerCase()] = option;
+      optionNameMap[option.name.toLowerCase()] = option
       if (option.shortName) {
-        shortOptionNames[option.shortName] = option.name;
+        shortOptionNames[option.shortName] = option.name
       }
-    });
+    })
 
-    optionNameMapCache = { optionNameMap, shortOptionNames };
-    return optionNameMapCache;
+    optionNameMapCache = { optionNameMap, shortOptionNames }
+    return optionNameMapCache
   }
 
-  export function parseCommandLine(commandLine: string[], readFile?: (path: string) => string): ParsedCommandLine {
-    const options: CompilerOptions = {};
-    const fileNames: string[] = [];
-    const errors: Diagnostic[] = [];
-    const { optionNameMap, shortOptionNames } = getOptionNameMap();
+  def parseCommandLine(commandLine: String[], readFile?: (path: String) => String): ParsedCommandLine {
+    val options: CompilerOptions = {}
+    val fileNames: String[] = []
+    val errors: Diagnostic[] = []
+    val { optionNameMap, shortOptionNames } = getOptionNameMap()
 
-    parseStrings(commandLine);
+    parseStrings(commandLine)
     return {
       options,
       fileNames,
       errors
-    };
+    }
 
-    function parseStrings(args: string[]) {
-      let i = 0;
+    def parseStrings(args: String[]) {
+      var i = 0
       while (i < args.length) {
-        let s = args[i];
-        i++;
-        if (s.charCodeAt(0) === CharacterCodes.at) {
-          parseResponseFile(s.slice(1));
+        var s = args[i]
+        i++
+        if (s.charCodeAt(0) == CharacterCodes.at) {
+          parseResponseFile(s.slice(1))
         }
-        else if (s.charCodeAt(0) === CharacterCodes.minus) {
-          s = s.slice(s.charCodeAt(1) === CharacterCodes.minus ? 2 : 1).toLowerCase();
+        else if (s.charCodeAt(0) == CharacterCodes.minus) {
+          s = s.slice(s.charCodeAt(1) == CharacterCodes.minus ? 2 : 1).toLowerCase()
 
           // Try to translate short option names to their full equivalents.
           if (hasProperty(shortOptionNames, s)) {
-            s = shortOptionNames[s];
+            s = shortOptionNames[s]
           }
 
           if (hasProperty(optionNameMap, s)) {
-            const opt = optionNameMap[s];
+            val opt = optionNameMap[s]
 
             if (opt.isTSConfigOnly) {
-              errors.push(createCompilerDiagnostic(Diagnostics.Option_0_can_only_be_specified_in_tsconfig_json_file, opt.name));
+              errors.push(createCompilerDiagnostic(Diagnostics.Option_0_can_only_be_specified_in_tsconfig_json_file, opt.name))
             }
             else {
               // Check to see if no argument was provided (e.g. "--locale" is the last command-line argument).
-              if (!args[i] && opt.type !== "boolean") {
-                errors.push(createCompilerDiagnostic(Diagnostics.Compiler_option_0_expects_an_argument, opt.name));
+              if (!args[i] && opt.type != "Boolean") {
+                errors.push(createCompilerDiagnostic(Diagnostics.Compiler_option_0_expects_an_argument, opt.name))
               }
 
               switch (opt.type) {
-                case "number":
-                  options[opt.name] = parseInt(args[i]);
-                  i++;
-                  break;
-                case "boolean":
-                  options[opt.name] = true;
-                  break;
-                case "string":
-                  options[opt.name] = args[i] || "";
-                  i++;
-                  break;
+                case "Int":
+                  options[opt.name] = parseInt(args[i])
+                  i++
+                  break
+                case "Boolean":
+                  options[opt.name] = true
+                  break
+                case "String":
+                  options[opt.name] = args[i] || ""
+                  i++
+                  break
                 // If not a primitive, the possible types are specified in what is effectively a map of options.
                 default:
-                  let map = <Map<number>>opt.type;
-                  let key = (args[i] || "").toLowerCase();
-                  i++;
+                  var map = <Map<Int>>opt.type
+                  var key = (args[i] || "").toLowerCase()
+                  i++
                   if (hasProperty(map, key)) {
-                    options[opt.name] = map[key];
+                    options[opt.name] = map[key]
                   }
                   else {
-                    errors.push(createCompilerDiagnostic((<CommandLineOptionOfCustomType>opt).error));
+                    errors.push(createCompilerDiagnostic((<CommandLineOptionOfCustomType>opt).error))
                   }
               }
             }
           }
           else {
-            errors.push(createCompilerDiagnostic(Diagnostics.Unknown_compiler_option_0, s));
+            errors.push(createCompilerDiagnostic(Diagnostics.Unknown_compiler_option_0, s))
           }
         }
         else {
-          fileNames.push(s);
+          fileNames.push(s)
         }
       }
     }
 
-    function parseResponseFile(fileName: string) {
-      const text = readFile ? readFile(fileName) : sys.readFile(fileName);
+    def parseResponseFile(fileName: String) {
+      val text = readFile ? readFile(fileName) : sys.readFile(fileName)
 
       if (!text) {
-        errors.push(createCompilerDiagnostic(Diagnostics.File_0_not_found, fileName));
-        return;
+        errors.push(createCompilerDiagnostic(Diagnostics.File_0_not_found, fileName))
+        return
       }
 
-      const args: string[] = [];
-      let pos = 0;
+      val args: String[] = []
+      var pos = 0
       while (true) {
-        while (pos < text.length && text.charCodeAt(pos) <= CharacterCodes.space) pos++;
-        if (pos >= text.length) break;
-        const start = pos;
-        if (text.charCodeAt(start) === CharacterCodes.doubleQuote) {
-          pos++;
-          while (pos < text.length && text.charCodeAt(pos) !== CharacterCodes.doubleQuote) pos++;
+        while (pos < text.length && text.charCodeAt(pos) <= CharacterCodes.space) pos++
+        if (pos >= text.length) break
+        val start = pos
+        if (text.charCodeAt(start) == CharacterCodes.doubleQuote) {
+          pos++
+          while (pos < text.length && text.charCodeAt(pos) != CharacterCodes.doubleQuote) pos++
           if (pos < text.length) {
-            args.push(text.substring(start + 1, pos));
-            pos++;
+            args.push(text.substring(start + 1, pos))
+            pos++
           }
           else {
-            errors.push(createCompilerDiagnostic(Diagnostics.Unterminated_quoted_string_in_response_file_0, fileName));
+            errors.push(createCompilerDiagnostic(Diagnostics.Unterminated_quoted_string_in_response_file_0, fileName))
           }
         }
         else {
-          while (text.charCodeAt(pos) > CharacterCodes.space) pos++;
-          args.push(text.substring(start, pos));
+          while (text.charCodeAt(pos) > CharacterCodes.space) pos++
+          args.push(text.substring(start, pos))
         }
       }
-      parseStrings(args);
+      parseStrings(args)
     }
   }
 
@@ -470,15 +470,15 @@ namespace ts {
     * Read tsconfig.json file
     * @param fileName The path to the config file
     */
-  export function readConfigFile(fileName: string, readFile: (path: string) => string): { config?: any; error?: Diagnostic }  {
-    let text = "";
+  def readConfigFile(fileName: String, readFile: (path: String) => String): { config?: any; error?: Diagnostic }  {
+    var text = ""
     try {
-      text = readFile(fileName);
+      text = readFile(fileName)
     }
     catch (e) {
-      return { error: createCompilerDiagnostic(Diagnostics.Cannot_read_file_0_Colon_1, fileName, e.message) };
+      return { error: createCompilerDiagnostic(Diagnostics.Cannot_read_file_0_Colon_1, fileName, e.message) }
     }
-    return parseConfigFileTextToJson(fileName, text);
+    return parseConfigFileTextToJson(fileName, text)
   }
 
   /**
@@ -486,13 +486,13 @@ namespace ts {
     * @param fileName The path to the config file
     * @param jsonText The text of the config file
     */
-  export function parseConfigFileTextToJson(fileName: string, jsonText: string): { config?: any; error?: Diagnostic } {
+  def parseConfigFileTextToJson(fileName: String, jsonText: String): { config?: any; error?: Diagnostic } {
     try {
-      const jsonTextWithoutComments = removeComments(jsonText);
-      return { config: /\S/.test(jsonTextWithoutComments) ? JSON.parse(jsonTextWithoutComments) : {} };
+      val jsonTextWithoutComments = removeComments(jsonText)
+      return { config: /\S/.test(jsonTextWithoutComments) ? JSON.parse(jsonTextWithoutComments) : {} }
     }
     catch (e) {
-      return { error: createCompilerDiagnostic(Diagnostics.Failed_to_parse_file_0_Colon_1, fileName, e.message) };
+      return { error: createCompilerDiagnostic(Diagnostics.Failed_to_parse_file_0_Colon_1, fileName, e.message) }
     }
   }
 
@@ -503,23 +503,23 @@ namespace ts {
    *
    * This method replace comment content by whitespace rather than completely remove them to keep positions in json parsing error reporting accurate.
    */
-  function removeComments(jsonText: string): string {
-    let output = "";
-    const scanner = createScanner(ScriptTarget.ES5, /* skipTrivia */ false, LanguageVariant.Standard, jsonText);
-    let token: SyntaxKind;
-    while ((token = scanner.scan()) !== SyntaxKind.EndOfFileToken) {
+  def removeComments(jsonText: String): String {
+    var output = ""
+    val scanner = createScanner(ScriptTarget.ES5, /* skipTrivia */ false, LanguageVariant.Standard, jsonText)
+    var token: SyntaxKind
+    while ((token = scanner.scan()) != SyntaxKind.EndOfFileToken) {
       switch (token) {
         case SyntaxKind.SingleLineCommentTrivia:
         case SyntaxKind.MultiLineCommentTrivia:
           // replace comments with whitespace to preserve original character positions
-          output += scanner.getTokenText().replace(/\S/g, " ");
-          break;
+          output += scanner.getTokenText().replace(/\S/g, " ")
+          break
         default:
-          output += scanner.getTokenText();
-          break;
+          output += scanner.getTokenText()
+          break
       }
     }
-    return output;
+    return output
   }
 
   /**
@@ -529,157 +529,157 @@ namespace ts {
     * @param basePath A root directory to resolve relative path entries in the config
     *  file to. e.g. outDir
     */
-  export function parseJsonConfigFileContent(json: any, host: ParseConfigHost, basePath: string, existingOptions: CompilerOptions = {}, configFileName?: string): ParsedCommandLine {
-    const { options: optionsFromJsonConfigFile, errors } = convertCompilerOptionsFromJson(json["compilerOptions"], basePath, configFileName);
+  def parseJsonConfigFileContent(json: any, host: ParseConfigHost, basePath: String, existingOptions: CompilerOptions = {}, configFileName?: String): ParsedCommandLine {
+    val { options: optionsFromJsonConfigFile, errors } = convertCompilerOptionsFromJson(json["compilerOptions"], basePath, configFileName)
 
-    const options = extend(existingOptions, optionsFromJsonConfigFile);
+    val options = extend(existingOptions, optionsFromJsonConfigFile)
 
     return {
       options,
       fileNames: getFileNames(),
       errors
-    };
+    }
 
-    function getFileNames(): string[] {
-      let fileNames: string[] = [];
+    def getFileNames(): String[] {
+      var fileNames: String[] = []
       if (hasProperty(json, "files")) {
         if (json["files"] instanceof Array) {
-          fileNames = map(<string[]>json["files"], s => combinePaths(basePath, s));
+          fileNames = map(<String[]>json["files"], s => combinePaths(basePath, s))
         }
         else {
-          errors.push(createCompilerDiagnostic(Diagnostics.Compiler_option_0_requires_a_value_of_type_1, "files", "Array"));
+          errors.push(createCompilerDiagnostic(Diagnostics.Compiler_option_0_requires_a_value_of_type_1, "files", "Array"))
         }
       }
       else {
-        const filesSeen: Map<boolean> = {};
+        val filesSeen: Map<Boolean> = {}
 
-        let exclude: string[] = [];
+        var exclude: String[] = []
         if (json["exclude"] instanceof Array) {
-          exclude = json["exclude"];
+          exclude = json["exclude"]
         }
         else {
           // by default exclude node_modules, and any specificied output directory
-          exclude = ["node_modules"];
-          const outDir = json["compilerOptions"] && json["compilerOptions"]["outDir"];
+          exclude = ["node_modules"]
+          val outDir = json["compilerOptions"] && json["compilerOptions"]["outDir"]
           if (outDir) {
-            exclude.push(outDir);
+            exclude.push(outDir)
           }
         }
-        exclude = map(exclude, normalizeSlashes);
+        exclude = map(exclude, normalizeSlashes)
 
-        const supportedExtensions = getSupportedExtensions(options);
-        Debug.assert(indexOf(supportedExtensions, ".ts") < indexOf(supportedExtensions, ".d.ts"), "Changed priority of extensions to pick");
+        val supportedExtensions = getSupportedExtensions(options)
+        Debug.assert(indexOf(supportedExtensions, ".ts") < indexOf(supportedExtensions, ".d.ts"), "Changed priority of extensions to pick")
 
         // Get files of supported extensions in their order of resolution
-        for (const extension of supportedExtensions) {
-          const filesInDirWithExtension = host.readDirectory(basePath, extension, exclude);
-          for (const fileName of filesInDirWithExtension) {
+        for (val extension of supportedExtensions) {
+          val filesInDirWithExtension = host.readDirectory(basePath, extension, exclude)
+          for (val fileName of filesInDirWithExtension) {
             // .ts extension would read the .d.ts extension files too but since .d.ts is lower priority extension,
             // lets pick them when its turn comes up
-            if (extension === ".ts" && fileExtensionIs(fileName, ".d.ts")) {
-              continue;
+            if (extension == ".ts" && fileExtensionIs(fileName, ".d.ts")) {
+              continue
             }
 
             // Skip over any minified JavaScript files (ending in ".min.js")
             if (/\.min\.js$/.test(fileName)) {
-              continue;
+              continue
             }
 
             // If this is one of the output extension (which would be .d.ts and .js if we are allowing compilation of js files)
             // do not include this file if we included .ts or .tsx file with same base name as it could be output of the earlier compilation
-            if (extension === ".d.ts" || (options.allowJs && contains(supportedJavascriptExtensions, extension))) {
-              const baseName = fileName.substr(0, fileName.length - extension.length);
+            if (extension == ".d.ts" || (options.allowJs && contains(supportedJavascriptExtensions, extension))) {
+              val baseName = fileName.substr(0, fileName.length - extension.length)
               if (hasProperty(filesSeen, baseName + ".ts") || hasProperty(filesSeen, baseName + ".tsx")) {
-                continue;
+                continue
               }
             }
 
-            filesSeen[fileName] = true;
-            fileNames.push(fileName);
+            filesSeen[fileName] = true
+            fileNames.push(fileName)
           }
         }
       }
-      return fileNames;
+      return fileNames
     }
   }
 
-  export function convertCompilerOptionsFromJson(jsonOptions: any, basePath: string, configFileName?: string): { options: CompilerOptions, errors: Diagnostic[] } {
-    const options: CompilerOptions = {};
-    const errors: Diagnostic[] = [];
+  def convertCompilerOptionsFromJson(jsonOptions: any, basePath: String, configFileName?: String): { options: CompilerOptions, errors: Diagnostic[] } {
+    val options: CompilerOptions = {}
+    val errors: Diagnostic[] = []
 
-    if (configFileName && getBaseFileName(configFileName) === "jsconfig.json") {
-      options.allowJs = true;
+    if (configFileName && getBaseFileName(configFileName) == "jsconfig.json") {
+      options.allowJs = true
     }
 
     if (!jsonOptions) {
-      return { options, errors };
+      return { options, errors }
     }
 
-    const optionNameMap = arrayToMap(optionDeclarations, opt => opt.name);
+    val optionNameMap = arrayToMap(optionDeclarations, opt => opt.name)
 
-    for (const id in jsonOptions) {
+    for (val id in jsonOptions) {
       if (hasProperty(optionNameMap, id)) {
-        const opt = optionNameMap[id];
-        const optType = opt.type;
-        let value = jsonOptions[id];
-        const expectedType = typeof optType === "string" ? optType : "string";
-        if (typeof value === expectedType) {
-          if (typeof optType !== "string") {
-            const key = value.toLowerCase();
+        val opt = optionNameMap[id]
+        val optType = opt.type
+        var value = jsonOptions[id]
+        val expectedType = typeof optType == "String" ? optType : "String"
+        if (typeof value == expectedType) {
+          if (typeof optType != "String") {
+            val key = value.toLowerCase()
             if (hasProperty(optType, key)) {
-              value = optType[key];
+              value = optType[key]
             }
             else {
-              errors.push(createCompilerDiagnostic((<CommandLineOptionOfCustomType>opt).error));
-              value = 0;
+              errors.push(createCompilerDiagnostic((<CommandLineOptionOfCustomType>opt).error))
+              value = 0
             }
           }
           if (opt.isFilePath) {
             switch (typeof value) {
-              case "string":
-                value = normalizePath(combinePaths(basePath, value));
-                break;
+              case "String":
+                value = normalizePath(combinePaths(basePath, value))
+                break
               case "object":
-                // "object" options with 'isFilePath' = true expected to be string arrays
-                let paths: string[] = [];
-                let invalidOptionType = false;
+                // "object" options with 'isFilePath' = true expected to be String arrays
+                var paths: String[] = []
+                var invalidOptionType = false
                 if (!isArray(value)) {
-                  invalidOptionType = true;
+                  invalidOptionType = true
                 }
                 else {
-                  for (const element of <any[]>value) {
-                    if (typeof element === "string") {
-                      paths.push(normalizePath(combinePaths(basePath, element)));
+                  for (val element of <any[]>value) {
+                    if (typeof element == "String") {
+                      paths.push(normalizePath(combinePaths(basePath, element)))
                     }
                     else {
-                      invalidOptionType = true;
-                      break;
+                      invalidOptionType = true
+                      break
                     }
                   }
                 }
                 if (invalidOptionType) {
-                  errors.push(createCompilerDiagnostic(Diagnostics.Option_0_should_have_array_of_strings_as_a_value, opt.name));
+                  errors.push(createCompilerDiagnostic(Diagnostics.Option_0_should_have_array_of_strings_as_a_value, opt.name))
                 }
                 else {
-                  value = paths;
+                  value = paths
                 }
-                break;
+                break
             }
-            if (value === "") {
-              value = ".";
+            if (value == "") {
+              value = "."
             }
           }
-          options[opt.name] = value;
+          options[opt.name] = value
         }
         else {
-          errors.push(createCompilerDiagnostic(Diagnostics.Compiler_option_0_requires_a_value_of_type_1, id, expectedType));
+          errors.push(createCompilerDiagnostic(Diagnostics.Compiler_option_0_requires_a_value_of_type_1, id, expectedType))
         }
       }
       else {
-        errors.push(createCompilerDiagnostic(Diagnostics.Unknown_compiler_option_0, id));
+        errors.push(createCompilerDiagnostic(Diagnostics.Unknown_compiler_option_0, id))
       }
     }
 
-    return { options, errors };
+    return { options, errors }
   }
 }

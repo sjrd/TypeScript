@@ -2,135 +2,135 @@
 /// <reference path="emitter.ts" />
 /// <reference path="core.ts" />
 
-namespace ts {
-  /* @internal */ export let programTime = 0;
-  /* @internal */ export let emitTime = 0;
-  /* @internal */ export let ioReadTime = 0;
-  /* @internal */ export let ioWriteTime = 0;
+package ts {
+  /* @internal */ var programTime = 0
+  /* @internal */ var emitTime = 0
+  /* @internal */ var ioReadTime = 0
+  /* @internal */ var ioWriteTime = 0
 
   /** The version of the TypeScript compiler release */
 
-  const emptyArray: any[] = [];
+  val emptyArray: any[] = []
 
-  export const version = "1.9.0";
+  val version = "1.9.0"
 
-  export function findConfigFile(searchPath: string, fileExists: (fileName: string) => boolean): string {
-    let fileName = "tsconfig.json";
+  def findConfigFile(searchPath: String, fileExists: (fileName: String) => Boolean): String {
+    var fileName = "tsconfig.json"
     while (true) {
       if (fileExists(fileName)) {
-        return fileName;
+        return fileName
       }
-      const parentPath = getDirectoryPath(searchPath);
-      if (parentPath === searchPath) {
-        break;
+      val parentPath = getDirectoryPath(searchPath)
+      if (parentPath == searchPath) {
+        break
       }
-      searchPath = parentPath;
-      fileName = "../" + fileName;
+      searchPath = parentPath
+      fileName = "../" + fileName
     }
-    return undefined;
+    return undefined
   }
 
-  export function resolveTripleslashReference(moduleName: string, containingFile: string): string {
-    const basePath = getDirectoryPath(containingFile);
-    const referencedFileName = isRootedDiskPath(moduleName) ? moduleName : combinePaths(basePath, moduleName);
-    return normalizePath(referencedFileName);
+  def resolveTripleslashReference(moduleName: String, containingFile: String): String {
+    val basePath = getDirectoryPath(containingFile)
+    val referencedFileName = isRootedDiskPath(moduleName) ? moduleName : combinePaths(basePath, moduleName)
+    return normalizePath(referencedFileName)
   }
 
-  function trace(host: ModuleResolutionHost, message: DiagnosticMessage, ...args: any[]): void;
-  function trace(host: ModuleResolutionHost, message: DiagnosticMessage): void {
-    host.trace(formatMessage.apply(undefined, arguments));
+  def trace(host: ModuleResolutionHost, message: DiagnosticMessage, ...args: any[]): void
+  def trace(host: ModuleResolutionHost, message: DiagnosticMessage): void {
+    host.trace(formatMessage.apply(undefined, arguments))
   }
 
-  function isTraceEnabled(compilerOptions: CompilerOptions, host: ModuleResolutionHost): boolean {
-    return compilerOptions.traceModuleResolution && host.trace !== undefined;
+  def isTraceEnabled(compilerOptions: CompilerOptions, host: ModuleResolutionHost): Boolean {
+    return compilerOptions.traceModuleResolution && host.trace != undefined
   }
 
-  function startsWith(str: string, prefix: string): boolean {
-    return str.lastIndexOf(prefix, 0) === 0;
+  def startsWith(str: String, prefix: String): Boolean {
+    return str.lastIndexOf(prefix, 0) == 0
   }
 
-  function endsWith(str: string, suffix: string): boolean {
-    const expectedPos = str.length - suffix.length;
-    return str.indexOf(suffix, expectedPos) === expectedPos;
+  def endsWith(str: String, suffix: String): Boolean {
+    val expectedPos = str.length - suffix.length
+    return str.indexOf(suffix, expectedPos) == expectedPos
   }
 
-  function hasZeroOrOneAsteriskCharacter(str: string): boolean {
-    let seenAsterisk = false;
-    for (let i = 0; i < str.length; i++) {
-      if (str.charCodeAt(i) === CharacterCodes.asterisk) {
+  def hasZeroOrOneAsteriskCharacter(str: String): Boolean {
+    var seenAsterisk = false
+    for (var i = 0; i < str.length; i++) {
+      if (str.charCodeAt(i) == CharacterCodes.asterisk) {
         if (!seenAsterisk) {
-          seenAsterisk = true;
+          seenAsterisk = true
         }
         else {
           // have already seen asterisk
-          return false;
+          return false
         }
       }
     }
-    return true;
+    return true
   }
 
-  function createResolvedModule(resolvedFileName: string, isExternalLibraryImport: boolean, failedLookupLocations: string[]): ResolvedModuleWithFailedLookupLocations {
-    return { resolvedModule: resolvedFileName ? { resolvedFileName, isExternalLibraryImport } : undefined, failedLookupLocations };
+  def createResolvedModule(resolvedFileName: String, isExternalLibraryImport: Boolean, failedLookupLocations: String[]): ResolvedModuleWithFailedLookupLocations {
+    return { resolvedModule: resolvedFileName ? { resolvedFileName, isExternalLibraryImport } : undefined, failedLookupLocations }
   }
 
-  function moduleHasNonRelativeName(moduleName: string): boolean {
+  def moduleHasNonRelativeName(moduleName: String): Boolean {
     if (isRootedDiskPath(moduleName)) {
-      return false;
+      return false
     }
 
-    const i = moduleName.lastIndexOf("./", 1);
-    const startsWithDotSlashOrDotDotSlash = i === 0 || (i === 1 && moduleName.charCodeAt(0) === CharacterCodes.dot);
-    return !startsWithDotSlashOrDotDotSlash;
+    val i = moduleName.lastIndexOf("./", 1)
+    val startsWithDotSlashOrDotDotSlash = i == 0 || (i == 1 && moduleName.charCodeAt(0) == CharacterCodes.dot)
+    return !startsWithDotSlashOrDotDotSlash
   }
 
   interface ModuleResolutionState {
-    host: ModuleResolutionHost;
-    compilerOptions: CompilerOptions;
-    traceEnabled: boolean;
+    host: ModuleResolutionHost
+    compilerOptions: CompilerOptions
+    traceEnabled: Boolean
     // skip .tsx files if jsx is not enabled
-    skipTsx: boolean;
+    skipTsx: Boolean
   }
 
-  export function resolveModuleName(moduleName: string, containingFile: string, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
-    const traceEnabled = isTraceEnabled(compilerOptions, host);
+  def resolveModuleName(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
+    val traceEnabled = isTraceEnabled(compilerOptions, host)
     if (traceEnabled) {
-      trace(host, Diagnostics.Resolving_module_0_from_1, moduleName, containingFile);
+      trace(host, Diagnostics.Resolving_module_0_from_1, moduleName, containingFile)
     }
 
-    let moduleResolution = compilerOptions.moduleResolution;
-    if (moduleResolution === undefined) {
-      moduleResolution = getEmitModuleKind(compilerOptions) === ModuleKind.CommonJS ? ModuleResolutionKind.NodeJs : ModuleResolutionKind.Classic;
+    var moduleResolution = compilerOptions.moduleResolution
+    if (moduleResolution == undefined) {
+      moduleResolution = getEmitModuleKind(compilerOptions) == ModuleKind.CommonJS ? ModuleResolutionKind.NodeJs : ModuleResolutionKind.Classic
       if (traceEnabled) {
-        trace(host, Diagnostics.Module_resolution_kind_is_not_specified_using_0, ModuleResolutionKind[moduleResolution]);
+        trace(host, Diagnostics.Module_resolution_kind_is_not_specified_using_0, ModuleResolutionKind[moduleResolution])
       }
     }
     else {
       if (traceEnabled) {
-        trace(host, Diagnostics.Explicitly_specified_module_resolution_kind_Colon_0, ModuleResolutionKind[moduleResolution]);
+        trace(host, Diagnostics.Explicitly_specified_module_resolution_kind_Colon_0, ModuleResolutionKind[moduleResolution])
       }
     }
 
-    let result: ResolvedModuleWithFailedLookupLocations;
+    var result: ResolvedModuleWithFailedLookupLocations
     switch (moduleResolution) {
       case ModuleResolutionKind.NodeJs:
-        result = nodeModuleNameResolver(moduleName, containingFile, compilerOptions, host);
-        break;
+        result = nodeModuleNameResolver(moduleName, containingFile, compilerOptions, host)
+        break
       case ModuleResolutionKind.Classic:
-        result = classicNameResolver(moduleName, containingFile, compilerOptions, host);
-        break;
+        result = classicNameResolver(moduleName, containingFile, compilerOptions, host)
+        break
     }
 
     if (traceEnabled) {
       if (result.resolvedModule) {
-        trace(host, Diagnostics.Module_name_0_was_successfully_resolved_to_1, moduleName, result.resolvedModule.resolvedFileName);
+        trace(host, Diagnostics.Module_name_0_was_successfully_resolved_to_1, moduleName, result.resolvedModule.resolvedFileName)
       }
       else {
-        trace(host, Diagnostics.Module_name_0_was_not_resolved, moduleName);
+        trace(host, Diagnostics.Module_name_0_was_not_resolved, moduleName)
       }
     }
 
-    return result;
+    return result
   }
 
   /*
@@ -141,7 +141,7 @@ namespace ts {
    * 'typings' entry or file 'index' with some supported extension
    * - Classic loader will only try to interpret '/a/b/c' as file.
    */
-  type ResolutionKindSpecificLoader = (candidate: string, extensions: string[], failedLookupLocations: string[], onlyRecordFailures: boolean, state: ModuleResolutionState) => string;
+  type ResolutionKindSpecificLoader = (candidate: String, extensions: String[], failedLookupLocations: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState) => String
 
   /**
    * Any module resolution kind can be augmented with optional settings: 'baseUrl', 'paths' and 'rootDirs' - they are used to
@@ -162,15 +162,15 @@ namespace ts {
    *  ...
    *  pattern-n: [...substitutions]
    * }
-   * Pattern here is a string that can contain zero or one '*' character. During module resolution module name will be matched against
+   * Pattern here is a String that can contain zero or one '*' character. During module resolution module name will be matched against
    * all patterns in the list. Matching for patterns that don't contain '*' means that module name must be equal to pattern respecting the case.
    * If pattern contains '*' then to match pattern "<prefix>*<suffix>" module name must start with the <prefix> and end with <suffix>.
    * <MatchedStar> denotes part of the module name between <prefix> and <suffix>.
    * If module name can be matches with multiple patterns then pattern with the longest prefix will be picked.
    * After selecting pattern we'll use list of substitutions to get candidate locations of the module and the try to load module
    * from the candidate location.
-   * Substitution is a string that can contain zero or one '*'. To get candidate location from substitution we'll pick every
-   * substitution in the list and replace '*' with <MatchedStar> string. If candidate location is not rooted it
+   * Substitution is a String that can contain zero or one '*'. To get candidate location from substitution we'll pick every
+   * substitution in the list and replace '*' with <MatchedStar> String. If candidate location is not rooted it
    * will be converted to absolute using baseUrl.
    * For example:
    * baseUrl: /a/b/c
@@ -203,427 +203,427 @@ namespace ts {
    * be converted to a path relative to found rootDir entry './content/protocols/file2' (*). As a last step compiler will check all remaining
    * entries in 'rootDirs', use them to build absolute path out of (*) and try to resolve module from this location.
    */
-  function tryLoadModuleUsingOptionalResolutionSettings(moduleName: string, containingDirectory: string, loader: ResolutionKindSpecificLoader,
-    failedLookupLocations: string[], supportedExtensions: string[], state: ModuleResolutionState): string {
+  def tryLoadModuleUsingOptionalResolutionSettings(moduleName: String, containingDirectory: String, loader: ResolutionKindSpecificLoader,
+    failedLookupLocations: String[], supportedExtensions: String[], state: ModuleResolutionState): String {
 
     if (moduleHasNonRelativeName(moduleName)) {
-      return tryLoadModuleUsingBaseUrl(moduleName, loader, failedLookupLocations, supportedExtensions, state);
+      return tryLoadModuleUsingBaseUrl(moduleName, loader, failedLookupLocations, supportedExtensions, state)
     }
     else {
-      return tryLoadModuleUsingRootDirs(moduleName, containingDirectory, loader, failedLookupLocations, supportedExtensions, state);
+      return tryLoadModuleUsingRootDirs(moduleName, containingDirectory, loader, failedLookupLocations, supportedExtensions, state)
     }
   }
 
-  function tryLoadModuleUsingRootDirs(moduleName: string, containingDirectory: string, loader: ResolutionKindSpecificLoader,
-    failedLookupLocations: string[], supportedExtensions: string[], state: ModuleResolutionState): string {
+  def tryLoadModuleUsingRootDirs(moduleName: String, containingDirectory: String, loader: ResolutionKindSpecificLoader,
+    failedLookupLocations: String[], supportedExtensions: String[], state: ModuleResolutionState): String {
 
     if (!state.compilerOptions.rootDirs) {
-      return undefined;
+      return undefined
     }
 
     if (state.traceEnabled) {
-      trace(state.host, Diagnostics.rootDirs_option_is_set_using_it_to_resolve_relative_module_name_0, moduleName);
+      trace(state.host, Diagnostics.rootDirs_option_is_set_using_it_to_resolve_relative_module_name_0, moduleName)
     }
 
-    const candidate = normalizePath(combinePaths(containingDirectory, moduleName));
+    val candidate = normalizePath(combinePaths(containingDirectory, moduleName))
 
-    let matchedRootDir: string;
-    let matchedNormalizedPrefix: string;
-    for (const rootDir of state.compilerOptions.rootDirs) {
+    var matchedRootDir: String
+    var matchedNormalizedPrefix: String
+    for (val rootDir of state.compilerOptions.rootDirs) {
       // rootDirs are expected to be absolute
       // in case of tsconfig.json this will happen automatically - compiler will expand relative names
       // using location of tsconfig.json as base location
-      let normalizedRoot = normalizePath(rootDir);
+      var normalizedRoot = normalizePath(rootDir)
       if (!endsWith(normalizedRoot, directorySeparator)) {
-        normalizedRoot += directorySeparator;
+        normalizedRoot += directorySeparator
       }
-      const isLongestMatchingPrefix =
+      val isLongestMatchingPrefix =
         startsWith(candidate, normalizedRoot) &&
-        (matchedNormalizedPrefix === undefined || matchedNormalizedPrefix.length < normalizedRoot.length);
+        (matchedNormalizedPrefix == undefined || matchedNormalizedPrefix.length < normalizedRoot.length)
 
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Checking_if_0_is_the_longest_matching_prefix_for_1_2, normalizedRoot, candidate, isLongestMatchingPrefix);
+        trace(state.host, Diagnostics.Checking_if_0_is_the_longest_matching_prefix_for_1_2, normalizedRoot, candidate, isLongestMatchingPrefix)
       }
 
       if (isLongestMatchingPrefix) {
-        matchedNormalizedPrefix = normalizedRoot;
-        matchedRootDir = rootDir;
+        matchedNormalizedPrefix = normalizedRoot
+        matchedRootDir = rootDir
       }
     }
     if (matchedNormalizedPrefix) {
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Longest_matching_prefix_for_0_is_1, candidate, matchedNormalizedPrefix);
+        trace(state.host, Diagnostics.Longest_matching_prefix_for_0_is_1, candidate, matchedNormalizedPrefix)
       }
-      const suffix = candidate.substr(matchedNormalizedPrefix.length);
+      val suffix = candidate.substr(matchedNormalizedPrefix.length)
 
       // first - try to load from a initial location
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Loading_0_from_the_root_dir_1_candidate_location_2, suffix, matchedNormalizedPrefix, candidate);
+        trace(state.host, Diagnostics.Loading_0_from_the_root_dir_1_candidate_location_2, suffix, matchedNormalizedPrefix, candidate)
       }
-      const resolvedFileName = loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(containingDirectory, state.host), state);
+      val resolvedFileName = loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(containingDirectory, state.host), state)
       if (resolvedFileName) {
-        return resolvedFileName;
+        return resolvedFileName
       }
 
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Trying_other_entries_in_rootDirs);
+        trace(state.host, Diagnostics.Trying_other_entries_in_rootDirs)
       }
       // then try to resolve using remaining entries in rootDirs
-      for (const rootDir of state.compilerOptions.rootDirs) {
-        if (rootDir === matchedRootDir) {
+      for (val rootDir of state.compilerOptions.rootDirs) {
+        if (rootDir == matchedRootDir) {
           // skip the initially matched entry
-          continue;
+          continue
         }
-        const candidate = combinePaths(normalizePath(rootDir), suffix);
+        val candidate = combinePaths(normalizePath(rootDir), suffix)
         if (state.traceEnabled) {
-          trace(state.host, Diagnostics.Loading_0_from_the_root_dir_1_candidate_location_2, suffix, rootDir, candidate);
+          trace(state.host, Diagnostics.Loading_0_from_the_root_dir_1_candidate_location_2, suffix, rootDir, candidate)
         }
-        const baseDirectory = getDirectoryPath(candidate);
-        const resolvedFileName = loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(baseDirectory, state.host), state);
+        val baseDirectory = getDirectoryPath(candidate)
+        val resolvedFileName = loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(baseDirectory, state.host), state)
         if (resolvedFileName) {
-          return resolvedFileName;
+          return resolvedFileName
         }
       }
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Module_resolution_using_rootDirs_has_failed);
+        trace(state.host, Diagnostics.Module_resolution_using_rootDirs_has_failed)
       }
     }
-    return undefined;
+    return undefined
   }
 
-  function tryLoadModuleUsingBaseUrl(moduleName: string, loader: ResolutionKindSpecificLoader, failedLookupLocations: string[],
-    supportedExtensions: string[], state: ModuleResolutionState): string {
+  def tryLoadModuleUsingBaseUrl(moduleName: String, loader: ResolutionKindSpecificLoader, failedLookupLocations: String[],
+    supportedExtensions: String[], state: ModuleResolutionState): String {
 
     if (!state.compilerOptions.baseUrl) {
-      return undefined;
+      return undefined
     }
     if (state.traceEnabled) {
-      trace(state.host, Diagnostics.baseUrl_option_is_set_to_0_using_this_value_to_resolve_non_relative_module_name_1, state.compilerOptions.baseUrl, moduleName);
+      trace(state.host, Diagnostics.baseUrl_option_is_set_to_0_using_this_value_to_resolve_non_relative_module_name_1, state.compilerOptions.baseUrl, moduleName)
     }
 
-    let longestMatchPrefixLength = -1;
-    let matchedPattern: string;
-    let matchedStar: string;
+    var longestMatchPrefixLength = -1
+    var matchedPattern: String
+    var matchedStar: String
 
     if (state.compilerOptions.paths) {
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.paths_option_is_specified_looking_for_a_pattern_to_match_module_name_0, moduleName);
+        trace(state.host, Diagnostics.paths_option_is_specified_looking_for_a_pattern_to_match_module_name_0, moduleName)
       }
 
-      for (const key in state.compilerOptions.paths) {
-        const pattern: string = key;
-        const indexOfStar = pattern.indexOf("*");
-        if (indexOfStar !== -1) {
-          const prefix = pattern.substr(0, indexOfStar);
-          const suffix = pattern.substr(indexOfStar + 1);
+      for (val key in state.compilerOptions.paths) {
+        val pattern: String = key
+        val indexOfStar = pattern.indexOf("*")
+        if (indexOfStar != -1) {
+          val prefix = pattern.substr(0, indexOfStar)
+          val suffix = pattern.substr(indexOfStar + 1)
           if (moduleName.length >= prefix.length + suffix.length &&
             startsWith(moduleName, prefix) &&
             endsWith(moduleName, suffix)) {
 
             // use length of prefix as betterness criteria
             if (prefix.length > longestMatchPrefixLength) {
-              longestMatchPrefixLength = prefix.length;
-              matchedPattern = pattern;
-              matchedStar = moduleName.substr(prefix.length, moduleName.length - suffix.length);
+              longestMatchPrefixLength = prefix.length
+              matchedPattern = pattern
+              matchedStar = moduleName.substr(prefix.length, moduleName.length - suffix.length)
             }
           }
         }
-        else if (pattern === moduleName) {
+        else if (pattern == moduleName) {
           // pattern was matched as is - no need to search further
-          matchedPattern = pattern;
-          matchedStar = undefined;
-          break;
+          matchedPattern = pattern
+          matchedStar = undefined
+          break
         }
       }
     }
 
     if (matchedPattern) {
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Module_name_0_matched_pattern_1, moduleName, matchedPattern);
+        trace(state.host, Diagnostics.Module_name_0_matched_pattern_1, moduleName, matchedPattern)
       }
-      for (const subst of state.compilerOptions.paths[matchedPattern]) {
-        const path = matchedStar ? subst.replace("\*", matchedStar) : subst;
-        const candidate = normalizePath(combinePaths(state.compilerOptions.baseUrl, path));
+      for (val subst of state.compilerOptions.paths[matchedPattern]) {
+        val path = matchedStar ? subst.replace("\*", matchedStar) : subst
+        val candidate = normalizePath(combinePaths(state.compilerOptions.baseUrl, path))
         if (state.traceEnabled) {
-          trace(state.host, Diagnostics.Trying_substitution_0_candidate_module_location_Colon_1, subst, path);
+          trace(state.host, Diagnostics.Trying_substitution_0_candidate_module_location_Colon_1, subst, path)
         }
-        const resolvedFileName = loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(getDirectoryPath(candidate), state.host), state);
+        val resolvedFileName = loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(getDirectoryPath(candidate), state.host), state)
         if (resolvedFileName) {
-          return resolvedFileName;
+          return resolvedFileName
         }
       }
-      return undefined;
+      return undefined
     }
     else {
-      const candidate = normalizePath(combinePaths(state.compilerOptions.baseUrl, moduleName));
+      val candidate = normalizePath(combinePaths(state.compilerOptions.baseUrl, moduleName))
 
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Resolving_module_name_0_relative_to_base_url_1_2, moduleName, state.compilerOptions.baseUrl, candidate);
+        trace(state.host, Diagnostics.Resolving_module_name_0_relative_to_base_url_1_2, moduleName, state.compilerOptions.baseUrl, candidate)
       }
 
-      return loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(getDirectoryPath(candidate), state.host), state);
+      return loader(candidate, supportedExtensions, failedLookupLocations, !directoryProbablyExists(getDirectoryPath(candidate), state.host), state)
     }
   }
 
-  export function nodeModuleNameResolver(moduleName: string, containingFile: string, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
-    const containingDirectory = getDirectoryPath(containingFile);
-    const supportedExtensions = getSupportedExtensions(compilerOptions);
-    const traceEnabled = isTraceEnabled(compilerOptions, host);
+  def nodeModuleNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
+    val containingDirectory = getDirectoryPath(containingFile)
+    val supportedExtensions = getSupportedExtensions(compilerOptions)
+    val traceEnabled = isTraceEnabled(compilerOptions, host)
 
-    const failedLookupLocations: string[] = [];
-    const state = {compilerOptions, host, traceEnabled, skipTsx: false};
-    let resolvedFileName = tryLoadModuleUsingOptionalResolutionSettings(moduleName, containingDirectory, nodeLoadModuleByRelativeName,
-      failedLookupLocations, supportedExtensions, state);
+    val failedLookupLocations: String[] = []
+    val state = {compilerOptions, host, traceEnabled, skipTsx: false}
+    var resolvedFileName = tryLoadModuleUsingOptionalResolutionSettings(moduleName, containingDirectory, nodeLoadModuleByRelativeName,
+      failedLookupLocations, supportedExtensions, state)
 
     if (resolvedFileName) {
-      return createResolvedModule(resolvedFileName, /*isExternalLibraryImport*/false, failedLookupLocations);
+      return createResolvedModule(resolvedFileName, /*isExternalLibraryImport*/false, failedLookupLocations)
     }
 
-    let isExternalLibraryImport = false;
+    var isExternalLibraryImport = false
     if (moduleHasNonRelativeName(moduleName)) {
       if (traceEnabled) {
-        trace(host, Diagnostics.Loading_module_0_from_node_modules_folder, moduleName);
+        trace(host, Diagnostics.Loading_module_0_from_node_modules_folder, moduleName)
       }
-      resolvedFileName = loadModuleFromNodeModules(moduleName, containingDirectory, failedLookupLocations, state);
-      isExternalLibraryImport = resolvedFileName !== undefined;
+      resolvedFileName = loadModuleFromNodeModules(moduleName, containingDirectory, failedLookupLocations, state)
+      isExternalLibraryImport = resolvedFileName != undefined
     }
     else {
-      const candidate = normalizePath(combinePaths(containingDirectory, moduleName));
-      resolvedFileName = nodeLoadModuleByRelativeName(candidate, supportedExtensions, failedLookupLocations, /*onlyRecordFailures*/ false, state);
+      val candidate = normalizePath(combinePaths(containingDirectory, moduleName))
+      resolvedFileName = nodeLoadModuleByRelativeName(candidate, supportedExtensions, failedLookupLocations, /*onlyRecordFailures*/ false, state)
     }
-    return createResolvedModule(resolvedFileName, isExternalLibraryImport, failedLookupLocations);
+    return createResolvedModule(resolvedFileName, isExternalLibraryImport, failedLookupLocations)
   }
 
-  function nodeLoadModuleByRelativeName(candidate: string, supportedExtensions: string[], failedLookupLocations: string[],
-    onlyRecordFailures: boolean, state: ModuleResolutionState): string {
+  def nodeLoadModuleByRelativeName(candidate: String, supportedExtensions: String[], failedLookupLocations: String[],
+    onlyRecordFailures: Boolean, state: ModuleResolutionState): String {
 
     if (state.traceEnabled) {
-      trace(state.host, Diagnostics.Loading_module_as_file_Slash_folder_candidate_module_location_0, candidate);
+      trace(state.host, Diagnostics.Loading_module_as_file_Slash_folder_candidate_module_location_0, candidate)
     }
 
-    const resolvedFileName = loadModuleFromFile(candidate, supportedExtensions, failedLookupLocations, onlyRecordFailures, state);
+    val resolvedFileName = loadModuleFromFile(candidate, supportedExtensions, failedLookupLocations, onlyRecordFailures, state)
 
-    return resolvedFileName || loadNodeModuleFromDirectory(supportedExtensions, candidate, failedLookupLocations, onlyRecordFailures, state);
+    return resolvedFileName || loadNodeModuleFromDirectory(supportedExtensions, candidate, failedLookupLocations, onlyRecordFailures, state)
   }
 
   /* @internal */
-  export function directoryProbablyExists(directoryName: string, host: { directoryExists?: (directoryName: string) => boolean } ): boolean {
+  def directoryProbablyExists(directoryName: String, host: { directoryExists?: (directoryName: String) => Boolean } ): Boolean {
     // if host does not support 'directoryExists' assume that directory will exist
-    return !host.directoryExists || host.directoryExists(directoryName);
+    return !host.directoryExists || host.directoryExists(directoryName)
   }
 
   /**
-   * @param {boolean} onlyRecordFailures - if true then function won't try to actually load files but instead record all attempts as failures. This flag is necessary
+   * @param {Boolean} onlyRecordFailures - if true then def won't try to actually load files but instead record all attempts as failures. This flag is necessary
    * in cases when we know upfront that all load attempts will fail (because containing folder does not exists) however we still need to record all failed lookup locations.
    */
-  function loadModuleFromFile(candidate: string, extensions: string[], failedLookupLocation: string[], onlyRecordFailures: boolean, state: ModuleResolutionState): string {
-    return forEach(extensions, tryLoad);
+  def loadModuleFromFile(candidate: String, extensions: String[], failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String {
+    return forEach(extensions, tryLoad)
 
-    function tryLoad(ext: string): string {
-      if (ext === ".tsx" && state.skipTsx) {
-        return undefined;
+    def tryLoad(ext: String): String {
+      if (ext == ".tsx" && state.skipTsx) {
+        return undefined
       }
-      const fileName = fileExtensionIs(candidate, ext) ? candidate : candidate + ext;
+      val fileName = fileExtensionIs(candidate, ext) ? candidate : candidate + ext
       if (!onlyRecordFailures && state.host.fileExists(fileName)) {
         if (state.traceEnabled) {
-          trace(state.host, Diagnostics.File_0_exist_use_it_as_a_module_resolution_result, fileName);
+          trace(state.host, Diagnostics.File_0_exist_use_it_as_a_module_resolution_result, fileName)
         }
-        return fileName;
+        return fileName
       }
       else {
         if (state.traceEnabled) {
-          trace(state.host, Diagnostics.File_0_does_not_exist, fileName);
+          trace(state.host, Diagnostics.File_0_does_not_exist, fileName)
         }
-        failedLookupLocation.push(fileName);
-        return undefined;
+        failedLookupLocation.push(fileName)
+        return undefined
       }
     }
   }
 
-  function loadNodeModuleFromDirectory(extensions: string[], candidate: string, failedLookupLocation: string[], onlyRecordFailures: boolean, state: ModuleResolutionState): string {
-    const packageJsonPath = combinePaths(candidate, "package.json");
-    const directoryExists = !onlyRecordFailures && directoryProbablyExists(candidate, state.host);
+  def loadNodeModuleFromDirectory(extensions: String[], candidate: String, failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String {
+    val packageJsonPath = combinePaths(candidate, "package.json")
+    val directoryExists = !onlyRecordFailures && directoryProbablyExists(candidate, state.host)
     if (directoryExists && state.host.fileExists(packageJsonPath)) {
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.Found_package_json_at_0, packageJsonPath);
+        trace(state.host, Diagnostics.Found_package_json_at_0, packageJsonPath)
       }
 
-      let jsonContent: { typings?: string };
+      var jsonContent: { typings?: String }
 
       try {
-        const jsonText = state.host.readFile(packageJsonPath);
-        jsonContent = jsonText ? <{ typings?: string }>JSON.parse(jsonText) : { typings: undefined };
+        val jsonText = state.host.readFile(packageJsonPath)
+        jsonContent = jsonText ? <{ typings?: String }>JSON.parse(jsonText) : { typings: undefined }
       }
       catch (e) {
         // gracefully handle if readFile fails or returns not JSON
-        jsonContent = { typings: undefined };
+        jsonContent = { typings: undefined }
       }
 
       if (jsonContent.typings) {
-        if (typeof jsonContent.typings === "string") {
-          const typingsFile = normalizePath(combinePaths(candidate, jsonContent.typings));
+        if (typeof jsonContent.typings == "String") {
+          val typingsFile = normalizePath(combinePaths(candidate, jsonContent.typings))
           if (state.traceEnabled) {
-            trace(state.host, Diagnostics.package_json_has_typings_field_0_that_references_1, jsonContent.typings, typingsFile);
+            trace(state.host, Diagnostics.package_json_has_typings_field_0_that_references_1, jsonContent.typings, typingsFile)
           }
-          const result = loadModuleFromFile(typingsFile, extensions, failedLookupLocation, !directoryProbablyExists(getDirectoryPath(typingsFile), state.host), state);
+          val result = loadModuleFromFile(typingsFile, extensions, failedLookupLocation, !directoryProbablyExists(getDirectoryPath(typingsFile), state.host), state)
           if (result) {
-            return result;
+            return result
           }
         }
         else if (state.traceEnabled) {
-          trace(state.host, Diagnostics.Expected_type_of_typings_field_in_package_json_to_be_string_got_0, typeof jsonContent.typings);
+          trace(state.host, Diagnostics.Expected_type_of_typings_field_in_package_json_to_be_string_got_0, typeof jsonContent.typings)
         }
       }
       else {
         if (state.traceEnabled) {
-          trace(state.host, Diagnostics.package_json_does_not_have_typings_field);
+          trace(state.host, Diagnostics.package_json_does_not_have_typings_field)
         }
       }
     }
     else {
       if (state.traceEnabled) {
-        trace(state.host, Diagnostics.File_0_does_not_exist, packageJsonPath);
+        trace(state.host, Diagnostics.File_0_does_not_exist, packageJsonPath)
       }
       // record package json as one of failed lookup locations - in the future if this file will appear it will invalidate resolution results
-      failedLookupLocation.push(packageJsonPath);
+      failedLookupLocation.push(packageJsonPath)
     }
 
-    return loadModuleFromFile(combinePaths(candidate, "index"), extensions, failedLookupLocation, !directoryExists, state);
+    return loadModuleFromFile(combinePaths(candidate, "index"), extensions, failedLookupLocation, !directoryExists, state)
   }
 
-  function loadModuleFromNodeModules(moduleName: string, directory: string, failedLookupLocations: string[], state: ModuleResolutionState): string {
-    directory = normalizeSlashes(directory);
+  def loadModuleFromNodeModules(moduleName: String, directory: String, failedLookupLocations: String[], state: ModuleResolutionState): String {
+    directory = normalizeSlashes(directory)
     while (true) {
-      const baseName = getBaseFileName(directory);
-      if (baseName !== "node_modules") {
-        const nodeModulesFolder = combinePaths(directory, "node_modules");
-        const nodeModulesFolderExists = directoryProbablyExists(nodeModulesFolder, state.host);
-        const candidate = normalizePath(combinePaths(nodeModulesFolder, moduleName));
+      val baseName = getBaseFileName(directory)
+      if (baseName != "node_modules") {
+        val nodeModulesFolder = combinePaths(directory, "node_modules")
+        val nodeModulesFolderExists = directoryProbablyExists(nodeModulesFolder, state.host)
+        val candidate = normalizePath(combinePaths(nodeModulesFolder, moduleName))
         // Load only typescript files irrespective of allowJs option if loading from node modules
-        let result = loadModuleFromFile(candidate, supportedTypeScriptExtensions, failedLookupLocations, !nodeModulesFolderExists, state);
+        var result = loadModuleFromFile(candidate, supportedTypeScriptExtensions, failedLookupLocations, !nodeModulesFolderExists, state)
         if (result) {
-          return result;
+          return result
         }
-        result = loadNodeModuleFromDirectory(supportedTypeScriptExtensions, candidate, failedLookupLocations, !nodeModulesFolderExists, state);
+        result = loadNodeModuleFromDirectory(supportedTypeScriptExtensions, candidate, failedLookupLocations, !nodeModulesFolderExists, state)
         if (result) {
-          return result;
+          return result
         }
       }
 
-      const parentPath = getDirectoryPath(directory);
-      if (parentPath === directory) {
-        break;
+      val parentPath = getDirectoryPath(directory)
+      if (parentPath == directory) {
+        break
       }
 
-      directory = parentPath;
+      directory = parentPath
     }
-    return undefined;
+    return undefined
   }
 
-  export function classicNameResolver(moduleName: string, containingFile: string, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
-    const traceEnabled = isTraceEnabled(compilerOptions, host);
-    const state = { compilerOptions, host, traceEnabled, skipTsx: !compilerOptions.jsx };
-    const failedLookupLocations: string[] = [];
-    const supportedExtensions = getSupportedExtensions(compilerOptions);
-    let containingDirectory = getDirectoryPath(containingFile);
+  def classicNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
+    val traceEnabled = isTraceEnabled(compilerOptions, host)
+    val state = { compilerOptions, host, traceEnabled, skipTsx: !compilerOptions.jsx }
+    val failedLookupLocations: String[] = []
+    val supportedExtensions = getSupportedExtensions(compilerOptions)
+    var containingDirectory = getDirectoryPath(containingFile)
 
-    const resolvedFileName = tryLoadModuleUsingOptionalResolutionSettings(moduleName, containingDirectory, loadModuleFromFile, failedLookupLocations, supportedExtensions, state);
+    val resolvedFileName = tryLoadModuleUsingOptionalResolutionSettings(moduleName, containingDirectory, loadModuleFromFile, failedLookupLocations, supportedExtensions, state)
     if (resolvedFileName) {
-      return createResolvedModule(resolvedFileName, /*isExternalLibraryImport*/false, failedLookupLocations);
+      return createResolvedModule(resolvedFileName, /*isExternalLibraryImport*/false, failedLookupLocations)
     }
 
-    let referencedSourceFile: string;
+    var referencedSourceFile: String
     while (true) {
-      const searchName = normalizePath(combinePaths(containingDirectory, moduleName));
-      referencedSourceFile = loadModuleFromFile(searchName, supportedExtensions, failedLookupLocations, /*onlyRecordFailures*/ false, state);
+      val searchName = normalizePath(combinePaths(containingDirectory, moduleName))
+      referencedSourceFile = loadModuleFromFile(searchName, supportedExtensions, failedLookupLocations, /*onlyRecordFailures*/ false, state)
       if (referencedSourceFile) {
-        break;
+        break
       }
-      const parentPath = getDirectoryPath(containingDirectory);
-      if (parentPath === containingDirectory) {
-        break;
+      val parentPath = getDirectoryPath(containingDirectory)
+      if (parentPath == containingDirectory) {
+        break
       }
-      containingDirectory = parentPath;
+      containingDirectory = parentPath
     }
 
     return referencedSourceFile
       ? { resolvedModule: { resolvedFileName: referencedSourceFile  }, failedLookupLocations }
-      : { resolvedModule: undefined, failedLookupLocations };
+      : { resolvedModule: undefined, failedLookupLocations }
   }
 
   /* @internal */
-  export const defaultInitCompilerOptions: CompilerOptions = {
+  val defaultInitCompilerOptions: CompilerOptions = {
     module: ModuleKind.CommonJS,
     target: ScriptTarget.ES5,
     noImplicitAny: false,
     sourceMap: false,
-  };
+  }
 
-  export function createCompilerHost(options: CompilerOptions, setParentNodes?: boolean): CompilerHost {
-    const existingDirectories: Map<boolean> = {};
+  def createCompilerHost(options: CompilerOptions, setParentNodes?: Boolean): CompilerHost {
+    val existingDirectories: Map<Boolean> = {}
 
-    function getCanonicalFileName(fileName: string): string {
+    def getCanonicalFileName(fileName: String): String {
       // if underlying system can distinguish between two files whose names differs only in cases then file name already in canonical form.
       // otherwise use toLowerCase as a canonical form.
-      return sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
+      return sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase()
     }
 
     // returned by CScript sys environment
-    const unsupportedFileEncodingErrorCode = -2147024809;
+    val unsupportedFileEncodingErrorCode = -2147024809
 
-    function getSourceFile(fileName: string, languageVersion: ScriptTarget, onError?: (message: string) => void): SourceFile {
-      let text: string;
+    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => void): SourceFile {
+      var text: String
       try {
-        const start = new Date().getTime();
-        text = sys.readFile(fileName, options.charset);
-        ioReadTime += new Date().getTime() - start;
+        val start = new Date().getTime()
+        text = sys.readFile(fileName, options.charset)
+        ioReadTime += new Date().getTime() - start
       }
       catch (e) {
         if (onError) {
-          onError(e.number === unsupportedFileEncodingErrorCode
+          onError(e.Int == unsupportedFileEncodingErrorCode
             ? createCompilerDiagnostic(Diagnostics.Unsupported_file_encoding).messageText
-            : e.message);
+            : e.message)
         }
-        text = "";
+        text = ""
       }
 
-      return text !== undefined ? createSourceFile(fileName, text, languageVersion, setParentNodes) : undefined;
+      return text != undefined ? createSourceFile(fileName, text, languageVersion, setParentNodes) : undefined
     }
 
-    function directoryExists(directoryPath: string): boolean {
+    def directoryExists(directoryPath: String): Boolean {
       if (hasProperty(existingDirectories, directoryPath)) {
-        return true;
+        return true
       }
       if (sys.directoryExists(directoryPath)) {
-        existingDirectories[directoryPath] = true;
-        return true;
+        existingDirectories[directoryPath] = true
+        return true
       }
-      return false;
+      return false
     }
 
-    function ensureDirectoriesExist(directoryPath: string) {
+    def ensureDirectoriesExist(directoryPath: String) {
       if (directoryPath.length > getRootLength(directoryPath) && !directoryExists(directoryPath)) {
-        const parentDirectory = getDirectoryPath(directoryPath);
-        ensureDirectoriesExist(parentDirectory);
-        sys.createDirectory(directoryPath);
+        val parentDirectory = getDirectoryPath(directoryPath)
+        ensureDirectoriesExist(parentDirectory)
+        sys.createDirectory(directoryPath)
       }
     }
 
-    function writeFile(fileName: string, data: string, writeByteOrderMark: boolean, onError?: (message: string) => void) {
+    def writeFile(fileName: String, data: String, writeByteOrderMark: Boolean, onError?: (message: String) => void) {
       try {
-        const start = new Date().getTime();
-        ensureDirectoriesExist(getDirectoryPath(normalizePath(fileName)));
-        sys.writeFile(fileName, data, writeByteOrderMark);
-        ioWriteTime += new Date().getTime() - start;
+        val start = new Date().getTime()
+        ensureDirectoriesExist(getDirectoryPath(normalizePath(fileName)))
+        sys.writeFile(fileName, data, writeByteOrderMark)
+        ioWriteTime += new Date().getTime() - start
       }
       catch (e) {
         if (onError) {
-          onError(e.message);
+          onError(e.message)
         }
       }
     }
 
-    const newLine = getNewLineCharacter(options);
+    val newLine = getNewLineCharacter(options)
 
     return {
       getSourceFile,
@@ -635,124 +635,124 @@ namespace ts {
       getNewLine: () => newLine,
       fileExists: fileName => sys.fileExists(fileName),
       readFile: fileName => sys.readFile(fileName),
-      trace: (s: string) => sys.write(s + newLine),
+      trace: (s: String) => sys.write(s + newLine),
       directoryExists: directoryName => sys.directoryExists(directoryName)
-    };
+    }
   }
 
-  export function getPreEmitDiagnostics(program: Program, sourceFile?: SourceFile, cancellationToken?: CancellationToken): Diagnostic[] {
-    let diagnostics = program.getOptionsDiagnostics(cancellationToken).concat(
+  def getPreEmitDiagnostics(program: Program, sourceFile?: SourceFile, cancellationToken?: CancellationToken): Diagnostic[] {
+    var diagnostics = program.getOptionsDiagnostics(cancellationToken).concat(
               program.getSyntacticDiagnostics(sourceFile, cancellationToken),
               program.getGlobalDiagnostics(cancellationToken),
-              program.getSemanticDiagnostics(sourceFile, cancellationToken));
+              program.getSemanticDiagnostics(sourceFile, cancellationToken))
 
     if (program.getCompilerOptions().declaration) {
-      diagnostics = diagnostics.concat(program.getDeclarationDiagnostics(sourceFile, cancellationToken));
+      diagnostics = diagnostics.concat(program.getDeclarationDiagnostics(sourceFile, cancellationToken))
     }
 
-    return sortAndDeduplicateDiagnostics(diagnostics);
+    return sortAndDeduplicateDiagnostics(diagnostics)
   }
 
-  export function flattenDiagnosticMessageText(messageText: string | DiagnosticMessageChain, newLine: string): string {
-    if (typeof messageText === "string") {
-      return messageText;
+  def flattenDiagnosticMessageText(messageText: String | DiagnosticMessageChain, newLine: String): String {
+    if (typeof messageText == "String") {
+      return messageText
     }
     else {
-      let diagnosticChain = messageText;
-      let result = "";
+      var diagnosticChain = messageText
+      var result = ""
 
-      let indent = 0;
+      var indent = 0
       while (diagnosticChain) {
         if (indent) {
-          result += newLine;
+          result += newLine
 
-          for (let i = 0; i < indent; i++) {
-            result += "  ";
+          for (var i = 0; i < indent; i++) {
+            result += "  "
           }
         }
-        result += diagnosticChain.messageText;
-        indent++;
-        diagnosticChain = diagnosticChain.next;
+        result += diagnosticChain.messageText
+        indent++
+        diagnosticChain = diagnosticChain.next
       }
 
-      return result;
+      return result
     }
   }
 
-  export function createProgram(rootNames: string[], options: CompilerOptions, host?: CompilerHost, oldProgram?: Program): Program {
-    let program: Program;
-    let files: SourceFile[] = [];
-    let fileProcessingDiagnostics = createDiagnosticCollection();
-    const programDiagnostics = createDiagnosticCollection();
+  def createProgram(rootNames: String[], options: CompilerOptions, host?: CompilerHost, oldProgram?: Program): Program {
+    var program: Program
+    var files: SourceFile[] = []
+    var fileProcessingDiagnostics = createDiagnosticCollection()
+    val programDiagnostics = createDiagnosticCollection()
 
-    let commonSourceDirectory: string;
-    let diagnosticsProducingTypeChecker: TypeChecker;
-    let noDiagnosticsTypeChecker: TypeChecker;
-    let classifiableNames: Map<string>;
+    var commonSourceDirectory: String
+    var diagnosticsProducingTypeChecker: TypeChecker
+    var noDiagnosticsTypeChecker: TypeChecker
+    var classifiableNames: Map<String>
 
-    let skipDefaultLib = options.noLib;
-    const supportedExtensions = getSupportedExtensions(options);
+    var skipDefaultLib = options.noLib
+    val supportedExtensions = getSupportedExtensions(options)
 
-    const start = new Date().getTime();
+    val start = new Date().getTime()
 
-    host = host || createCompilerHost(options);
+    host = host || createCompilerHost(options)
     // Map storing if there is emit blocking diagnostics for given input
-    const hasEmitBlockingDiagnostics = createFileMap<boolean>(getCanonicalFileName);
+    val hasEmitBlockingDiagnostics = createFileMap<Boolean>(getCanonicalFileName)
 
-    const currentDirectory = host.getCurrentDirectory();
-    const resolveModuleNamesWorker = host.resolveModuleNames
-      ? ((moduleNames: string[], containingFile: string) => host.resolveModuleNames(moduleNames, containingFile))
-      : ((moduleNames: string[], containingFile: string) => {
-        const resolvedModuleNames: ResolvedModule[] = [];
+    val currentDirectory = host.getCurrentDirectory()
+    val resolveModuleNamesWorker = host.resolveModuleNames
+      ? ((moduleNames: String[], containingFile: String) => host.resolveModuleNames(moduleNames, containingFile))
+      : ((moduleNames: String[], containingFile: String) => {
+        val resolvedModuleNames: ResolvedModule[] = []
         // resolveModuleName does not store any results between calls.
         // lookup is a local cache to avoid resolving the same module name several times
-        const lookup: Map<ResolvedModule> = {};
-        for (const moduleName of moduleNames) {
-          let resolvedName: ResolvedModule;
+        val lookup: Map<ResolvedModule> = {}
+        for (val moduleName of moduleNames) {
+          var resolvedName: ResolvedModule
           if (hasProperty(lookup, moduleName)) {
-            resolvedName = lookup[moduleName];
+            resolvedName = lookup[moduleName]
           }
           else {
-            resolvedName = resolveModuleName(moduleName, containingFile, options, host).resolvedModule;
-            lookup[moduleName] = resolvedName;
+            resolvedName = resolveModuleName(moduleName, containingFile, options, host).resolvedModule
+            lookup[moduleName] = resolvedName
           }
-          resolvedModuleNames.push(resolvedName);
+          resolvedModuleNames.push(resolvedName)
         }
-        return resolvedModuleNames;
-      });
+        return resolvedModuleNames
+      })
 
-    const filesByName = createFileMap<SourceFile>();
+    val filesByName = createFileMap<SourceFile>()
     // stores 'filename -> file association' ignoring case
     // used to track cases when two file names differ only in casing
-    const filesByNameIgnoreCase = host.useCaseSensitiveFileNames() ? createFileMap<SourceFile>(fileName => fileName.toLowerCase()) : undefined;
+    val filesByNameIgnoreCase = host.useCaseSensitiveFileNames() ? createFileMap<SourceFile>(fileName => fileName.toLowerCase()) : undefined
 
     if (oldProgram) {
       // check properties that can affect structure of the program or module resolution strategy
       // if any of these properties has changed - structure cannot be reused
-      const oldOptions = oldProgram.getCompilerOptions();
-      if ((oldOptions.module !== options.module) ||
-        (oldOptions.noResolve !== options.noResolve) ||
-        (oldOptions.target !== options.target) ||
-        (oldOptions.noLib !== options.noLib) ||
-        (oldOptions.jsx !== options.jsx) ||
-        (oldOptions.allowJs !== options.allowJs)) {
-        oldProgram = undefined;
+      val oldOptions = oldProgram.getCompilerOptions()
+      if ((oldOptions.module != options.module) ||
+        (oldOptions.noResolve != options.noResolve) ||
+        (oldOptions.target != options.target) ||
+        (oldOptions.noLib != options.noLib) ||
+        (oldOptions.jsx != options.jsx) ||
+        (oldOptions.allowJs != options.allowJs)) {
+        oldProgram = undefined
       }
     }
 
     if (!tryReuseStructureFromOldProgram()) {
-      forEach(rootNames, name => processRootFile(name, /*isDefaultLib*/ false));
+      forEach(rootNames, name => processRootFile(name, /*isDefaultLib*/ false))
       // Do not process the default library if:
       //  - The '--noLib' flag is used.
       //  - A 'no-default-lib' reference comment is encountered in
       //    processing the root files.
       if (!skipDefaultLib) {
-        processRootFile(host.getDefaultLibFileName(options), /*isDefaultLib*/ true);
+        processRootFile(host.getDefaultLibFileName(options), /*isDefaultLib*/ true)
       }
     }
 
     // unconditionally set oldProgram to undefined to prevent it from being captured in closure
-    oldProgram = undefined;
+    oldProgram = undefined
 
     program = {
       getRootFileNames: () => rootNames,
@@ -775,146 +775,146 @@ namespace ts {
       getSymbolCount: () => getDiagnosticsProducingTypeChecker().getSymbolCount(),
       getTypeCount: () => getDiagnosticsProducingTypeChecker().getTypeCount(),
       getFileProcessingDiagnostics: () => fileProcessingDiagnostics
-    };
+    }
 
-    verifyCompilerOptions();
+    verifyCompilerOptions()
 
-    programTime += new Date().getTime() - start;
+    programTime += new Date().getTime() - start
 
-    return program;
+    return program
 
-    function getCommonSourceDirectory() {
-      if (typeof commonSourceDirectory === "undefined") {
+    def getCommonSourceDirectory() {
+      if (typeof commonSourceDirectory == "undefined") {
         if (options.rootDir && checkSourceFilesBelongToPath(files, options.rootDir)) {
           // If a rootDir is specified and is valid use it as the commonSourceDirectory
-          commonSourceDirectory = getNormalizedAbsolutePath(options.rootDir, currentDirectory);
+          commonSourceDirectory = getNormalizedAbsolutePath(options.rootDir, currentDirectory)
         }
         else {
-          commonSourceDirectory = computeCommonSourceDirectory(files);
+          commonSourceDirectory = computeCommonSourceDirectory(files)
         }
-        if (commonSourceDirectory && commonSourceDirectory[commonSourceDirectory.length - 1] !== directorySeparator) {
-          // Make sure directory path ends with directory separator so this string can directly
+        if (commonSourceDirectory && commonSourceDirectory[commonSourceDirectory.length - 1] != directorySeparator) {
+          // Make sure directory path ends with directory separator so this String can directly
           // used to replace with "" to get the relative path of the source file and the relative path doesn't
           // start with / making it rooted path
-          commonSourceDirectory += directorySeparator;
+          commonSourceDirectory += directorySeparator
         }
       }
-      return commonSourceDirectory;
+      return commonSourceDirectory
     }
 
-    function getClassifiableNames() {
+    def getClassifiableNames() {
       if (!classifiableNames) {
         // Initialize a checker so that all our files are bound.
-        getTypeChecker();
-        classifiableNames = {};
+        getTypeChecker()
+        classifiableNames = {}
 
-        for (const sourceFile of files) {
-          copyMap(sourceFile.classifiableNames, classifiableNames);
+        for (val sourceFile of files) {
+          copyMap(sourceFile.classifiableNames, classifiableNames)
         }
       }
 
-      return classifiableNames;
+      return classifiableNames
     }
 
-    function tryReuseStructureFromOldProgram(): boolean {
+    def tryReuseStructureFromOldProgram(): Boolean {
       if (!oldProgram) {
-        return false;
+        return false
       }
 
-      Debug.assert(!oldProgram.structureIsReused);
+      Debug.assert(!oldProgram.structureIsReused)
 
       // there is an old program, check if we can reuse its structure
-      const oldRootNames = oldProgram.getRootFileNames();
+      val oldRootNames = oldProgram.getRootFileNames()
       if (!arrayIsEqualTo(oldRootNames, rootNames)) {
-        return false;
+        return false
       }
 
       // check if program source files has changed in the way that can affect structure of the program
-      const newSourceFiles: SourceFile[] = [];
-      const filePaths: Path[] = [];
-      const modifiedSourceFiles: SourceFile[] = [];
+      val newSourceFiles: SourceFile[] = []
+      val filePaths: Path[] = []
+      val modifiedSourceFiles: SourceFile[] = []
 
-      for (const oldSourceFile of oldProgram.getSourceFiles()) {
-        let newSourceFile = host.getSourceFile(oldSourceFile.fileName, options.target);
+      for (val oldSourceFile of oldProgram.getSourceFiles()) {
+        var newSourceFile = host.getSourceFile(oldSourceFile.fileName, options.target)
         if (!newSourceFile) {
-          return false;
+          return false
         }
 
-        newSourceFile.path = oldSourceFile.path;
-        filePaths.push(newSourceFile.path);
+        newSourceFile.path = oldSourceFile.path
+        filePaths.push(newSourceFile.path)
 
-        if (oldSourceFile !== newSourceFile) {
-          if (oldSourceFile.hasNoDefaultLib !== newSourceFile.hasNoDefaultLib) {
+        if (oldSourceFile != newSourceFile) {
+          if (oldSourceFile.hasNoDefaultLib != newSourceFile.hasNoDefaultLib) {
             // value of no-default-lib has changed
             // this will affect if default library is injected into the list of files
-            return false;
+            return false
           }
 
           // check tripleslash references
           if (!arrayIsEqualTo(oldSourceFile.referencedFiles, newSourceFile.referencedFiles, fileReferenceIsEqualTo)) {
             // tripleslash references has changed
-            return false;
+            return false
           }
 
           // check imports and module augmentations
-          collectExternalModuleReferences(newSourceFile);
+          collectExternalModuleReferences(newSourceFile)
           if (!arrayIsEqualTo(oldSourceFile.imports, newSourceFile.imports, moduleNameIsEqualTo)) {
             // imports has changed
-            return false;
+            return false
           }
           if (!arrayIsEqualTo(oldSourceFile.moduleAugmentations, newSourceFile.moduleAugmentations, moduleNameIsEqualTo)) {
             // moduleAugmentations has changed
-            return false;
+            return false
           }
 
           if (resolveModuleNamesWorker) {
-            const moduleNames = map(concatenate(newSourceFile.imports, newSourceFile.moduleAugmentations), getTextOfLiteral);
-            const resolutions = resolveModuleNamesWorker(moduleNames, getNormalizedAbsolutePath(newSourceFile.fileName, currentDirectory));
+            val moduleNames = map(concatenate(newSourceFile.imports, newSourceFile.moduleAugmentations), getTextOfLiteral)
+            val resolutions = resolveModuleNamesWorker(moduleNames, getNormalizedAbsolutePath(newSourceFile.fileName, currentDirectory))
             // ensure that module resolution results are still correct
-            for (let i = 0; i < moduleNames.length; i++) {
-              const newResolution = resolutions[i];
-              const oldResolution = getResolvedModule(oldSourceFile, moduleNames[i]);
-              const resolutionChanged = oldResolution
+            for (var i = 0; i < moduleNames.length; i++) {
+              val newResolution = resolutions[i]
+              val oldResolution = getResolvedModule(oldSourceFile, moduleNames[i])
+              val resolutionChanged = oldResolution
                 ? !newResolution ||
-                  oldResolution.resolvedFileName !== newResolution.resolvedFileName ||
-                  !!oldResolution.isExternalLibraryImport !== !!newResolution.isExternalLibraryImport
-                : newResolution;
+                  oldResolution.resolvedFileName != newResolution.resolvedFileName ||
+                  !!oldResolution.isExternalLibraryImport != !!newResolution.isExternalLibraryImport
+                : newResolution
 
               if (resolutionChanged) {
-                return false;
+                return false
               }
             }
           }
           // pass the cache of module resolutions from the old source file
-          newSourceFile.resolvedModules = oldSourceFile.resolvedModules;
-          modifiedSourceFiles.push(newSourceFile);
+          newSourceFile.resolvedModules = oldSourceFile.resolvedModules
+          modifiedSourceFiles.push(newSourceFile)
         }
         else {
           // file has no changes - use it as is
-          newSourceFile = oldSourceFile;
+          newSourceFile = oldSourceFile
         }
 
         // if file has passed all checks it should be safe to reuse it
-        newSourceFiles.push(newSourceFile);
+        newSourceFiles.push(newSourceFile)
       }
 
       // update fileName -> file mapping
-      for (let i = 0, len = newSourceFiles.length; i < len; i++) {
-        filesByName.set(filePaths[i], newSourceFiles[i]);
+      for (var i = 0, len = newSourceFiles.length; i < len; i++) {
+        filesByName.set(filePaths[i], newSourceFiles[i])
       }
 
-      files = newSourceFiles;
-      fileProcessingDiagnostics = oldProgram.getFileProcessingDiagnostics();
+      files = newSourceFiles
+      fileProcessingDiagnostics = oldProgram.getFileProcessingDiagnostics()
 
-      for (const modifiedFile of modifiedSourceFiles) {
-        fileProcessingDiagnostics.reattachFileDiagnostics(modifiedFile);
+      for (val modifiedFile of modifiedSourceFiles) {
+        fileProcessingDiagnostics.reattachFileDiagnostics(modifiedFile)
       }
-      oldProgram.structureIsReused = true;
+      oldProgram.structureIsReused = true
 
-      return true;
+      return true
     }
 
-    function getEmitHost(writeFileCallback?: WriteFileCallback): EmitHost {
+    def getEmitHost(writeFileCallback?: WriteFileCallback): EmitHost {
       return {
         getCanonicalFileName,
         getCommonSourceDirectory: program.getCommonSourceDirectory,
@@ -926,33 +926,33 @@ namespace ts {
         writeFile: writeFileCallback || (
           (fileName, data, writeByteOrderMark, onError) => host.writeFile(fileName, data, writeByteOrderMark, onError)),
         isEmitBlocked,
-      };
+      }
     }
 
-    function getDiagnosticsProducingTypeChecker() {
-      return diagnosticsProducingTypeChecker || (diagnosticsProducingTypeChecker = createTypeChecker(program, /*produceDiagnostics:*/ true));
+    def getDiagnosticsProducingTypeChecker() {
+      return diagnosticsProducingTypeChecker || (diagnosticsProducingTypeChecker = createTypeChecker(program, /*produceDiagnostics:*/ true))
     }
 
-    function getTypeChecker() {
-      return noDiagnosticsTypeChecker || (noDiagnosticsTypeChecker = createTypeChecker(program, /*produceDiagnostics:*/ false));
+    def getTypeChecker() {
+      return noDiagnosticsTypeChecker || (noDiagnosticsTypeChecker = createTypeChecker(program, /*produceDiagnostics:*/ false))
     }
 
-    function emit(sourceFile?: SourceFile, writeFileCallback?: WriteFileCallback, cancellationToken?: CancellationToken): EmitResult {
-      return runWithCancellationToken(() => emitWorker(this, sourceFile, writeFileCallback, cancellationToken));
+    def emit(sourceFile?: SourceFile, writeFileCallback?: WriteFileCallback, cancellationToken?: CancellationToken): EmitResult {
+      return runWithCancellationToken(() => emitWorker(this, sourceFile, writeFileCallback, cancellationToken))
     }
 
-    function isEmitBlocked(emitFileName: string): boolean {
-      return hasEmitBlockingDiagnostics.contains(toPath(emitFileName, currentDirectory, getCanonicalFileName));
+    def isEmitBlocked(emitFileName: String): Boolean {
+      return hasEmitBlockingDiagnostics.contains(toPath(emitFileName, currentDirectory, getCanonicalFileName))
     }
 
-    function emitWorker(program: Program, sourceFile: SourceFile, writeFileCallback: WriteFileCallback, cancellationToken: CancellationToken): EmitResult {
+    def emitWorker(program: Program, sourceFile: SourceFile, writeFileCallback: WriteFileCallback, cancellationToken: CancellationToken): EmitResult {
       // If the noEmitOnError flag is set, then check if we have any errors so far.  If so,
       // immediately bail out.  Note that we pass 'undefined' for 'sourceFile' so that we
       // get any preEmit diagnostics, not just the ones
       if (options.noEmitOnError) {
-        const preEmitDiagnostics = getPreEmitDiagnostics(program, /*sourceFile:*/ undefined, cancellationToken);
+        val preEmitDiagnostics = getPreEmitDiagnostics(program, /*sourceFile:*/ undefined, cancellationToken)
         if (preEmitDiagnostics.length > 0) {
-          return { diagnostics: preEmitDiagnostics, sourceMaps: undefined, emitSkipped: true };
+          return { diagnostics: preEmitDiagnostics, sourceMaps: undefined, emitSkipped: true }
         }
       }
 
@@ -964,61 +964,61 @@ namespace ts {
       // This is because in the -out scenario all files need to be emitted, and therefore all
       // files need to be type checked. And the way to specify that all files need to be type
       // checked is to not pass the file to getEmitResolver.
-      const emitResolver = getDiagnosticsProducingTypeChecker().getEmitResolver((options.outFile || options.out) ? undefined : sourceFile);
+      val emitResolver = getDiagnosticsProducingTypeChecker().getEmitResolver((options.outFile || options.out) ? undefined : sourceFile)
 
-      const start = new Date().getTime();
+      val start = new Date().getTime()
 
-      const emitResult = emitFiles(
+      val emitResult = emitFiles(
         emitResolver,
         getEmitHost(writeFileCallback),
-        sourceFile);
+        sourceFile)
 
-      emitTime += new Date().getTime() - start;
-      return emitResult;
+      emitTime += new Date().getTime() - start
+      return emitResult
     }
 
-    function getSourceFile(fileName: string): SourceFile {
-      return filesByName.get(toPath(fileName, currentDirectory, getCanonicalFileName));
+    def getSourceFile(fileName: String): SourceFile {
+      return filesByName.get(toPath(fileName, currentDirectory, getCanonicalFileName))
     }
 
-    function getDiagnosticsHelper(
+    def getDiagnosticsHelper(
         sourceFile: SourceFile,
         getDiagnostics: (sourceFile: SourceFile, cancellationToken: CancellationToken) => Diagnostic[],
         cancellationToken: CancellationToken): Diagnostic[] {
       if (sourceFile) {
-        return getDiagnostics(sourceFile, cancellationToken);
+        return getDiagnostics(sourceFile, cancellationToken)
       }
 
-      const allDiagnostics: Diagnostic[] = [];
+      val allDiagnostics: Diagnostic[] = []
       forEach(program.getSourceFiles(), sourceFile => {
         if (cancellationToken) {
-          cancellationToken.throwIfCancellationRequested();
+          cancellationToken.throwIfCancellationRequested()
         }
-        addRange(allDiagnostics, getDiagnostics(sourceFile, cancellationToken));
-      });
+        addRange(allDiagnostics, getDiagnostics(sourceFile, cancellationToken))
+      })
 
-      return sortAndDeduplicateDiagnostics(allDiagnostics);
+      return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
 
-    function getSyntacticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
-      return getDiagnosticsHelper(sourceFile, getSyntacticDiagnosticsForFile, cancellationToken);
+    def getSyntacticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+      return getDiagnosticsHelper(sourceFile, getSyntacticDiagnosticsForFile, cancellationToken)
     }
 
-    function getSemanticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
-      return getDiagnosticsHelper(sourceFile, getSemanticDiagnosticsForFile, cancellationToken);
+    def getSemanticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+      return getDiagnosticsHelper(sourceFile, getSemanticDiagnosticsForFile, cancellationToken)
     }
 
-    function getDeclarationDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
-      return getDiagnosticsHelper(sourceFile, getDeclarationDiagnosticsForFile, cancellationToken);
+    def getDeclarationDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+      return getDiagnosticsHelper(sourceFile, getDeclarationDiagnosticsForFile, cancellationToken)
     }
 
-    function getSyntacticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
-      return sourceFile.parseDiagnostics;
+    def getSyntacticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+      return sourceFile.parseDiagnostics
     }
 
-    function runWithCancellationToken<T>(func: () => T): T {
+    def runWithCancellationToken<T>(func: () => T): T {
       try {
-        return func();
+        return func()
       }
       catch (e) {
         if (e instanceof OperationCanceledException) {
@@ -1031,78 +1031,78 @@ namespace ts {
           // cancel when the user has made a change anyways.  And, in that case, we (the
           // program instance) will get thrown away anyways.  So trying to keep one of
           // these type checkers alive doesn't serve much purpose.
-          noDiagnosticsTypeChecker = undefined;
-          diagnosticsProducingTypeChecker = undefined;
+          noDiagnosticsTypeChecker = undefined
+          diagnosticsProducingTypeChecker = undefined
         }
 
-        throw e;
+        throw e
       }
     }
 
-    function getSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
       return runWithCancellationToken(() => {
-        const typeChecker = getDiagnosticsProducingTypeChecker();
+        val typeChecker = getDiagnosticsProducingTypeChecker()
 
-        Debug.assert(!!sourceFile.bindDiagnostics);
-        const bindDiagnostics = sourceFile.bindDiagnostics;
+        Debug.assert(!!sourceFile.bindDiagnostics)
+        val bindDiagnostics = sourceFile.bindDiagnostics
         // For JavaScript files, we don't want to report the normal typescript semantic errors.
         // Instead, we just report errors for using TypeScript-only constructs from within a
         // JavaScript file.
-        const checkDiagnostics = isSourceFileJavaScript(sourceFile) ?
+        val checkDiagnostics = isSourceFileJavaScript(sourceFile) ?
           getJavaScriptSemanticDiagnosticsForFile(sourceFile, cancellationToken) :
-          typeChecker.getDiagnostics(sourceFile, cancellationToken);
-        const fileProcessingDiagnosticsInFile = fileProcessingDiagnostics.getDiagnostics(sourceFile.fileName);
-        const programDiagnosticsInFile = programDiagnostics.getDiagnostics(sourceFile.fileName);
+          typeChecker.getDiagnostics(sourceFile, cancellationToken)
+        val fileProcessingDiagnosticsInFile = fileProcessingDiagnostics.getDiagnostics(sourceFile.fileName)
+        val programDiagnosticsInFile = programDiagnostics.getDiagnostics(sourceFile.fileName)
 
-        return bindDiagnostics.concat(checkDiagnostics).concat(fileProcessingDiagnosticsInFile).concat(programDiagnosticsInFile);
-      });
+        return bindDiagnostics.concat(checkDiagnostics).concat(fileProcessingDiagnosticsInFile).concat(programDiagnosticsInFile)
+      })
     }
 
-    function getJavaScriptSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getJavaScriptSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
       return runWithCancellationToken(() => {
-        const diagnostics: Diagnostic[] = [];
-        walk(sourceFile);
+        val diagnostics: Diagnostic[] = []
+        walk(sourceFile)
 
-        return diagnostics;
+        return diagnostics
 
-        function walk(node: Node): boolean {
+        def walk(node: Node): Boolean {
           if (!node) {
-            return false;
+            return false
           }
 
           switch (node.kind) {
             case SyntaxKind.ImportEqualsDeclaration:
-              diagnostics.push(createDiagnosticForNode(node, Diagnostics.import_can_only_be_used_in_a_ts_file));
-              return true;
+              diagnostics.push(createDiagnosticForNode(node, Diagnostics.import_can_only_be_used_in_a_ts_file))
+              return true
             case SyntaxKind.ExportAssignment:
               if ((<ExportAssignment>node).isExportEquals) {
-                diagnostics.push(createDiagnosticForNode(node, Diagnostics.export_can_only_be_used_in_a_ts_file));
-                return true;
+                diagnostics.push(createDiagnosticForNode(node, Diagnostics.export_can_only_be_used_in_a_ts_file))
+                return true
               }
-              break;
+              break
             case SyntaxKind.ClassDeclaration:
-              let classDeclaration = <ClassDeclaration>node;
+              var classDeclaration = <ClassDeclaration>node
               if (checkModifiers(classDeclaration.modifiers) ||
                 checkTypeParameters(classDeclaration.typeParameters)) {
-                return true;
+                return true
               }
-              break;
+              break
             case SyntaxKind.HeritageClause:
-              let heritageClause = <HeritageClause>node;
-              if (heritageClause.token === SyntaxKind.ImplementsKeyword) {
-                diagnostics.push(createDiagnosticForNode(node, Diagnostics.implements_clauses_can_only_be_used_in_a_ts_file));
-                return true;
+              var heritageClause = <HeritageClause>node
+              if (heritageClause.token == SyntaxKind.ImplementsKeyword) {
+                diagnostics.push(createDiagnosticForNode(node, Diagnostics.implements_clauses_can_only_be_used_in_a_ts_file))
+                return true
               }
-              break;
+              break
             case SyntaxKind.InterfaceDeclaration:
-              diagnostics.push(createDiagnosticForNode(node, Diagnostics.interface_declarations_can_only_be_used_in_a_ts_file));
-              return true;
+              diagnostics.push(createDiagnosticForNode(node, Diagnostics.interface_declarations_can_only_be_used_in_a_ts_file))
+              return true
             case SyntaxKind.ModuleDeclaration:
-              diagnostics.push(createDiagnosticForNode(node, Diagnostics.module_declarations_can_only_be_used_in_a_ts_file));
-              return true;
+              diagnostics.push(createDiagnosticForNode(node, Diagnostics.module_declarations_can_only_be_used_in_a_ts_file))
+              return true
             case SyntaxKind.TypeAliasDeclaration:
-              diagnostics.push(createDiagnosticForNode(node, Diagnostics.type_aliases_can_only_be_used_in_a_ts_file));
-              return true;
+              diagnostics.push(createDiagnosticForNode(node, Diagnostics.type_aliases_can_only_be_used_in_a_ts_file))
+              return true
             case SyntaxKind.MethodDeclaration:
             case SyntaxKind.MethodSignature:
             case SyntaxKind.Constructor:
@@ -1112,99 +1112,99 @@ namespace ts {
             case SyntaxKind.FunctionDeclaration:
             case SyntaxKind.ArrowFunction:
             case SyntaxKind.FunctionDeclaration:
-              const functionDeclaration = <FunctionLikeDeclaration>node;
+              val functionDeclaration = <FunctionLikeDeclaration>node
               if (checkModifiers(functionDeclaration.modifiers) ||
                 checkTypeParameters(functionDeclaration.typeParameters) ||
                 checkTypeAnnotation(functionDeclaration.type)) {
-                return true;
+                return true
               }
-              break;
+              break
             case SyntaxKind.VariableStatement:
-              const variableStatement = <VariableStatement>node;
+              val variableStatement = <VariableStatement>node
               if (checkModifiers(variableStatement.modifiers)) {
-                return true;
+                return true
               }
-              break;
+              break
             case SyntaxKind.VariableDeclaration:
-              const variableDeclaration = <VariableDeclaration>node;
+              val variableDeclaration = <VariableDeclaration>node
               if (checkTypeAnnotation(variableDeclaration.type)) {
-                return true;
+                return true
               }
-              break;
+              break
             case SyntaxKind.CallExpression:
             case SyntaxKind.NewExpression:
-              const expression = <CallExpression>node;
+              val expression = <CallExpression>node
               if (expression.typeArguments && expression.typeArguments.length > 0) {
-                const start = expression.typeArguments.pos;
+                val start = expression.typeArguments.pos
                 diagnostics.push(createFileDiagnostic(sourceFile, start, expression.typeArguments.end - start,
-                  Diagnostics.type_arguments_can_only_be_used_in_a_ts_file));
-                return true;
+                  Diagnostics.type_arguments_can_only_be_used_in_a_ts_file))
+                return true
               }
-              break;
+              break
             case SyntaxKind.Parameter:
-              const parameter = <ParameterDeclaration>node;
+              val parameter = <ParameterDeclaration>node
               if (parameter.modifiers) {
-                const start = parameter.modifiers.pos;
+                val start = parameter.modifiers.pos
                 diagnostics.push(createFileDiagnostic(sourceFile, start, parameter.modifiers.end - start,
-                  Diagnostics.parameter_modifiers_can_only_be_used_in_a_ts_file));
-                return true;
+                  Diagnostics.parameter_modifiers_can_only_be_used_in_a_ts_file))
+                return true
               }
               if (parameter.questionToken) {
-                diagnostics.push(createDiagnosticForNode(parameter.questionToken, Diagnostics._0_can_only_be_used_in_a_ts_file, "?"));
-                return true;
+                diagnostics.push(createDiagnosticForNode(parameter.questionToken, Diagnostics._0_can_only_be_used_in_a_ts_file, "?"))
+                return true
               }
               if (parameter.type) {
-                diagnostics.push(createDiagnosticForNode(parameter.type, Diagnostics.types_can_only_be_used_in_a_ts_file));
-                return true;
+                diagnostics.push(createDiagnosticForNode(parameter.type, Diagnostics.types_can_only_be_used_in_a_ts_file))
+                return true
               }
-              break;
+              break
             case SyntaxKind.PropertyDeclaration:
-              diagnostics.push(createDiagnosticForNode(node, Diagnostics.property_declarations_can_only_be_used_in_a_ts_file));
-              return true;
+              diagnostics.push(createDiagnosticForNode(node, Diagnostics.property_declarations_can_only_be_used_in_a_ts_file))
+              return true
             case SyntaxKind.EnumDeclaration:
-              diagnostics.push(createDiagnosticForNode(node, Diagnostics.enum_declarations_can_only_be_used_in_a_ts_file));
-              return true;
+              diagnostics.push(createDiagnosticForNode(node, Diagnostics.enum_declarations_can_only_be_used_in_a_ts_file))
+              return true
             case SyntaxKind.TypeAssertionExpression:
-              let typeAssertionExpression = <TypeAssertion>node;
-              diagnostics.push(createDiagnosticForNode(typeAssertionExpression.type, Diagnostics.type_assertion_expressions_can_only_be_used_in_a_ts_file));
-              return true;
+              var typeAssertionExpression = <TypeAssertion>node
+              diagnostics.push(createDiagnosticForNode(typeAssertionExpression.type, Diagnostics.type_assertion_expressions_can_only_be_used_in_a_ts_file))
+              return true
             case SyntaxKind.Decorator:
-              diagnostics.push(createDiagnosticForNode(node, Diagnostics.decorators_can_only_be_used_in_a_ts_file));
-              return true;
+              diagnostics.push(createDiagnosticForNode(node, Diagnostics.decorators_can_only_be_used_in_a_ts_file))
+              return true
           }
 
-          return forEachChild(node, walk);
+          return forEachChild(node, walk)
         }
 
-        function checkTypeParameters(typeParameters: NodeArray<TypeParameterDeclaration>): boolean {
+        def checkTypeParameters(typeParameters: NodeArray<TypeParameterDeclaration>): Boolean {
           if (typeParameters) {
-            const start = typeParameters.pos;
-            diagnostics.push(createFileDiagnostic(sourceFile, start, typeParameters.end - start, Diagnostics.type_parameter_declarations_can_only_be_used_in_a_ts_file));
-            return true;
+            val start = typeParameters.pos
+            diagnostics.push(createFileDiagnostic(sourceFile, start, typeParameters.end - start, Diagnostics.type_parameter_declarations_can_only_be_used_in_a_ts_file))
+            return true
           }
-          return false;
+          return false
         }
 
-        function checkTypeAnnotation(type: TypeNode): boolean {
+        def checkTypeAnnotation(type: TypeNode): Boolean {
           if (type) {
-            diagnostics.push(createDiagnosticForNode(type, Diagnostics.types_can_only_be_used_in_a_ts_file));
-            return true;
+            diagnostics.push(createDiagnosticForNode(type, Diagnostics.types_can_only_be_used_in_a_ts_file))
+            return true
           }
 
-          return false;
+          return false
         }
 
-        function checkModifiers(modifiers: ModifiersArray): boolean {
+        def checkModifiers(modifiers: ModifiersArray): Boolean {
           if (modifiers) {
-            for (const modifier of modifiers) {
+            for (val modifier of modifiers) {
               switch (modifier.kind) {
                 case SyntaxKind.PublicKeyword:
                 case SyntaxKind.PrivateKeyword:
                 case SyntaxKind.ProtectedKeyword:
                 case SyntaxKind.ReadonlyKeyword:
                 case SyntaxKind.DeclareKeyword:
-                  diagnostics.push(createDiagnosticForNode(modifier, Diagnostics._0_can_only_be_used_in_a_ts_file, tokenToString(modifier.kind)));
-                  return true;
+                  diagnostics.push(createDiagnosticForNode(modifier, Diagnostics._0_can_only_be_used_in_a_ts_file, tokenToString(modifier.kind)))
+                  return true
 
                 // These are all legal modifiers.
                 case SyntaxKind.StaticKeyword:
@@ -1216,108 +1216,108 @@ namespace ts {
             }
           }
 
-          return false;
+          return false
         }
-      });
+      })
     }
 
-    function getDeclarationDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getDeclarationDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
       return runWithCancellationToken(() => {
         if (!isDeclarationFile(sourceFile)) {
-          const resolver = getDiagnosticsProducingTypeChecker().getEmitResolver(sourceFile, cancellationToken);
+          val resolver = getDiagnosticsProducingTypeChecker().getEmitResolver(sourceFile, cancellationToken)
           // Don't actually write any files since we're just getting diagnostics.
-          const writeFile: WriteFileCallback = () => { };
-          return ts.getDeclarationDiagnostics(getEmitHost(writeFile), resolver, sourceFile);
+          val writeFile: WriteFileCallback = () => { }
+          return ts.getDeclarationDiagnostics(getEmitHost(writeFile), resolver, sourceFile)
         }
-      });
+      })
     }
 
-    function getOptionsDiagnostics(): Diagnostic[] {
-      const allDiagnostics: Diagnostic[] = [];
-      addRange(allDiagnostics, fileProcessingDiagnostics.getGlobalDiagnostics());
-      addRange(allDiagnostics, programDiagnostics.getGlobalDiagnostics());
-      return sortAndDeduplicateDiagnostics(allDiagnostics);
+    def getOptionsDiagnostics(): Diagnostic[] {
+      val allDiagnostics: Diagnostic[] = []
+      addRange(allDiagnostics, fileProcessingDiagnostics.getGlobalDiagnostics())
+      addRange(allDiagnostics, programDiagnostics.getGlobalDiagnostics())
+      return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
 
-    function getGlobalDiagnostics(): Diagnostic[] {
-      const allDiagnostics: Diagnostic[] = [];
-      addRange(allDiagnostics, getDiagnosticsProducingTypeChecker().getGlobalDiagnostics());
-      return sortAndDeduplicateDiagnostics(allDiagnostics);
+    def getGlobalDiagnostics(): Diagnostic[] {
+      val allDiagnostics: Diagnostic[] = []
+      addRange(allDiagnostics, getDiagnosticsProducingTypeChecker().getGlobalDiagnostics())
+      return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
 
-    function hasExtension(fileName: string): boolean {
-      return getBaseFileName(fileName).indexOf(".") >= 0;
+    def hasExtension(fileName: String): Boolean {
+      return getBaseFileName(fileName).indexOf(".") >= 0
     }
 
-    function processRootFile(fileName: string, isDefaultLib: boolean) {
-      processSourceFile(normalizePath(fileName), isDefaultLib);
+    def processRootFile(fileName: String, isDefaultLib: Boolean) {
+      processSourceFile(normalizePath(fileName), isDefaultLib)
     }
 
-    function fileReferenceIsEqualTo(a: FileReference, b: FileReference): boolean {
-      return a.fileName === b.fileName;
+    def fileReferenceIsEqualTo(a: FileReference, b: FileReference): Boolean {
+      return a.fileName == b.fileName
     }
 
-    function moduleNameIsEqualTo(a: LiteralExpression, b: LiteralExpression): boolean {
-      return a.text === b.text;
+    def moduleNameIsEqualTo(a: LiteralExpression, b: LiteralExpression): Boolean {
+      return a.text == b.text
     }
 
-    function getTextOfLiteral(literal: LiteralExpression): string {
-      return literal.text;
+    def getTextOfLiteral(literal: LiteralExpression): String {
+      return literal.text
     }
 
-    function collectExternalModuleReferences(file: SourceFile): void {
+    def collectExternalModuleReferences(file: SourceFile): void {
       if (file.imports) {
-        return;
+        return
       }
 
-      const isJavaScriptFile = isSourceFileJavaScript(file);
-      const isExternalModuleFile = isExternalModule(file);
+      val isJavaScriptFile = isSourceFileJavaScript(file)
+      val isExternalModuleFile = isExternalModule(file)
 
-      let imports: LiteralExpression[];
-      let moduleAugmentations: LiteralExpression[];
+      var imports: LiteralExpression[]
+      var moduleAugmentations: LiteralExpression[]
 
-      for (const node of file.statements) {
-        collectModuleReferences(node, /*inAmbientModule*/ false);
+      for (val node of file.statements) {
+        collectModuleReferences(node, /*inAmbientModule*/ false)
         if (isJavaScriptFile) {
-          collectRequireCalls(node);
+          collectRequireCalls(node)
         }
       }
 
-      file.imports = imports || emptyArray;
-      file.moduleAugmentations = moduleAugmentations || emptyArray;
+      file.imports = imports || emptyArray
+      file.moduleAugmentations = moduleAugmentations || emptyArray
 
-      return;
+      return
 
-      function collectModuleReferences(node: Node, inAmbientModule: boolean): void {
+      def collectModuleReferences(node: Node, inAmbientModule: Boolean): void {
         switch (node.kind) {
           case SyntaxKind.ImportDeclaration:
           case SyntaxKind.ImportEqualsDeclaration:
           case SyntaxKind.ExportDeclaration:
-            let moduleNameExpr = getExternalModuleName(node);
-            if (!moduleNameExpr || moduleNameExpr.kind !== SyntaxKind.StringLiteral) {
-              break;
+            var moduleNameExpr = getExternalModuleName(node)
+            if (!moduleNameExpr || moduleNameExpr.kind != SyntaxKind.StringLiteral) {
+              break
             }
             if (!(<LiteralExpression>moduleNameExpr).text) {
-              break;
+              break
             }
 
             // TypeScript 1.0 spec (April 2014): 12.1.6
             // An ExternalImportDeclaration in an AmbientExternalModuleDeclaration may reference other external modules
             // only through top - level external module names. Relative external module names are not permitted.
             if (!inAmbientModule || !isExternalModuleNameRelative((<LiteralExpression>moduleNameExpr).text)) {
-              (imports || (imports = [])).push(<LiteralExpression>moduleNameExpr);
+              (imports || (imports = [])).push(<LiteralExpression>moduleNameExpr)
             }
-            break;
+            break
           case SyntaxKind.ModuleDeclaration:
             if (isAmbientModule(<ModuleDeclaration>node) && (inAmbientModule || node.flags & NodeFlags.Ambient || isDeclarationFile(file))) {
-              const moduleName = <LiteralExpression>(<ModuleDeclaration>node).name;
+              val moduleName = <LiteralExpression>(<ModuleDeclaration>node).name
               // Ambient module declarations can be interpreted as augmentations for some existing external modules.
               // This will happen in two cases:
               // - if current file is external module then module augmentation is a ambient module declaration defined in the top level scope
               // - if current file is not external module then module augmentation is an ambient module declaration with non-relative module name
               //   immediately nested in top level ambient module declaration .
               if (isExternalModuleFile || (inAmbientModule && !isExternalModuleNameRelative(moduleName.text))) {
-                (moduleAugmentations || (moduleAugmentations = [])).push(moduleName);
+                (moduleAugmentations || (moduleAugmentations = [])).push(moduleName)
               }
               else if (!inAmbientModule) {
                 // An AmbientExternalModuleDeclaration declares an external module.
@@ -1326,177 +1326,177 @@ namespace ts {
                 // Relative external module names are not permitted
 
                 // NOTE: body of ambient module is always a module block
-                for (const statement of (<ModuleBlock>(<ModuleDeclaration>node).body).statements) {
-                  collectModuleReferences(statement, /*inAmbientModule*/ true);
+                for (val statement of (<ModuleBlock>(<ModuleDeclaration>node).body).statements) {
+                  collectModuleReferences(statement, /*inAmbientModule*/ true)
                 }
               }
             }
         }
       }
 
-      function collectRequireCalls(node: Node): void {
+      def collectRequireCalls(node: Node): void {
         if (isRequireCall(node, /*checkArgumentIsStringLiteral*/true)) {
-          (imports || (imports = [])).push(<StringLiteral>(<CallExpression>node).arguments[0]);
+          (imports || (imports = [])).push(<StringLiteral>(<CallExpression>node).arguments[0])
         }
         else {
-          forEachChild(node, collectRequireCalls);
+          forEachChild(node, collectRequireCalls)
         }
       }
     }
 
-    function processSourceFile(fileName: string, isDefaultLib: boolean, refFile?: SourceFile, refPos?: number, refEnd?: number) {
-      let diagnosticArgument: string[];
-      let diagnostic: DiagnosticMessage;
+    def processSourceFile(fileName: String, isDefaultLib: Boolean, refFile?: SourceFile, refPos?: Int, refEnd?: Int) {
+      var diagnosticArgument: String[]
+      var diagnostic: DiagnosticMessage
       if (hasExtension(fileName)) {
         if (!options.allowNonTsExtensions && !forEach(supportedExtensions, extension => fileExtensionIs(host.getCanonicalFileName(fileName), extension))) {
-          diagnostic = Diagnostics.File_0_has_unsupported_extension_The_only_supported_extensions_are_1;
-          diagnosticArgument = [fileName, "'" + supportedExtensions.join("', '") + "'"];
+          diagnostic = Diagnostics.File_0_has_unsupported_extension_The_only_supported_extensions_are_1
+          diagnosticArgument = [fileName, "'" + supportedExtensions.join("', '") + "'"]
         }
         else if (!findSourceFile(fileName, toPath(fileName, currentDirectory, getCanonicalFileName), isDefaultLib, refFile, refPos, refEnd)) {
-          diagnostic = Diagnostics.File_0_not_found;
-          diagnosticArgument = [fileName];
+          diagnostic = Diagnostics.File_0_not_found
+          diagnosticArgument = [fileName]
         }
-        else if (refFile && host.getCanonicalFileName(fileName) === host.getCanonicalFileName(refFile.fileName)) {
-          diagnostic = Diagnostics.A_file_cannot_have_a_reference_to_itself;
-          diagnosticArgument = [fileName];
+        else if (refFile && host.getCanonicalFileName(fileName) == host.getCanonicalFileName(refFile.fileName)) {
+          diagnostic = Diagnostics.A_file_cannot_have_a_reference_to_itself
+          diagnosticArgument = [fileName]
         }
       }
       else {
-        const nonTsFile: SourceFile = options.allowNonTsExtensions && findSourceFile(fileName, toPath(fileName, currentDirectory, getCanonicalFileName), isDefaultLib, refFile, refPos, refEnd);
+        val nonTsFile: SourceFile = options.allowNonTsExtensions && findSourceFile(fileName, toPath(fileName, currentDirectory, getCanonicalFileName), isDefaultLib, refFile, refPos, refEnd)
         if (!nonTsFile) {
           if (options.allowNonTsExtensions) {
-            diagnostic = Diagnostics.File_0_not_found;
-            diagnosticArgument = [fileName];
+            diagnostic = Diagnostics.File_0_not_found
+            diagnosticArgument = [fileName]
           }
           else if (!forEach(supportedExtensions, extension => findSourceFile(fileName + extension, toPath(fileName + extension, currentDirectory, getCanonicalFileName), isDefaultLib, refFile, refPos, refEnd))) {
-            diagnostic = Diagnostics.File_0_not_found;
-            fileName += ".ts";
-            diagnosticArgument = [fileName];
+            diagnostic = Diagnostics.File_0_not_found
+            fileName += ".ts"
+            diagnosticArgument = [fileName]
           }
         }
       }
 
       if (diagnostic) {
-        if (refFile !== undefined && refEnd !== undefined && refPos !== undefined) {
-          fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos, diagnostic, ...diagnosticArgument));
+        if (refFile != undefined && refEnd != undefined && refPos != undefined) {
+          fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos, diagnostic, ...diagnosticArgument))
         }
         else {
-          fileProcessingDiagnostics.add(createCompilerDiagnostic(diagnostic, ...diagnosticArgument));
+          fileProcessingDiagnostics.add(createCompilerDiagnostic(diagnostic, ...diagnosticArgument))
         }
       }
     }
 
-    function reportFileNamesDifferOnlyInCasingError(fileName: string, existingFileName: string, refFile: SourceFile, refPos: number, refEnd: number): void {
-      if (refFile !== undefined && refPos !== undefined && refEnd !== undefined) {
+    def reportFileNamesDifferOnlyInCasingError(fileName: String, existingFileName: String, refFile: SourceFile, refPos: Int, refEnd: Int): void {
+      if (refFile != undefined && refPos != undefined && refEnd != undefined) {
         fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos,
-          Diagnostics.File_name_0_differs_from_already_included_file_name_1_only_in_casing, fileName, existingFileName));
+          Diagnostics.File_name_0_differs_from_already_included_file_name_1_only_in_casing, fileName, existingFileName))
       }
       else {
-        fileProcessingDiagnostics.add(createCompilerDiagnostic(Diagnostics.File_name_0_differs_from_already_included_file_name_1_only_in_casing, fileName, existingFileName));
+        fileProcessingDiagnostics.add(createCompilerDiagnostic(Diagnostics.File_name_0_differs_from_already_included_file_name_1_only_in_casing, fileName, existingFileName))
       }
     }
 
     // Get source file from normalized fileName
-    function findSourceFile(fileName: string, path: Path, isDefaultLib: boolean, refFile?: SourceFile, refPos?: number, refEnd?: number): SourceFile {
+    def findSourceFile(fileName: String, path: Path, isDefaultLib: Boolean, refFile?: SourceFile, refPos?: Int, refEnd?: Int): SourceFile {
       if (filesByName.contains(path)) {
-        const file = filesByName.get(path);
+        val file = filesByName.get(path)
         // try to check if we've already seen this file but with a different casing in path
         // NOTE: this only makes sense for case-insensitive file systems
-        if (file && options.forceConsistentCasingInFileNames && getNormalizedAbsolutePath(file.fileName, currentDirectory) !== getNormalizedAbsolutePath(fileName, currentDirectory)) {
-          reportFileNamesDifferOnlyInCasingError(fileName, file.fileName, refFile, refPos, refEnd);
+        if (file && options.forceConsistentCasingInFileNames && getNormalizedAbsolutePath(file.fileName, currentDirectory) != getNormalizedAbsolutePath(fileName, currentDirectory)) {
+          reportFileNamesDifferOnlyInCasingError(fileName, file.fileName, refFile, refPos, refEnd)
         }
 
-        return file;
+        return file
       }
 
       // We haven't looked for this file, do so now and cache result
-      const file = host.getSourceFile(fileName, options.target, hostErrorMessage => {
-        if (refFile !== undefined && refPos !== undefined && refEnd !== undefined) {
+      val file = host.getSourceFile(fileName, options.target, hostErrorMessage => {
+        if (refFile != undefined && refPos != undefined && refEnd != undefined) {
           fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos,
-            Diagnostics.Cannot_read_file_0_Colon_1, fileName, hostErrorMessage));
+            Diagnostics.Cannot_read_file_0_Colon_1, fileName, hostErrorMessage))
         }
         else {
-          fileProcessingDiagnostics.add(createCompilerDiagnostic(Diagnostics.Cannot_read_file_0_Colon_1, fileName, hostErrorMessage));
+          fileProcessingDiagnostics.add(createCompilerDiagnostic(Diagnostics.Cannot_read_file_0_Colon_1, fileName, hostErrorMessage))
         }
-      });
+      })
 
-      filesByName.set(path, file);
+      filesByName.set(path, file)
       if (file) {
-        file.path = path;
+        file.path = path
 
         if (host.useCaseSensitiveFileNames()) {
           // for case-sensitive file systems check if we've already seen some file with similar filename ignoring case
-          const existingFile = filesByNameIgnoreCase.get(path);
+          val existingFile = filesByNameIgnoreCase.get(path)
           if (existingFile) {
-            reportFileNamesDifferOnlyInCasingError(fileName, existingFile.fileName, refFile, refPos, refEnd);
+            reportFileNamesDifferOnlyInCasingError(fileName, existingFile.fileName, refFile, refPos, refEnd)
           }
           else {
-            filesByNameIgnoreCase.set(path, file);
+            filesByNameIgnoreCase.set(path, file)
           }
         }
 
-        skipDefaultLib = skipDefaultLib || file.hasNoDefaultLib;
+        skipDefaultLib = skipDefaultLib || file.hasNoDefaultLib
 
-        const basePath = getDirectoryPath(fileName);
+        val basePath = getDirectoryPath(fileName)
         if (!options.noResolve) {
-          processReferencedFiles(file, basePath);
+          processReferencedFiles(file, basePath)
         }
 
         // always process imported modules to record module name resolutions
-        processImportedModules(file, basePath);
+        processImportedModules(file, basePath)
 
         if (isDefaultLib) {
-          files.unshift(file);
+          files.unshift(file)
         }
         else {
-          files.push(file);
+          files.push(file)
         }
       }
 
-      return file;
+      return file
     }
 
-    function processReferencedFiles(file: SourceFile, basePath: string) {
+    def processReferencedFiles(file: SourceFile, basePath: String) {
       forEach(file.referencedFiles, ref => {
-        const referencedFileName = resolveTripleslashReference(ref.fileName, file.fileName);
-        processSourceFile(referencedFileName, /*isDefaultLib*/ false, file, ref.pos, ref.end);
-      });
+        val referencedFileName = resolveTripleslashReference(ref.fileName, file.fileName)
+        processSourceFile(referencedFileName, /*isDefaultLib*/ false, file, ref.pos, ref.end)
+      })
     }
 
-    function getCanonicalFileName(fileName: string): string {
-      return host.getCanonicalFileName(fileName);
+    def getCanonicalFileName(fileName: String): String {
+      return host.getCanonicalFileName(fileName)
     }
 
-    function processImportedModules(file: SourceFile, basePath: string) {
-      collectExternalModuleReferences(file);
+    def processImportedModules(file: SourceFile, basePath: String) {
+      collectExternalModuleReferences(file)
       if (file.imports.length || file.moduleAugmentations.length) {
-        file.resolvedModules = {};
-        const moduleNames = map(concatenate(file.imports, file.moduleAugmentations), getTextOfLiteral);
-        const resolutions = resolveModuleNamesWorker(moduleNames, getNormalizedAbsolutePath(file.fileName, currentDirectory));
-        for (let i = 0; i < moduleNames.length; i++) {
-          const resolution = resolutions[i];
-          setResolvedModule(file, moduleNames[i], resolution);
+        file.resolvedModules = {}
+        val moduleNames = map(concatenate(file.imports, file.moduleAugmentations), getTextOfLiteral)
+        val resolutions = resolveModuleNamesWorker(moduleNames, getNormalizedAbsolutePath(file.fileName, currentDirectory))
+        for (var i = 0; i < moduleNames.length; i++) {
+          val resolution = resolutions[i]
+          setResolvedModule(file, moduleNames[i], resolution)
           // add file to program only if:
           // - resolution was successful
           // - noResolve is falsy
           // - module name come from the list fo imports
-          const shouldAddFile = resolution &&
+          val shouldAddFile = resolution &&
             !options.noResolve &&
-            i < file.imports.length;
+            i < file.imports.length
 
           if (shouldAddFile) {
-            const importedFile = findSourceFile(resolution.resolvedFileName, toPath(resolution.resolvedFileName, currentDirectory, getCanonicalFileName), /*isDefaultLib*/ false, file, skipTrivia(file.text, file.imports[i].pos), file.imports[i].end);
+            val importedFile = findSourceFile(resolution.resolvedFileName, toPath(resolution.resolvedFileName, currentDirectory, getCanonicalFileName), /*isDefaultLib*/ false, file, skipTrivia(file.text, file.imports[i].pos), file.imports[i].end)
 
             if (importedFile && resolution.isExternalLibraryImport) {
               // Since currently irrespective of allowJs, we only look for supportedTypeScript extension external module files,
               // this check is ok. Otherwise this would be never true for javascript file
               if (!isExternalModule(importedFile) && importedFile.statements.length) {
-                const start = getTokenPosOfNode(file.imports[i], file);
-                fileProcessingDiagnostics.add(createFileDiagnostic(file, start, file.imports[i].end - start, Diagnostics.Exported_external_package_typings_file_0_is_not_a_module_Please_contact_the_package_author_to_update_the_package_definition, importedFile.fileName));
+                val start = getTokenPosOfNode(file.imports[i], file)
+                fileProcessingDiagnostics.add(createFileDiagnostic(file, start, file.imports[i].end - start, Diagnostics.Exported_external_package_typings_file_0_is_not_a_module_Please_contact_the_package_author_to_update_the_package_definition, importedFile.fileName))
               }
               else if (importedFile.referencedFiles.length) {
-                const firstRef = importedFile.referencedFiles[0];
-                fileProcessingDiagnostics.add(createFileDiagnostic(importedFile, firstRef.pos, firstRef.end - firstRef.pos, Diagnostics.Exported_external_package_typings_file_cannot_contain_tripleslash_references_Please_contact_the_package_author_to_update_the_package_definition));
+                val firstRef = importedFile.referencedFiles[0]
+                fileProcessingDiagnostics.add(createFileDiagnostic(importedFile, firstRef.pos, firstRef.end - firstRef.pos, Diagnostics.Exported_external_package_typings_file_cannot_contain_tripleslash_references_Please_contact_the_package_author_to_update_the_package_definition))
               }
             }
           }
@@ -1504,121 +1504,121 @@ namespace ts {
       }
       else {
         // no imports - drop cached module resolutions
-        file.resolvedModules = undefined;
+        file.resolvedModules = undefined
       }
-      return;
+      return
     }
 
-    function computeCommonSourceDirectory(sourceFiles: SourceFile[]): string {
-      let commonPathComponents: string[];
-      const failed = forEach(files, sourceFile => {
+    def computeCommonSourceDirectory(sourceFiles: SourceFile[]): String {
+      var commonPathComponents: String[]
+      val failed = forEach(files, sourceFile => {
         // Each file contributes into common source file path
         if (isDeclarationFile(sourceFile)) {
-          return;
+          return
         }
 
-        const sourcePathComponents = getNormalizedPathComponents(sourceFile.fileName, currentDirectory);
+        val sourcePathComponents = getNormalizedPathComponents(sourceFile.fileName, currentDirectory)
         sourcePathComponents.pop(); // The base file name is not part of the common directory path
 
         if (!commonPathComponents) {
           // first file
-          commonPathComponents = sourcePathComponents;
-          return;
+          commonPathComponents = sourcePathComponents
+          return
         }
 
-        for (let i = 0, n = Math.min(commonPathComponents.length, sourcePathComponents.length); i < n; i++) {
-          if (getCanonicalFileName(commonPathComponents[i]) !== getCanonicalFileName(sourcePathComponents[i])) {
-            if (i === 0) {
+        for (var i = 0, n = Math.min(commonPathComponents.length, sourcePathComponents.length); i < n; i++) {
+          if (getCanonicalFileName(commonPathComponents[i]) != getCanonicalFileName(sourcePathComponents[i])) {
+            if (i == 0) {
               // Failed to find any common path component
-              return true;
+              return true
             }
 
             // New common path found that is 0 -> i-1
-            commonPathComponents.length = i;
-            break;
+            commonPathComponents.length = i
+            break
           }
         }
 
         // If the sourcePathComponents was shorter than the commonPathComponents, truncate to the sourcePathComponents
         if (sourcePathComponents.length < commonPathComponents.length) {
-          commonPathComponents.length = sourcePathComponents.length;
+          commonPathComponents.length = sourcePathComponents.length
         }
-      });
+      })
 
       // A common path can not be found when paths span multiple drives on windows, for example
       if (failed) {
-        return "";
+        return ""
       }
 
       if (!commonPathComponents) { // Can happen when all input files are .d.ts files
-        return currentDirectory;
+        return currentDirectory
       }
 
-      return getNormalizedPathFromPathComponents(commonPathComponents);
+      return getNormalizedPathFromPathComponents(commonPathComponents)
     }
 
-    function checkSourceFilesBelongToPath(sourceFiles: SourceFile[], rootDirectory: string): boolean {
-      let allFilesBelongToPath = true;
+    def checkSourceFilesBelongToPath(sourceFiles: SourceFile[], rootDirectory: String): Boolean {
+      var allFilesBelongToPath = true
       if (sourceFiles) {
-        const absoluteRootDirectoryPath = host.getCanonicalFileName(getNormalizedAbsolutePath(rootDirectory, currentDirectory));
+        val absoluteRootDirectoryPath = host.getCanonicalFileName(getNormalizedAbsolutePath(rootDirectory, currentDirectory))
 
-        for (const sourceFile of sourceFiles) {
+        for (val sourceFile of sourceFiles) {
           if (!isDeclarationFile(sourceFile)) {
-            const absoluteSourceFilePath = host.getCanonicalFileName(getNormalizedAbsolutePath(sourceFile.fileName, currentDirectory));
-            if (absoluteSourceFilePath.indexOf(absoluteRootDirectoryPath) !== 0) {
-              programDiagnostics.add(createCompilerDiagnostic(Diagnostics.File_0_is_not_under_rootDir_1_rootDir_is_expected_to_contain_all_source_files, sourceFile.fileName, options.rootDir));
-              allFilesBelongToPath = false;
+            val absoluteSourceFilePath = host.getCanonicalFileName(getNormalizedAbsolutePath(sourceFile.fileName, currentDirectory))
+            if (absoluteSourceFilePath.indexOf(absoluteRootDirectoryPath) != 0) {
+              programDiagnostics.add(createCompilerDiagnostic(Diagnostics.File_0_is_not_under_rootDir_1_rootDir_is_expected_to_contain_all_source_files, sourceFile.fileName, options.rootDir))
+              allFilesBelongToPath = false
             }
           }
         }
       }
 
-      return allFilesBelongToPath;
+      return allFilesBelongToPath
     }
 
-    function verifyCompilerOptions() {
+    def verifyCompilerOptions() {
       if (options.isolatedModules) {
         if (options.declaration) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "declaration", "isolatedModules"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "declaration", "isolatedModules"))
         }
 
         if (options.noEmitOnError) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmitOnError", "isolatedModules"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmitOnError", "isolatedModules"))
         }
 
         if (options.out) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "out", "isolatedModules"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "out", "isolatedModules"))
         }
 
         if (options.outFile) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "outFile", "isolatedModules"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "outFile", "isolatedModules"))
         }
       }
 
       if (options.inlineSourceMap) {
         if (options.sourceMap) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "sourceMap", "inlineSourceMap"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "sourceMap", "inlineSourceMap"))
         }
         if (options.mapRoot) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "mapRoot", "inlineSourceMap"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "mapRoot", "inlineSourceMap"))
         }
       }
 
-      if (options.paths && options.baseUrl === undefined) {
-        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_paths_cannot_be_used_without_specifying_baseUrl_option));
+      if (options.paths && options.baseUrl == undefined) {
+        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_paths_cannot_be_used_without_specifying_baseUrl_option))
       }
 
       if (options.paths) {
-        for (const key in options.paths) {
+        for (val key in options.paths) {
           if (!hasProperty(options.paths, key)) {
-            continue;
+            continue
           }
           if (!hasZeroOrOneAsteriskCharacter(key)) {
-            programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Pattern_0_can_have_at_most_one_Asterisk_character, key));
+            programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Pattern_0_can_have_at_most_one_Asterisk_character, key))
           }
-          for (const subst of options.paths[key]) {
+          for (val subst of options.paths[key]) {
             if (!hasZeroOrOneAsteriskCharacter(subst)) {
-              programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Substitution_0_in_pattern_1_in_can_have_at_most_one_Asterisk_character, subst, key));
+              programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Substitution_0_in_pattern_1_in_can_have_at_most_one_Asterisk_character, subst, key))
             }
           }
         }
@@ -1626,56 +1626,56 @@ namespace ts {
 
       if (options.inlineSources) {
         if (!options.sourceMap && !options.inlineSourceMap) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_inlineSources_can_only_be_used_when_either_option_inlineSourceMap_or_option_sourceMap_is_provided));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_inlineSources_can_only_be_used_when_either_option_inlineSourceMap_or_option_sourceMap_is_provided))
         }
         if (options.sourceRoot) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "sourceRoot", "inlineSources"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "sourceRoot", "inlineSources"))
         }
       }
 
       if (options.out && options.outFile) {
-        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "out", "outFile"));
+        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "out", "outFile"))
       }
 
       if (!options.sourceMap && (options.mapRoot || options.sourceRoot)) {
         // Error to specify --mapRoot or --sourceRoot without mapSourceFiles
         if (options.mapRoot) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "mapRoot", "sourceMap"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "mapRoot", "sourceMap"))
         }
         if (options.sourceRoot && !options.inlineSourceMap) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "sourceRoot", "sourceMap"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "sourceRoot", "sourceMap"))
         }
       }
 
-      const languageVersion = options.target || ScriptTarget.ES3;
-      const outFile = options.outFile || options.out;
+      val languageVersion = options.target || ScriptTarget.ES3
+      val outFile = options.outFile || options.out
 
-      const firstExternalModuleSourceFile = forEach(files, f => isExternalModule(f) ? f : undefined);
+      val firstExternalModuleSourceFile = forEach(files, f => isExternalModule(f) ? f : undefined)
       if (options.isolatedModules) {
-        if (options.module === ModuleKind.None && languageVersion < ScriptTarget.ES6) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_isolatedModules_can_only_be_used_when_either_option_module_is_provided_or_option_target_is_ES2015_or_higher));
+        if (options.module == ModuleKind.None && languageVersion < ScriptTarget.ES6) {
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_isolatedModules_can_only_be_used_when_either_option_module_is_provided_or_option_target_is_ES2015_or_higher))
         }
 
-        const firstNonExternalModuleSourceFile = forEach(files, f => !isExternalModule(f) && !isDeclarationFile(f) ? f : undefined);
+        val firstNonExternalModuleSourceFile = forEach(files, f => !isExternalModule(f) && !isDeclarationFile(f) ? f : undefined)
         if (firstNonExternalModuleSourceFile) {
-          const span = getErrorSpanForNode(firstNonExternalModuleSourceFile, firstNonExternalModuleSourceFile);
-          programDiagnostics.add(createFileDiagnostic(firstNonExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_compile_namespaces_when_the_isolatedModules_flag_is_provided));
+          val span = getErrorSpanForNode(firstNonExternalModuleSourceFile, firstNonExternalModuleSourceFile)
+          programDiagnostics.add(createFileDiagnostic(firstNonExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_compile_namespaces_when_the_isolatedModules_flag_is_provided))
         }
       }
-      else if (firstExternalModuleSourceFile && languageVersion < ScriptTarget.ES6 && options.module === ModuleKind.None) {
+      else if (firstExternalModuleSourceFile && languageVersion < ScriptTarget.ES6 && options.module == ModuleKind.None) {
         // We cannot use createDiagnosticFromNode because nodes do not have parents yet
-        const span = getErrorSpanForNode(firstExternalModuleSourceFile, firstExternalModuleSourceFile.externalModuleIndicator);
-        programDiagnostics.add(createFileDiagnostic(firstExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_compile_modules_unless_the_module_flag_is_provided_with_a_valid_module_type_Consider_setting_the_module_compiler_option_in_a_tsconfig_json_file));
+        val span = getErrorSpanForNode(firstExternalModuleSourceFile, firstExternalModuleSourceFile.externalModuleIndicator)
+        programDiagnostics.add(createFileDiagnostic(firstExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_compile_modules_unless_the_module_flag_is_provided_with_a_valid_module_type_Consider_setting_the_module_compiler_option_in_a_tsconfig_json_file))
       }
 
       // Cannot specify module gen target of es6 when below es6
-      if (options.module === ModuleKind.ES6 && languageVersion < ScriptTarget.ES6) {
-        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Cannot_compile_modules_into_es2015_when_targeting_ES5_or_lower));
+      if (options.module == ModuleKind.ES6 && languageVersion < ScriptTarget.ES6) {
+        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Cannot_compile_modules_into_es2015_when_targeting_ES5_or_lower))
       }
 
       // Cannot specify module gen that isn't amd or system with --out
-      if (outFile && options.module && !(options.module === ModuleKind.AMD || options.module === ModuleKind.System)) {
-        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Only_amd_and_system_modules_are_supported_alongside_0, options.out ? "out" : "outFile"));
+      if (outFile && options.module && !(options.module == ModuleKind.AMD || options.module == ModuleKind.System)) {
+        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Only_amd_and_system_modules_are_supported_alongside_0, options.out ? "out" : "outFile"))
       }
 
       // there has to be common source directory if user specified --outdir || --sourceRoot
@@ -1685,78 +1685,78 @@ namespace ts {
         options.mapRoot) { // there is --mapRoot specified
 
         // Precalculate and cache the common source directory
-        const dir = getCommonSourceDirectory();
+        val dir = getCommonSourceDirectory()
 
         // If we failed to find a good common directory, but outDir is specified and at least one of our files is on a windows drive/URL/other resource, add a failure
-        if (options.outDir && dir === "" && forEach(files, file => getRootLength(file.fileName) > 1)) {
-            programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Cannot_find_the_common_subdirectory_path_for_the_input_files));
+        if (options.outDir && dir == "" && forEach(files, file => getRootLength(file.fileName) > 1)) {
+            programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Cannot_find_the_common_subdirectory_path_for_the_input_files))
         }
       }
 
       if (options.noEmit) {
         if (options.out) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "out"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "out"))
         }
 
         if (options.outFile) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "outFile"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "outFile"))
         }
 
         if (options.outDir) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "outDir"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "outDir"))
         }
 
         if (options.declaration) {
-          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "declaration"));
+          programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "noEmit", "declaration"))
         }
       }
       else if (options.allowJs && options.declaration) {
-        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "allowJs", "declaration"));
+        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "allowJs", "declaration"))
       }
 
       if (options.emitDecoratorMetadata &&
         !options.experimentalDecorators) {
-        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "emitDecoratorMetadata", "experimentalDecorators"));
+        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "emitDecoratorMetadata", "experimentalDecorators"))
       }
 
       if (options.reactNamespace && !isIdentifier(options.reactNamespace, languageVersion)) {
-        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Invalid_value_for_reactNamespace_0_is_not_a_valid_identifier, options.reactNamespace));
+        programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Invalid_value_for_reactNamespace_0_is_not_a_valid_identifier, options.reactNamespace))
       }
 
       // If the emit is enabled make sure that every output file is unique and not overwriting any of the input files
       if (!options.noEmit && !options.suppressOutputPathCheck) {
-        const emitHost = getEmitHost();
-        const emitFilesSeen = createFileMap<boolean>(!host.useCaseSensitiveFileNames() ? key => key.toLocaleLowerCase() : undefined);
+        val emitHost = getEmitHost()
+        val emitFilesSeen = createFileMap<Boolean>(!host.useCaseSensitiveFileNames() ? key => key.toLocaleLowerCase() : undefined)
         forEachExpectedEmitFile(emitHost, (emitFileNames, sourceFiles, isBundledEmit) => {
-          verifyEmitFilePath(emitFileNames.jsFilePath, emitFilesSeen);
-          verifyEmitFilePath(emitFileNames.declarationFilePath, emitFilesSeen);
-        });
+          verifyEmitFilePath(emitFileNames.jsFilePath, emitFilesSeen)
+          verifyEmitFilePath(emitFileNames.declarationFilePath, emitFilesSeen)
+        })
       }
 
       // Verify that all the emit files are unique and don't overwrite input files
-      function verifyEmitFilePath(emitFileName: string, emitFilesSeen: FileMap<boolean>) {
+      def verifyEmitFilePath(emitFileName: String, emitFilesSeen: FileMap<Boolean>) {
         if (emitFileName) {
-          const emitFilePath = toPath(emitFileName, currentDirectory, getCanonicalFileName);
+          val emitFilePath = toPath(emitFileName, currentDirectory, getCanonicalFileName)
           // Report error if the output overwrites input file
           if (filesByName.contains(emitFilePath)) {
-            createEmitBlockingDiagnostics(emitFileName, emitFilePath, Diagnostics.Cannot_write_file_0_because_it_would_overwrite_input_file);
+            createEmitBlockingDiagnostics(emitFileName, emitFilePath, Diagnostics.Cannot_write_file_0_because_it_would_overwrite_input_file)
           }
 
           // Report error if multiple files write into same file
           if (emitFilesSeen.contains(emitFilePath)) {
             // Already seen the same emit file - report error
-            createEmitBlockingDiagnostics(emitFileName, emitFilePath, Diagnostics.Cannot_write_file_0_because_it_would_be_overwritten_by_multiple_input_files);
+            createEmitBlockingDiagnostics(emitFileName, emitFilePath, Diagnostics.Cannot_write_file_0_because_it_would_be_overwritten_by_multiple_input_files)
           }
           else {
-            emitFilesSeen.set(emitFilePath, true);
+            emitFilesSeen.set(emitFilePath, true)
           }
         }
       }
     }
 
-    function createEmitBlockingDiagnostics(emitFileName: string, emitFilePath: Path, message: DiagnosticMessage) {
-      hasEmitBlockingDiagnostics.set(toPath(emitFileName, currentDirectory, getCanonicalFileName), true);
-      programDiagnostics.add(createCompilerDiagnostic(message, emitFileName));
+    def createEmitBlockingDiagnostics(emitFileName: String, emitFilePath: Path, message: DiagnosticMessage) {
+      hasEmitBlockingDiagnostics.set(toPath(emitFileName, currentDirectory, getCanonicalFileName), true)
+      programDiagnostics.add(createCompilerDiagnostic(message, emitFileName))
     }
   }
 }
