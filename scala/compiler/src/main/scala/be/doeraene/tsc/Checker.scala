@@ -8,7 +8,7 @@ object Checker {
   var nextNodeId = 1
   var nextMergeId = 1
 
-  def getNodeId(node: Node): Int {
+  def getNodeId(node: Node): Int = {
     if (!node.id) {
       node.id = nextNodeId
       nextNodeId++
@@ -18,7 +18,7 @@ object Checker {
 
   var checkTime = 0
 
-  def getSymbolId(symbol: Symbol): Int {
+  def getSymbolId(symbol: Symbol): Int = {
     if (!symbol.id) {
       symbol.id = nextSymbolId
       nextSymbolId++
@@ -27,7 +27,7 @@ object Checker {
     return symbol.id
   }
 
-  def createTypeChecker(host: TypeCheckerHost, produceDiagnostics: Boolean): TypeChecker {
+  def createTypeChecker(host: TypeCheckerHost, produceDiagnostics: Boolean): TypeChecker = {
     // Cancellation that controls whether or not we can cancel in the middle of type checking.
     // In general cancelling is *not* safe for the type checker.  We might be in the middle of
     // computing something, and we will leave our internals in an inconsistent state.  Callers
@@ -253,26 +253,26 @@ object Checker {
 
     return checker
 
-    def getEmitResolver(sourceFile: SourceFile, cancellationToken: CancellationToken) {
+    def getEmitResolver(sourceFile: SourceFile, cancellationToken: CancellationToken) = {
       // Ensure we have all the type information in place for this file so that all the
       // emitter questions of this resolver will return the right information.
       getDiagnostics(sourceFile, cancellationToken)
       return emitResolver
     }
 
-    def error(location: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Unit {
+    def error(location: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Unit = {
       val diagnostic = location
         ? createDiagnosticForNode(location, message, arg0, arg1, arg2)
         : createCompilerDiagnostic(message, arg0, arg1, arg2)
       diagnostics.add(diagnostic)
     }
 
-    def createSymbol(flags: SymbolFlags, name: String): Symbol {
+    def createSymbol(flags: SymbolFlags, name: String): Symbol = {
       symbolCount++
       return new Symbol(flags, name)
     }
 
-    def getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags {
+    def getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags = {
       var result: SymbolFlags = 0
       if (flags & SymbolFlags.BlockScopedVariable) result |= SymbolFlags.BlockScopedVariableExcludes
       if (flags & SymbolFlags.FunctionScopedVariable) result |= SymbolFlags.FunctionScopedVariableExcludes
@@ -293,7 +293,7 @@ object Checker {
       return result
     }
 
-    def recordMergedSymbol(target: Symbol, source: Symbol) {
+    def recordMergedSymbol(target: Symbol, source: Symbol) = {
       if (!source.mergeId) {
         source.mergeId = nextMergeId
         nextMergeId++
@@ -301,7 +301,7 @@ object Checker {
       mergedSymbols[source.mergeId] = target
     }
 
-    def cloneSymbol(symbol: Symbol): Symbol {
+    def cloneSymbol(symbol: Symbol): Symbol = {
       val result = createSymbol(symbol.flags | SymbolFlags.Merged, symbol.name)
       result.declarations = symbol.declarations.slice(0)
       result.parent = symbol.parent
@@ -313,7 +313,7 @@ object Checker {
       return result
     }
 
-    def mergeSymbol(target: Symbol, source: Symbol) {
+    def mergeSymbol(target: Symbol, source: Symbol) = {
       if (!(target.flags & getExcludedSymbolFlags(source.flags))) {
         if (source.flags & SymbolFlags.ValueModule && target.flags & SymbolFlags.ValueModule && target.constEnumOnlyModule && !source.constEnumOnlyModule) {
           // reset flag when merging instantiated module into value module that has only val enums
@@ -351,7 +351,7 @@ object Checker {
       }
     }
 
-    def cloneSymbolTable(symbolTable: SymbolTable): SymbolTable {
+    def cloneSymbolTable(symbolTable: SymbolTable): SymbolTable = {
       val result: SymbolTable = {}
       for (val id in symbolTable) {
         if (hasProperty(symbolTable, id)) {
@@ -361,7 +361,7 @@ object Checker {
       return result
     }
 
-    def mergeSymbolTable(target: SymbolTable, source: SymbolTable) {
+    def mergeSymbolTable(target: SymbolTable, source: SymbolTable) = {
       for (val id in source) {
         if (hasProperty(source, id)) {
           if (!hasProperty(target, id)) {
@@ -378,7 +378,7 @@ object Checker {
       }
     }
 
-    def mergeModuleAugmentation(moduleName: LiteralExpression): Unit {
+    def mergeModuleAugmentation(moduleName: LiteralExpression): Unit = {
       val moduleAugmentation = <ModuleDeclaration>moduleName.parent
       if (moduleAugmentation.symbol.valueDeclaration != moduleAugmentation) {
         // this is a combined symbol for multiple augmentations within the same file.
@@ -411,7 +411,7 @@ object Checker {
       }
     }
 
-    def addToSymbolTable(target: SymbolTable, source: SymbolTable, message: DiagnosticMessage) {
+    def addToSymbolTable(target: SymbolTable, source: SymbolTable, message: DiagnosticMessage) = {
       for (val id in source) {
         if (hasProperty(source, id)) {
           if (hasProperty(target, id)) {
@@ -424,27 +424,27 @@ object Checker {
         }
       }
 
-      def addDeclarationDiagnostic(id: String, message: DiagnosticMessage) {
+      def addDeclarationDiagnostic(id: String, message: DiagnosticMessage) = {
         return (declaration: Declaration) => diagnostics.add(createDiagnosticForNode(declaration, message, id))
       }
     }
 
-    def getSymbolLinks(symbol: Symbol): SymbolLinks {
+    def getSymbolLinks(symbol: Symbol): SymbolLinks = {
       if (symbol.flags & SymbolFlags.Transient) return <TransientSymbol>symbol
       val id = getSymbolId(symbol)
       return symbolLinks[id] || (symbolLinks[id] = {})
     }
 
-    def getNodeLinks(node: Node): NodeLinks {
+    def getNodeLinks(node: Node): NodeLinks = {
       val nodeId = getNodeId(node)
       return nodeLinks[nodeId] || (nodeLinks[nodeId] = {})
     }
 
-    def isGlobalSourceFile(node: Node) {
+    def isGlobalSourceFile(node: Node) = {
       return node.kind == SyntaxKind.SourceFile && !isExternalOrCommonJsModule(<SourceFile>node)
     }
 
-    def getSymbol(symbols: SymbolTable, name: String, meaning: SymbolFlags): Symbol {
+    def getSymbol(symbols: SymbolTable, name: String, meaning: SymbolFlags): Symbol = {
       if (meaning && hasProperty(symbols, name)) {
         val symbol = symbols[name]
         Debug.assert((symbol.flags & SymbolFlags.Instantiated) == 0, "Should never get an instantiated symbol here.")
@@ -482,7 +482,7 @@ object Checker {
       Debug.fail("There should exist two symbols, one as property declaration and one as parameter declaration")
     }
 
-    def isBlockScopedNameDeclaredBeforeUse(declaration: Declaration, usage: Node): Boolean {
+    def isBlockScopedNameDeclaredBeforeUse(declaration: Declaration, usage: Node): Boolean = {
       val declarationFile = getSourceFileOfNode(declaration)
       val useFile = getSourceFileOfNode(usage)
       if (declarationFile != useFile) {
@@ -506,7 +506,7 @@ object Checker {
       // can be legal if usage is deferred (i.e. inside def or in initializer of instance property)
       return isUsedInFunctionOrNonStaticProperty(declaration, usage)
 
-      def isImmediatelyUsedInInitializerOfBlockScopedVariable(declaration: VariableDeclaration, usage: Node): Boolean {
+      def isImmediatelyUsedInInitializerOfBlockScopedVariable(declaration: VariableDeclaration, usage: Node): Boolean = {
         val container = getEnclosingBlockScopeContainer(declaration)
 
         if (declaration.parent.parent.kind == SyntaxKind.VariableStatement ||
@@ -523,7 +523,7 @@ object Checker {
         }
       }
 
-      def isUsedInFunctionOrNonStaticProperty(declaration: Declaration, usage: Node): Boolean {
+      def isUsedInFunctionOrNonStaticProperty(declaration: Declaration, usage: Node): Boolean = {
         val container = getEnclosingBlockScopeContainer(declaration)
         var current = usage
         while (current) {
@@ -553,7 +553,7 @@ object Checker {
     // Resolve a given name for a given meaning at a given location. An error is reported if the name was not found and
     // the nameNotFoundMessage argument is not (). Returns the resolved symbol, or () if no symbol with
     // the given name can be found.
-    def resolveName(location: Node, name: String, meaning: SymbolFlags, nameNotFoundMessage: DiagnosticMessage, nameArg: String | Identifier): Symbol {
+    def resolveName(location: Node, name: String, meaning: SymbolFlags, nameNotFoundMessage: DiagnosticMessage, nameArg: String | Identifier): Symbol = {
       var result: Symbol
       var lastLocation: Node
       var propertyWithInvalidInitializer: Node
@@ -803,7 +803,7 @@ object Checker {
       return result
     }
 
-    def checkAndReportErrorForMissingPrefix(errorLocation: Node, name: String, nameArg: String | Identifier): Boolean {
+    def checkAndReportErrorForMissingPrefix(errorLocation: Node, name: String, nameArg: String | Identifier): Boolean = {
       if (!errorLocation || (errorLocation.kind == SyntaxKind.Identifier && (isTypeReferenceIdentifier(<Identifier>errorLocation)) || isInTypeQuery(errorLocation))) {
         return false
       }
@@ -840,7 +840,7 @@ object Checker {
       return false
     }
 
-    def checkResolvedBlockScopedVariable(result: Symbol, errorLocation: Node): Unit {
+    def checkResolvedBlockScopedVariable(result: Symbol, errorLocation: Node): Unit = {
       Debug.assert((result.flags & SymbolFlags.BlockScopedVariable) != 0)
       // Block-scoped variables cannot be used before their definition
       val declaration = forEach(result.declarations, d => isBlockOrCatchScoped(d) ? d : ())
@@ -856,7 +856,7 @@ object Checker {
      * If at any point current node is equal to 'parent' node - return true.
      * Return false if 'stopAt' node is reached or isFunctionLike(current) == true.
      */
-    def isSameScopeDescendentOf(initial: Node, parent: Node, stopAt: Node): Boolean {
+    def isSameScopeDescendentOf(initial: Node, parent: Node, stopAt: Node): Boolean = {
       if (!parent) {
         return false
       }
@@ -868,7 +868,7 @@ object Checker {
       return false
     }
 
-    def getAnyImportSyntax(node: Node): AnyImportSyntax {
+    def getAnyImportSyntax(node: Node): AnyImportSyntax = {
       if (isAliasSymbolDeclaration(node)) {
         if (node.kind == SyntaxKind.ImportEqualsDeclaration) {
           return <ImportEqualsDeclaration>node
@@ -881,18 +881,18 @@ object Checker {
       }
     }
 
-    def getDeclarationOfAliasSymbol(symbol: Symbol): Declaration {
+    def getDeclarationOfAliasSymbol(symbol: Symbol): Declaration = {
       return forEach(symbol.declarations, d => isAliasSymbolDeclaration(d) ? d : ())
     }
 
-    def getTargetOfImportEqualsDeclaration(node: ImportEqualsDeclaration): Symbol {
+    def getTargetOfImportEqualsDeclaration(node: ImportEqualsDeclaration): Symbol = {
       if (node.moduleReference.kind == SyntaxKind.ExternalModuleReference) {
         return resolveExternalModuleSymbol(resolveExternalModuleName(node, getExternalModuleImportEqualsDeclarationExpression(node)))
       }
       return getSymbolOfPartOfRightHandSideOfImportEquals(<EntityName>node.moduleReference, node)
     }
 
-    def getTargetOfImportClause(node: ImportClause): Symbol {
+    def getTargetOfImportClause(node: ImportClause): Symbol = {
       val moduleSymbol = resolveExternalModuleName(node, (<ImportDeclaration>node.parent).moduleSpecifier)
       if (moduleSymbol) {
         val exportDefaultSymbol = resolveSymbol(moduleSymbol.exports["default"])
@@ -906,7 +906,7 @@ object Checker {
       }
     }
 
-    def getTargetOfNamespaceImport(node: NamespaceImport): Symbol {
+    def getTargetOfNamespaceImport(node: NamespaceImport): Symbol = {
       val moduleSpecifier = (<ImportDeclaration>node.parent.parent).moduleSpecifier
       return resolveESModuleSymbol(resolveExternalModuleName(node, moduleSpecifier), moduleSpecifier)
     }
@@ -929,7 +929,7 @@ object Checker {
     //
     // An 'import { Point } from "graphics"' needs to create a symbol that combines the value side 'Point'
     // property with the type/package side trait 'Point'.
-    def combineValueAndTypeSymbols(valueSymbol: Symbol, typeSymbol: Symbol): Symbol {
+    def combineValueAndTypeSymbols(valueSymbol: Symbol, typeSymbol: Symbol): Symbol = {
       if (valueSymbol.flags & (SymbolFlags.Type | SymbolFlags.Namespace)) {
         return valueSymbol
       }
@@ -942,7 +942,7 @@ object Checker {
       return result
     }
 
-    def getExportOfModule(symbol: Symbol, name: String): Symbol {
+    def getExportOfModule(symbol: Symbol, name: String): Symbol = {
       if (symbol.flags & SymbolFlags.Module) {
         val exports = getExportsOfSymbol(symbol)
         if (hasProperty(exports, name)) {
@@ -951,7 +951,7 @@ object Checker {
       }
     }
 
-    def getPropertyOfVariable(symbol: Symbol, name: String): Symbol {
+    def getPropertyOfVariable(symbol: Symbol, name: String): Symbol = {
       if (symbol.flags & SymbolFlags.Variable) {
         val typeAnnotation = (<VariableDeclaration>symbol.valueDeclaration).type
         if (typeAnnotation) {
@@ -960,7 +960,7 @@ object Checker {
       }
     }
 
-    def getExternalModuleMember(node: ImportDeclaration | ExportDeclaration, specifier: ImportOrExportSpecifier): Symbol {
+    def getExternalModuleMember(node: ImportDeclaration | ExportDeclaration, specifier: ImportOrExportSpecifier): Symbol = {
       val moduleSymbol = resolveExternalModuleName(node, node.moduleSpecifier)
       val targetSymbol = resolveESModuleSymbol(moduleSymbol, node.moduleSpecifier)
       if (targetSymbol) {
@@ -979,21 +979,21 @@ object Checker {
       }
     }
 
-    def getTargetOfImportSpecifier(node: ImportSpecifier): Symbol {
+    def getTargetOfImportSpecifier(node: ImportSpecifier): Symbol = {
       return getExternalModuleMember(<ImportDeclaration>node.parent.parent.parent, node)
     }
 
-    def getTargetOfExportSpecifier(node: ExportSpecifier): Symbol {
+    def getTargetOfExportSpecifier(node: ExportSpecifier): Symbol = {
       return (<ExportDeclaration>node.parent.parent).moduleSpecifier ?
         getExternalModuleMember(<ExportDeclaration>node.parent.parent, node) :
         resolveEntityName(node.propertyName || node.name, SymbolFlags.Value | SymbolFlags.Type | SymbolFlags.Namespace)
     }
 
-    def getTargetOfExportAssignment(node: ExportAssignment): Symbol {
+    def getTargetOfExportAssignment(node: ExportAssignment): Symbol = {
       return resolveEntityName(<Identifier>node.expression, SymbolFlags.Value | SymbolFlags.Type | SymbolFlags.Namespace)
     }
 
-    def getTargetOfAliasDeclaration(node: Declaration): Symbol {
+    def getTargetOfAliasDeclaration(node: Declaration): Symbol = {
       switch (node.kind) {
         case SyntaxKind.ImportEqualsDeclaration:
           return getTargetOfImportEqualsDeclaration(<ImportEqualsDeclaration>node)
@@ -1010,11 +1010,11 @@ object Checker {
       }
     }
 
-    def resolveSymbol(symbol: Symbol): Symbol {
+    def resolveSymbol(symbol: Symbol): Symbol = {
       return symbol && symbol.flags & SymbolFlags.Alias && !(symbol.flags & (SymbolFlags.Value | SymbolFlags.Type | SymbolFlags.Namespace)) ? resolveAlias(symbol) : symbol
     }
 
-    def resolveAlias(symbol: Symbol): Symbol {
+    def resolveAlias(symbol: Symbol): Symbol = {
       Debug.assert((symbol.flags & SymbolFlags.Alias) != 0, "Should only get Alias here.")
       val links = getSymbolLinks(symbol)
       if (!links.target) {
@@ -1034,7 +1034,7 @@ object Checker {
       return links.target
     }
 
-    def markExportAsReferenced(node: ImportEqualsDeclaration | ExportAssignment | ExportSpecifier) {
+    def markExportAsReferenced(node: ImportEqualsDeclaration | ExportAssignment | ExportSpecifier) = {
       val symbol = getSymbolOfNode(node)
       val target = resolveAlias(symbol)
       if (target) {
@@ -1051,7 +1051,7 @@ object Checker {
     // When an alias symbol is referenced, we need to mark the entity it references as referenced and in turn repeat that until
     // we reach a non-alias or an exported entity (which is always considered referenced). We do this by checking the target of
     // the alias as an expression (which recursively takes us back here if the target references another alias).
-    def markAliasSymbolAsReferenced(symbol: Symbol) {
+    def markAliasSymbolAsReferenced(symbol: Symbol) = {
       val links = getSymbolLinks(symbol)
       if (!links.referenced) {
         links.referenced = true
@@ -1072,7 +1072,7 @@ object Checker {
     }
 
     // This def is only for imports with entity names
-    def getSymbolOfPartOfRightHandSideOfImportEquals(entityName: EntityName, importDeclaration?: ImportEqualsDeclaration): Symbol {
+    def getSymbolOfPartOfRightHandSideOfImportEquals(entityName: EntityName, importDeclaration?: ImportEqualsDeclaration): Symbol = {
       if (!importDeclaration) {
         importDeclaration = <ImportEqualsDeclaration>getAncestor(entityName, SyntaxKind.ImportEqualsDeclaration)
         Debug.assert(importDeclaration != ())
@@ -1098,12 +1098,12 @@ object Checker {
       }
     }
 
-    def getFullyQualifiedName(symbol: Symbol): String {
+    def getFullyQualifiedName(symbol: Symbol): String = {
       return symbol.parent ? getFullyQualifiedName(symbol.parent) + "." + symbolToString(symbol) : symbolToString(symbol)
     }
 
     // Resolves a qualified name and any involved aliases
-    def resolveEntityName(name: EntityName | Expression, meaning: SymbolFlags, ignoreErrors?: Boolean): Symbol {
+    def resolveEntityName(name: EntityName | Expression, meaning: SymbolFlags, ignoreErrors?: Boolean): Symbol = {
       if (nodeIsMissing(name)) {
         return ()
       }
@@ -1140,11 +1140,11 @@ object Checker {
       return symbol.flags & meaning ? symbol : resolveAlias(symbol)
     }
 
-    def resolveExternalModuleName(location: Node, moduleReferenceExpression: Expression): Symbol {
+    def resolveExternalModuleName(location: Node, moduleReferenceExpression: Expression): Symbol = {
       return resolveExternalModuleNameWorker(location, moduleReferenceExpression, Diagnostics.Cannot_find_module_0)
     }
 
-    def resolveExternalModuleNameWorker(location: Node, moduleReferenceExpression: Expression, moduleNotFoundError: DiagnosticMessage): Symbol {
+    def resolveExternalModuleNameWorker(location: Node, moduleReferenceExpression: Expression, moduleNotFoundError: DiagnosticMessage): Symbol = {
       if (moduleReferenceExpression.kind != SyntaxKind.StringLiteral) {
         return
       }
@@ -1190,14 +1190,14 @@ object Checker {
 
     // An external module with an 'export =' declaration resolves to the target of the 'export =' declaration,
     // and an external module with no 'export =' declaration resolves to the module itself.
-    def resolveExternalModuleSymbol(moduleSymbol: Symbol): Symbol {
+    def resolveExternalModuleSymbol(moduleSymbol: Symbol): Symbol = {
       return moduleSymbol && getMergedSymbol(resolveSymbol(moduleSymbol.exports["export="])) || moduleSymbol
     }
 
     // An external module with an 'export =' declaration may be referenced as an ES6 module provided the 'export ='
     // references a symbol that is at least declared as a module or a variable. The target of the 'export =' may
     // combine other declarations with the module or variable (e.g. a class/module, def/module, trait/variable).
-    def resolveESModuleSymbol(moduleSymbol: Symbol, moduleReferenceExpression: Expression): Symbol {
+    def resolveESModuleSymbol(moduleSymbol: Symbol, moduleReferenceExpression: Expression): Symbol = {
       var symbol = resolveExternalModuleSymbol(moduleSymbol)
       if (symbol && !(symbol.flags & (SymbolFlags.Module | SymbolFlags.Variable))) {
         error(moduleReferenceExpression, Diagnostics.Module_0_resolves_to_a_non_module_entity_and_cannot_be_imported_using_this_construct, symbolToString(moduleSymbol))
@@ -1206,7 +1206,7 @@ object Checker {
       return symbol
     }
 
-    def hasExportAssignmentSymbol(moduleSymbol: Symbol): Boolean {
+    def hasExportAssignmentSymbol(moduleSymbol: Symbol): Boolean = {
       return moduleSymbol.exports["export="] != ()
     }
 
@@ -1214,11 +1214,11 @@ object Checker {
       return symbolsToArray(getExportsOfModule(moduleSymbol))
     }
 
-    def getExportsOfSymbol(symbol: Symbol): SymbolTable {
+    def getExportsOfSymbol(symbol: Symbol): SymbolTable = {
       return symbol.flags & SymbolFlags.Module ? getExportsOfModule(symbol) : symbol.exports || emptySymbols
     }
 
-    def getExportsOfModule(moduleSymbol: Symbol): SymbolTable {
+    def getExportsOfModule(moduleSymbol: Symbol): SymbolTable = {
       val links = getSymbolLinks(moduleSymbol)
       return links.resolvedExports || (links.resolvedExports = getExportsForModule(moduleSymbol))
     }
@@ -1232,7 +1232,7 @@ object Checker {
      * Extends one symbol table with another while collecting information on name collisions for error message generation into the `lookupTable` argument
      * Not passing `lookupTable` and `exportNode` disables this collection, and just extends the tables
      */
-    def extendExportSymbols(target: SymbolTable, source: SymbolTable, lookupTable?: Map<ExportCollisionTracker>, exportNode?: ExportDeclaration) {
+    def extendExportSymbols(target: SymbolTable, source: SymbolTable, lookupTable?: Map<ExportCollisionTracker>, exportNode?: ExportDeclaration) = {
       for (val id in source) {
         if (id != "default" && !hasProperty(target, id)) {
           target[id] = source[id]
@@ -1253,13 +1253,13 @@ object Checker {
       }
     }
 
-    def getExportsForModule(moduleSymbol: Symbol): SymbolTable {
+    def getExportsForModule(moduleSymbol: Symbol): SymbolTable = {
       val visitedSymbols: Symbol[] = []
       return visit(moduleSymbol) || moduleSymbol.exports
 
       // The ES6 spec permits * declarations in a module to circularly reference the module itself. For example,
       // module 'a' can 'export * from "b"' and 'b' can 'export * from "a"' without error.
-      def visit(symbol: Symbol): SymbolTable {
+      def visit(symbol: Symbol): SymbolTable = {
         if (!(symbol && symbol.flags & SymbolFlags.HasExports && !contains(visitedSymbols, symbol))) {
           return
         }
@@ -1301,26 +1301,26 @@ object Checker {
       }
     }
 
-    def getMergedSymbol(symbol: Symbol): Symbol {
+    def getMergedSymbol(symbol: Symbol): Symbol = {
       var merged: Symbol
       return symbol && symbol.mergeId && (merged = mergedSymbols[symbol.mergeId]) ? merged : symbol
     }
 
-    def getSymbolOfNode(node: Node): Symbol {
+    def getSymbolOfNode(node: Node): Symbol = {
       return getMergedSymbol(node.symbol)
     }
 
-    def getParentOfSymbol(symbol: Symbol): Symbol {
+    def getParentOfSymbol(symbol: Symbol): Symbol = {
       return getMergedSymbol(symbol.parent)
     }
 
-    def getExportSymbolOfValueSymbolIfExported(symbol: Symbol): Symbol {
+    def getExportSymbolOfValueSymbolIfExported(symbol: Symbol): Symbol = {
       return symbol && (symbol.flags & SymbolFlags.ExportValue) != 0
         ? getMergedSymbol(symbol.exportSymbol)
         : symbol
     }
 
-    def symbolIsValue(symbol: Symbol): Boolean {
+    def symbolIsValue(symbol: Symbol): Boolean = {
       // If it is an instantiated symbol, then it is a value if the symbol it is an
       // instantiation of is a value.
       if (symbol.flags & SymbolFlags.Instantiated) {
@@ -1340,7 +1340,7 @@ object Checker {
       return false
     }
 
-    def findConstructorDeclaration(node: ClassLikeDeclaration): ConstructorDeclaration {
+    def findConstructorDeclaration(node: ClassLikeDeclaration): ConstructorDeclaration = {
       val members = node.members
       for (val member of members) {
         if (member.kind == SyntaxKind.Constructor && nodeIsPresent((<ConstructorDeclaration>member).body)) {
@@ -1349,20 +1349,20 @@ object Checker {
       }
     }
 
-    def createType(flags: TypeFlags): Type {
+    def createType(flags: TypeFlags): Type = {
       val result = new Type(checker, flags)
       result.id = typeCount
       typeCount++
       return result
     }
 
-    def createIntrinsicType(kind: TypeFlags, intrinsicName: String): IntrinsicType {
+    def createIntrinsicType(kind: TypeFlags, intrinsicName: String): IntrinsicType = {
       val type = <IntrinsicType>createType(kind)
       type.intrinsicName = intrinsicName
       return type
     }
 
-    def createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType {
+    def createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType = {
       val type = <ObjectType>createType(kind)
       type.symbol = symbol
       return type
@@ -1372,7 +1372,7 @@ object Checker {
     // or the @ symbol. A third underscore indicates an escaped form of an identifer that started
     // with at least two underscores. The @ character indicates that the name is denoted by a well known ES
     // Symbol instance.
-    def isReservedMemberName(name: String) {
+    def isReservedMemberName(name: String) = {
       return name.charCodeAt(0) == CharacterCodes._ &&
         name.charCodeAt(1) == CharacterCodes._ &&
         name.charCodeAt(2) != CharacterCodes._ &&
@@ -1395,7 +1395,7 @@ object Checker {
       return result || emptyArray
     }
 
-    def setObjectTypeMembers(type: ObjectType, members: SymbolTable, callSignatures: Signature[], constructSignatures: Signature[], stringIndexInfo: IndexInfo, numberIndexInfo: IndexInfo): ResolvedType {
+    def setObjectTypeMembers(type: ObjectType, members: SymbolTable, callSignatures: Signature[], constructSignatures: Signature[], stringIndexInfo: IndexInfo, numberIndexInfo: IndexInfo): ResolvedType = {
       (<ResolvedType>type).members = members
       (<ResolvedType>type).properties = getNamedMembers(members)
       (<ResolvedType>type).callSignatures = callSignatures
@@ -1405,12 +1405,12 @@ object Checker {
       return <ResolvedType>type
     }
 
-    def createAnonymousType(symbol: Symbol, members: SymbolTable, callSignatures: Signature[], constructSignatures: Signature[], stringIndexInfo: IndexInfo, numberIndexInfo: IndexInfo): ResolvedType {
+    def createAnonymousType(symbol: Symbol, members: SymbolTable, callSignatures: Signature[], constructSignatures: Signature[], stringIndexInfo: IndexInfo, numberIndexInfo: IndexInfo): ResolvedType = {
       return setObjectTypeMembers(createObjectType(TypeFlags.Anonymous, symbol),
         members, callSignatures, constructSignatures, stringIndexInfo, numberIndexInfo)
     }
 
-    def forEachSymbolTableInScope<T>(enclosingDeclaration: Node, callback: (symbolTable: SymbolTable) => T): T {
+    def forEachSymbolTableInScope<T>(enclosingDeclaration: Node, callback: (symbolTable: SymbolTable) => T): T = {
       var result: T
       for (var location = enclosingDeclaration; location; location = location.parent) {
         // Locals of a source file are not in scope (because they get merged into the global symbol table)
@@ -1441,14 +1441,14 @@ object Checker {
       return callback(globals)
     }
 
-    def getQualifiedLeftMeaning(rightMeaning: SymbolFlags) {
+    def getQualifiedLeftMeaning(rightMeaning: SymbolFlags) = {
       // If we are looking in value space, the parent meaning is value, other wise it is package
       return rightMeaning == SymbolFlags.Value ? SymbolFlags.Value : SymbolFlags.Namespace
     }
 
     def getAccessibleSymbolChain(symbol: Symbol, enclosingDeclaration: Node, meaning: SymbolFlags, useOnlyExternalAliasing: Boolean): Symbol[] {
       def getAccessibleSymbolChainFromSymbolTable(symbols: SymbolTable): Symbol[] {
-        def canQualifySymbol(symbolFromSymbolTable: Symbol, meaning: SymbolFlags) {
+        def canQualifySymbol(symbolFromSymbolTable: Symbol, meaning: SymbolFlags) = {
           // If the symbol is equivalent and doesn't need further qualification, this symbol is accessible
           if (!needsQualification(symbolFromSymbolTable, enclosingDeclaration, meaning)) {
             return true
@@ -1459,7 +1459,7 @@ object Checker {
           return !!accessibleParent
         }
 
-        def isAccessible(symbolFromSymbolTable: Symbol, resolvedAliasSymbol?: Symbol) {
+        def isAccessible(symbolFromSymbolTable: Symbol, resolvedAliasSymbol?: Symbol) = {
           if (symbol == (resolvedAliasSymbol || symbolFromSymbolTable)) {
             // if the symbolFromSymbolTable is not external module (it could be if it was determined as ambient external module and would be in globals table)
             // and if symbolFromSymbolTable or alias resolution matches the symbol,
@@ -1504,7 +1504,7 @@ object Checker {
       }
     }
 
-    def needsQualification(symbol: Symbol, enclosingDeclaration: Node, meaning: SymbolFlags) {
+    def needsQualification(symbol: Symbol, enclosingDeclaration: Node, meaning: SymbolFlags) = {
       var qualify = false
       forEachSymbolTableInScope(enclosingDeclaration, symbolTable => {
         // If symbol of this name is not available in the symbol table we are ok
@@ -1533,7 +1533,7 @@ object Checker {
       return qualify
     }
 
-    def isSymbolAccessible(symbol: Symbol, enclosingDeclaration: Node, meaning: SymbolFlags): SymbolAccessibilityResult {
+    def isSymbolAccessible(symbol: Symbol, enclosingDeclaration: Node, meaning: SymbolFlags): SymbolAccessibilityResult = {
       if (symbol && enclosingDeclaration && !(symbol.flags & SymbolFlags.TypeParameter)) {
         val initialSymbol = symbol
         var meaningToLook = meaning
@@ -1592,7 +1592,7 @@ object Checker {
 
       return { accessibility: SymbolAccessibility.Accessible }
 
-      def getExternalModuleContainer(declaration: Node) {
+      def getExternalModuleContainer(declaration: Node) = {
         for (; declaration; declaration = declaration.parent) {
           if (hasExternalModuleSymbol(declaration)) {
             return getSymbolOfNode(declaration)
@@ -1601,18 +1601,18 @@ object Checker {
       }
     }
 
-    def hasExternalModuleSymbol(declaration: Node) {
+    def hasExternalModuleSymbol(declaration: Node) = {
       return isAmbientModule(declaration) || (declaration.kind == SyntaxKind.SourceFile && isExternalOrCommonJsModule(<SourceFile>declaration))
     }
 
-    def hasVisibleDeclarations(symbol: Symbol): SymbolVisibilityResult {
+    def hasVisibleDeclarations(symbol: Symbol): SymbolVisibilityResult = {
       var aliasesToMakeVisible: AnyImportSyntax[]
       if (forEach(symbol.declarations, declaration => !getIsDeclarationVisible(declaration))) {
         return ()
       }
       return { accessibility: SymbolAccessibility.Accessible, aliasesToMakeVisible }
 
-      def getIsDeclarationVisible(declaration: Declaration) {
+      def getIsDeclarationVisible(declaration: Declaration) = {
         if (!isDeclarationVisible(declaration)) {
           // Mark the unexported alias as visible if its parent is visible
           // because these kind of aliases can be used to name types in declaration file
@@ -1641,7 +1641,7 @@ object Checker {
       }
     }
 
-    def isEntityNameVisible(entityName: EntityName | Expression, enclosingDeclaration: Node): SymbolVisibilityResult {
+    def isEntityNameVisible(entityName: EntityName | Expression, enclosingDeclaration: Node): SymbolVisibilityResult = {
       // get symbol of the first identifier of the entityName
       var meaning: SymbolFlags
       if (entityName.parent.kind == SyntaxKind.TypeQuery) {
@@ -1670,19 +1670,19 @@ object Checker {
       }
     }
 
-    def writeKeyword(writer: SymbolWriter, kind: SyntaxKind) {
+    def writeKeyword(writer: SymbolWriter, kind: SyntaxKind) = {
       writer.writeKeyword(tokenToString(kind))
     }
 
-    def writePunctuation(writer: SymbolWriter, kind: SyntaxKind) {
+    def writePunctuation(writer: SymbolWriter, kind: SyntaxKind) = {
       writer.writePunctuation(tokenToString(kind))
     }
 
-    def writeSpace(writer: SymbolWriter) {
+    def writeSpace(writer: SymbolWriter) = {
       writer.writeSpace(" ")
     }
 
-    def symbolToString(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags): String {
+    def symbolToString(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags): String = {
       val writer = getSingleLineStringWriter()
       getSymbolDisplayBuilder().buildSymbolDisplay(symbol, writer, enclosingDeclaration, meaning)
       val result = writer.String()
@@ -1691,7 +1691,7 @@ object Checker {
       return result
     }
 
-    def signatureToString(signature: Signature, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind): String {
+    def signatureToString(signature: Signature, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind): String = {
       val writer = getSingleLineStringWriter()
       getSymbolDisplayBuilder().buildSignatureDisplay(signature, writer, enclosingDeclaration, flags, kind)
       val result = writer.String()
@@ -1700,7 +1700,7 @@ object Checker {
       return result
     }
 
-    def typeToString(type: Type, enclosingDeclaration?: Node, flags?: TypeFormatFlags): String {
+    def typeToString(type: Type, enclosingDeclaration?: Node, flags?: TypeFormatFlags): String = {
       val writer = getSingleLineStringWriter()
       getSymbolDisplayBuilder().buildTypeDisplay(type, writer, enclosingDeclaration, flags)
       var result = writer.String()
@@ -1713,7 +1713,7 @@ object Checker {
       return result
     }
 
-    def getTypeAliasForTypeLiteral(type: Type): Symbol {
+    def getTypeAliasForTypeLiteral(type: Type): Symbol = {
       if (type.symbol && type.symbol.flags & SymbolFlags.TypeLiteral) {
         var node = type.symbol.declarations[0].parent
         while (node.kind == SyntaxKind.ParenthesizedType) {
@@ -1726,15 +1726,15 @@ object Checker {
       return ()
     }
 
-    def isTopLevelInExternalModuleAugmentation(node: Node): Boolean {
+    def isTopLevelInExternalModuleAugmentation(node: Node): Boolean = {
       return node && node.parent &&
         node.parent.kind == SyntaxKind.ModuleBlock &&
         isExternalModuleAugmentation(node.parent.parent)
     }
 
-    def getSymbolDisplayBuilder(): SymbolDisplayBuilder {
+    def getSymbolDisplayBuilder(): SymbolDisplayBuilder = {
 
-      def getNameOfSymbol(symbol: Symbol): String {
+      def getNameOfSymbol(symbol: Symbol): String = {
         if (symbol.declarations && symbol.declarations.length) {
           val declaration = symbol.declarations[0]
           if (declaration.name) {
@@ -1755,7 +1755,7 @@ object Checker {
        * Writes only the name of the symbol out to the writer. Uses the original source text
        * for the name of the symbol if it is available to match how the user inputted the name.
        */
-      def appendSymbolNameOnly(symbol: Symbol, writer: SymbolWriter): Unit {
+      def appendSymbolNameOnly(symbol: Symbol, writer: SymbolWriter): Unit = {
         writer.writeSymbol(getNameOfSymbol(symbol), symbol)
       }
 
@@ -1763,9 +1763,9 @@ object Checker {
        * Enclosing declaration is optional when we don't want to get qualified name in the enclosing declaration scope
        * Meaning needs to be specified if the enclosing declaration is given
        */
-      def buildSymbolDisplay(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, meaning?: SymbolFlags, flags?: SymbolFormatFlags, typeFlags?: TypeFormatFlags): Unit {
+      def buildSymbolDisplay(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, meaning?: SymbolFlags, flags?: SymbolFormatFlags, typeFlags?: TypeFormatFlags): Unit = {
         var parentSymbol: Symbol
-        def appendParentTypeArgumentsAndSymbolName(symbol: Symbol): Unit {
+        def appendParentTypeArgumentsAndSymbolName(symbol: Symbol): Unit = {
           if (parentSymbol) {
             // Write type arguments of instantiated class/trait here
             if (flags & SymbolFormatFlags.WriteTypeParametersOrArguments) {
@@ -1791,7 +1791,7 @@ object Checker {
         // up front (for example, during checking) could determine if we need to emit the imports
         // and we could then access that data during declaration emit.
         writer.trackSymbol(symbol, enclosingDeclaration, meaning)
-        def walkSymbol(symbol: Symbol, meaning: SymbolFlags): Unit {
+        def walkSymbol(symbol: Symbol, meaning: SymbolFlags): Unit = {
           if (symbol) {
             val accessibleSymbolChain = getAccessibleSymbolChain(symbol, enclosingDeclaration, meaning, !!(flags & SymbolFormatFlags.UseOnlyExternalAliasing))
 
@@ -1838,12 +1838,12 @@ object Checker {
         return appendParentTypeArgumentsAndSymbolName(symbol)
       }
 
-      def buildTypeDisplay(type: Type, writer: SymbolWriter, enclosingDeclaration?: Node, globalFlags?: TypeFormatFlags, symbolStack?: Symbol[]) {
+      def buildTypeDisplay(type: Type, writer: SymbolWriter, enclosingDeclaration?: Node, globalFlags?: TypeFormatFlags, symbolStack?: Symbol[]) = {
         val globalFlagsToPass = globalFlags & TypeFormatFlags.WriteOwnNameForAnyLike
         var inObjectTypeLiteral = false
         return writeType(type, globalFlags)
 
-        def writeType(type: Type, flags: TypeFormatFlags) {
+        def writeType(type: Type, flags: TypeFormatFlags) = {
           // Write ()/null type as any
           if (type.flags & TypeFlags.Intrinsic) {
             if (type.flags & TypeFlags.PredicateType) {
@@ -1893,7 +1893,7 @@ object Checker {
           }
         }
 
-        def writeTypeList(types: Type[], delimiter: SyntaxKind) {
+        def writeTypeList(types: Type[], delimiter: SyntaxKind) = {
           for (var i = 0; i < types.length; i++) {
             if (i > 0) {
               if (delimiter != SyntaxKind.CommaToken) {
@@ -1906,7 +1906,7 @@ object Checker {
           }
         }
 
-        def writeSymbolTypeReference(symbol: Symbol, typeArguments: Type[], pos: Int, end: Int, flags: TypeFormatFlags) {
+        def writeSymbolTypeReference(symbol: Symbol, typeArguments: Type[], pos: Int, end: Int, flags: TypeFormatFlags) = {
           // Unnamed def expressions and arrow functions have reserved names that we don't want to display
           if (symbol.flags & SymbolFlags.Class || !isReservedMemberName(symbol.name)) {
             buildSymbolDisplay(symbol, writer, enclosingDeclaration, SymbolFlags.Type, SymbolFormatFlags.None, flags)
@@ -1925,7 +1925,7 @@ object Checker {
           }
         }
 
-        def writeTypeReference(type: TypeReference, flags: TypeFormatFlags) {
+        def writeTypeReference(type: TypeReference, flags: TypeFormatFlags) = {
           val typeArguments = type.typeArguments || emptyArray
           if (type.target == globalArrayType && !(flags & TypeFormatFlags.WriteArrayAsGenericType)) {
             writeType(typeArguments[0], TypeFormatFlags.InElementType)
@@ -1960,13 +1960,13 @@ object Checker {
           }
         }
 
-        def writeTupleType(type: TupleType) {
+        def writeTupleType(type: TupleType) = {
           writePunctuation(writer, SyntaxKind.OpenBracketToken)
           writeTypeList(type.elementTypes, SyntaxKind.CommaToken)
           writePunctuation(writer, SyntaxKind.CloseBracketToken)
         }
 
-        def writeUnionOrIntersectionType(type: UnionOrIntersectionType, flags: TypeFormatFlags) {
+        def writeUnionOrIntersectionType(type: UnionOrIntersectionType, flags: TypeFormatFlags) = {
           if (flags & TypeFormatFlags.InElementType) {
             writePunctuation(writer, SyntaxKind.OpenParenToken)
           }
@@ -1976,7 +1976,7 @@ object Checker {
           }
         }
 
-        def writeAnonymousType(type: ObjectType, flags: TypeFormatFlags) {
+        def writeAnonymousType(type: ObjectType, flags: TypeFormatFlags) = {
           val symbol = type.symbol
           if (symbol) {
             // Always use 'typeof T' for type of class, enum, and module objects
@@ -2014,7 +2014,7 @@ object Checker {
             writeLiteralType(type, flags)
           }
 
-          def shouldWriteTypeOfFunctionSymbol() {
+          def shouldWriteTypeOfFunctionSymbol() = {
             val isStaticMethodSymbol = !!(symbol.flags & SymbolFlags.Method &&  // typeof static method
               forEach(symbol.declarations, declaration => declaration.flags & NodeFlags.Static))
             val isNonLocalFunctionSymbol = !!(symbol.flags & SymbolFlags.Function) &&
@@ -2029,13 +2029,13 @@ object Checker {
           }
         }
 
-        def writeTypeofSymbol(type: ObjectType, typeFormatFlags?: TypeFormatFlags) {
+        def writeTypeofSymbol(type: ObjectType, typeFormatFlags?: TypeFormatFlags) = {
           writeKeyword(writer, SyntaxKind.TypeOfKeyword)
           writeSpace(writer)
           buildSymbolDisplay(type.symbol, writer, enclosingDeclaration, SymbolFlags.Value, SymbolFormatFlags.None, typeFormatFlags)
         }
 
-        def writeIndexSignature(info: IndexInfo, keyword: SyntaxKind) {
+        def writeIndexSignature(info: IndexInfo, keyword: SyntaxKind) = {
           if (info) {
             if (info.isReadonly) {
               writeKeyword(writer, SyntaxKind.ReadonlyKeyword)
@@ -2055,7 +2055,7 @@ object Checker {
           }
         }
 
-        def writePropertyWithModifiers(prop: Symbol) {
+        def writePropertyWithModifiers(prop: Symbol) = {
           if (isReadonlySymbol(prop)) {
             writeKeyword(writer, SyntaxKind.ReadonlyKeyword)
             writeSpace(writer)
@@ -2066,7 +2066,7 @@ object Checker {
           }
         }
 
-        def writeLiteralType(type: ObjectType, flags: TypeFormatFlags) {
+        def writeLiteralType(type: ObjectType, flags: TypeFormatFlags) = {
           val resolved = resolveStructuredTypeMembers(type)
           if (!resolved.properties.length && !resolved.stringIndexInfo && !resolved.numberIndexInfo) {
             if (!resolved.callSignatures.length && !resolved.constructSignatures.length) {
@@ -2142,14 +2142,14 @@ object Checker {
         }
       }
 
-      def buildTypeParameterDisplayFromSymbol(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags) {
+      def buildTypeParameterDisplayFromSymbol(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags) = {
         val targetSymbol = getTargetSymbol(symbol)
         if (targetSymbol.flags & SymbolFlags.Class || targetSymbol.flags & SymbolFlags.Interface || targetSymbol.flags & SymbolFlags.TypeAlias) {
           buildDisplayForTypeParametersAndDelimiters(getLocalTypeParametersOfClassOrInterfaceOrTypeAlias(symbol), writer, enclosingDeclaration, flags)
         }
       }
 
-      def buildTypeParameterDisplay(tp: TypeParameter, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) {
+      def buildTypeParameterDisplay(tp: TypeParameter, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) = {
         appendSymbolNameOnly(tp.symbol, writer)
         val constraint = getConstraintOfTypeParameter(tp)
         if (constraint) {
@@ -2160,7 +2160,7 @@ object Checker {
         }
       }
 
-      def buildParameterDisplay(p: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) {
+      def buildParameterDisplay(p: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) = {
         val parameterNode = <ParameterDeclaration>p.valueDeclaration
         if (isRestParameter(parameterNode)) {
           writePunctuation(writer, SyntaxKind.DotDotDotToken)
@@ -2175,7 +2175,7 @@ object Checker {
         buildTypeDisplay(getTypeOfSymbol(p), writer, enclosingDeclaration, flags, symbolStack)
       }
 
-      def buildDisplayForTypeParametersAndDelimiters(typeParameters: TypeParameter[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) {
+      def buildDisplayForTypeParametersAndDelimiters(typeParameters: TypeParameter[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) = {
         if (typeParameters && typeParameters.length) {
           writePunctuation(writer, SyntaxKind.LessThanToken)
           for (var i = 0; i < typeParameters.length; i++) {
@@ -2189,7 +2189,7 @@ object Checker {
         }
       }
 
-      def buildDisplayForTypeArgumentsAndDelimiters(typeParameters: TypeParameter[], mapper: TypeMapper, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) {
+      def buildDisplayForTypeArgumentsAndDelimiters(typeParameters: TypeParameter[], mapper: TypeMapper, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) = {
         if (typeParameters && typeParameters.length) {
           writePunctuation(writer, SyntaxKind.LessThanToken)
           for (var i = 0; i < typeParameters.length; i++) {
@@ -2203,7 +2203,7 @@ object Checker {
         }
       }
 
-      def buildDisplayForParametersAndDelimiters(parameters: Symbol[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) {
+      def buildDisplayForParametersAndDelimiters(parameters: Symbol[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) = {
         writePunctuation(writer, SyntaxKind.OpenParenToken)
         for (var i = 0; i < parameters.length; i++) {
           if (i > 0) {
@@ -2215,7 +2215,7 @@ object Checker {
         writePunctuation(writer, SyntaxKind.CloseParenToken)
       }
 
-      def buildTypePredicateDisplay(writer: SymbolWriter, predicate: TypePredicate) {
+      def buildTypePredicateDisplay(writer: SymbolWriter, predicate: TypePredicate) = {
         if (isIdentifierTypePredicate(predicate)) {
           writer.writeParameter(predicate.parameterName)
         }
@@ -2227,7 +2227,7 @@ object Checker {
         writeSpace(writer)
       }
 
-      def buildReturnTypeDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) {
+      def buildReturnTypeDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, symbolStack?: Symbol[]) = {
         if (flags & TypeFormatFlags.WriteArrowStyleSignature) {
           writeSpace(writer)
           writePunctuation(writer, SyntaxKind.EqualsGreaterThanToken)
@@ -2241,7 +2241,7 @@ object Checker {
         buildTypeDisplay(returnType, writer, enclosingDeclaration, flags, symbolStack)
       }
 
-      def buildSignatureDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind, symbolStack?: Symbol[]) {
+      def buildSignatureDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind, symbolStack?: Symbol[]) = {
         if (kind == SignatureKind.Construct) {
           writeKeyword(writer, SyntaxKind.NewKeyword)
           writeSpace(writer)
@@ -2273,7 +2273,7 @@ object Checker {
       })
     }
 
-    def isDeclarationVisible(node: Declaration): Boolean {
+    def isDeclarationVisible(node: Declaration): Boolean = {
       if (node) {
         val links = getNodeLinks(node)
         if (links.isVisible == ()) {
@@ -2284,7 +2284,7 @@ object Checker {
 
       return false
 
-      def determineIfDeclarationIsVisible() {
+      def determineIfDeclarationIsVisible() = {
         switch (node.kind) {
           case SyntaxKind.BindingElement:
             return isDeclarationVisible(<Declaration>node.parent.parent)
@@ -2384,7 +2384,7 @@ object Checker {
       }
       return result
 
-      def buildVisibleNodeList(declarations: Declaration[]) {
+      def buildVisibleNodeList(declarations: Declaration[]) = {
         forEach(declarations, declaration => {
           getNodeLinks(declaration).isVisible = true
           val resultNode = getAnyImportSyntax(declaration) || declaration
@@ -2417,7 +2417,7 @@ object Checker {
      * @param target The symbol, type, or signature whose type is being queried
      * @param propertyName The property name that should be used to query the target for its type
      */
-    def pushTypeResolution(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): Boolean {
+    def pushTypeResolution(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): Boolean = {
       val resolutionCycleStartIndex = findResolutionCycleStartIndex(target, propertyName)
       if (resolutionCycleStartIndex >= 0) {
         // A cycle was found
@@ -2433,7 +2433,7 @@ object Checker {
       return true
     }
 
-    def findResolutionCycleStartIndex(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): Int {
+    def findResolutionCycleStartIndex(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): Int = {
       for (var i = resolutionTargets.length - 1; i >= 0; i--) {
         if (hasType(resolutionTargets[i], resolutionPropertyNames[i])) {
           return -1
@@ -2446,7 +2446,7 @@ object Checker {
       return -1
     }
 
-    def hasType(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): Type {
+    def hasType(target: TypeSystemEntity, propertyName: TypeSystemPropertyName): Type = {
       if (propertyName == TypeSystemPropertyName.Type) {
         return getSymbolLinks(<Symbol>target).type
       }
@@ -2466,13 +2466,13 @@ object Checker {
 
     // Pop an entry from the type resolution stack and return its associated result value. The result value will
     // be true if no circularities were detected, or false if a circularity was found.
-    def popTypeResolution(): Boolean {
+    def popTypeResolution(): Boolean = {
       resolutionTargets.pop()
       resolutionPropertyNames.pop()
       return resolutionResults.pop()
     }
 
-    def getDeclarationContainer(node: Node): Node {
+    def getDeclarationContainer(node: Node): Node = {
       node = getRootDeclaration(node)
       while (node) {
         switch (node.kind) {
@@ -2491,7 +2491,7 @@ object Checker {
       }
     }
 
-    def getTypeOfPrototypeProperty(prototype: Symbol): Type {
+    def getTypeOfPrototypeProperty(prototype: Symbol): Type = {
       // TypeScript 1.0 spec (April 2014): 8.4
       // Every class automatically contains a static property member named 'prototype',
       // the type of which is an instantiation of the class type with type Any supplied as a type argument for each type parameter.
@@ -2501,23 +2501,23 @@ object Checker {
     }
 
     // Return the type of the given property in the given type, or () if no such property exists
-    def getTypeOfPropertyOfType(type: Type, name: String): Type {
+    def getTypeOfPropertyOfType(type: Type, name: String): Type = {
       val prop = getPropertyOfType(type, name)
       return prop ? getTypeOfSymbol(prop) : ()
     }
 
-    def isTypeAny(type: Type) {
+    def isTypeAny(type: Type) = {
       return type && (type.flags & TypeFlags.Any) != 0
     }
 
     // Return the type of a binding element parent. We check SymbolLinks first to see if a type has been
     // assigned by contextual typing.
-    def getTypeForBindingElementParent(node: VariableLikeDeclaration) {
+    def getTypeForBindingElementParent(node: VariableLikeDeclaration) = {
       val symbol = getSymbolOfNode(node)
       return symbol && getSymbolLinks(symbol).type || getTypeForVariableLikeDeclaration(node)
     }
 
-    def getTextOfPropertyName(name: PropertyName): String {
+    def getTextOfPropertyName(name: PropertyName): String = {
       switch (name.kind) {
         case SyntaxKind.Identifier:
           return (<Identifier>name).text
@@ -2533,12 +2533,12 @@ object Checker {
       return ()
     }
 
-    def isComputedNonLiteralName(name: PropertyName): Boolean {
+    def isComputedNonLiteralName(name: PropertyName): Boolean = {
       return name.kind == SyntaxKind.ComputedPropertyName && !isStringOrNumericLiteral((<ComputedPropertyName>name).expression.kind)
     }
 
     // Return the inferred type for a binding element
-    def getTypeForBindingElement(declaration: BindingElement): Type {
+    def getTypeForBindingElement(declaration: BindingElement): Type = {
       val pattern = <BindingPattern>declaration.parent
       val parentType = getTypeForBindingElementParent(<VariableLikeDeclaration>pattern.parent)
       // If parent has the unknown (error) type, then so does this binding element
@@ -2605,14 +2605,14 @@ object Checker {
       return type
     }
 
-    def getTypeForVariableLikeDeclarationFromJSDocComment(declaration: VariableLikeDeclaration) {
+    def getTypeForVariableLikeDeclarationFromJSDocComment(declaration: VariableLikeDeclaration) = {
       val jsDocType = getJSDocTypeForVariableLikeDeclarationFromJSDocComment(declaration)
       if (jsDocType) {
         return getTypeFromTypeNode(jsDocType)
       }
     }
 
-    def getJSDocTypeForVariableLikeDeclarationFromJSDocComment(declaration: VariableLikeDeclaration): JSDocType {
+    def getJSDocTypeForVariableLikeDeclarationFromJSDocComment(declaration: VariableLikeDeclaration): JSDocType = {
       // First, see if this node has an @type annotation on it directly.
       val typeTag = getJSDocTypeTag(declaration)
       if (typeTag && typeTag.typeExpression) {
@@ -2642,7 +2642,7 @@ object Checker {
     }
 
     // Return the inferred type for a variable, parameter, or property declaration
-    def getTypeForVariableLikeDeclaration(declaration: VariableLikeDeclaration): Type {
+    def getTypeForVariableLikeDeclaration(declaration: VariableLikeDeclaration): Type = {
       if (declaration.flags & NodeFlags.JavaScriptFile) {
         // If this is a variable in a JavaScript file, then use the JSDoc type (if it has
         // one as its type), otherwise fallback to the below standard TS codepaths to
@@ -2713,7 +2713,7 @@ object Checker {
     // Return the type implied by a binding pattern element. This is the type of the initializer of the element if
     // one is present. Otherwise, if the element is itself a binding pattern, it is the type implied by the binding
     // pattern. Otherwise, it is the type any.
-    def getTypeFromBindingElement(element: BindingElement, includePatternInType?: Boolean): Type {
+    def getTypeFromBindingElement(element: BindingElement, includePatternInType?: Boolean): Type = {
       if (element.initializer) {
         return getWidenedType(checkExpressionCached(element.initializer))
       }
@@ -2724,7 +2724,7 @@ object Checker {
     }
 
     // Return the type implied by an object binding pattern
-    def getTypeFromObjectBindingPattern(pattern: BindingPattern, includePatternInType: Boolean): Type {
+    def getTypeFromObjectBindingPattern(pattern: BindingPattern, includePatternInType: Boolean): Type = {
       val members: SymbolTable = {}
       var hasComputedProperties = false
       forEach(pattern.elements, e => {
@@ -2753,7 +2753,7 @@ object Checker {
     }
 
     // Return the type implied by an array binding pattern
-    def getTypeFromArrayBindingPattern(pattern: BindingPattern, includePatternInType: Boolean): Type {
+    def getTypeFromArrayBindingPattern(pattern: BindingPattern, includePatternInType: Boolean): Type = {
       val elements = pattern.elements
       if (elements.length == 0 || elements[elements.length - 1].dotDotDotToken) {
         return languageVersion >= ScriptTarget.ES6 ? createIterableType(anyType) : anyArrayType
@@ -2775,7 +2775,7 @@ object Checker {
     // used as the contextual type of an initializer associated with the binding pattern. Also, for a destructuring
     // parameter with no type annotation or initializer, the type implied by the binding pattern becomes the type of
     // the parameter.
-    def getTypeFromBindingPattern(pattern: BindingPattern, includePatternInType?: Boolean): Type {
+    def getTypeFromBindingPattern(pattern: BindingPattern, includePatternInType?: Boolean): Type = {
       return pattern.kind == SyntaxKind.ObjectBindingPattern
         ? getTypeFromObjectBindingPattern(pattern, includePatternInType)
         : getTypeFromArrayBindingPattern(pattern, includePatternInType)
@@ -2790,7 +2790,7 @@ object Checker {
     // Here, the array literal [1, "one"] is contextually typed by the type [any, String], which is the implied type of the
     // binding pattern [x, s = ""]. Because the contextual type is a tuple type, the resulting type of [1, "one"] is the
     // tuple type [Int, String]. Thus, the type inferred for 'x' is Int and the type inferred for 's' is String.
-    def getWidenedTypeForVariableLikeDeclaration(declaration: VariableLikeDeclaration, reportErrors?: Boolean): Type {
+    def getWidenedTypeForVariableLikeDeclaration(declaration: VariableLikeDeclaration, reportErrors?: Boolean): Type = {
       var type = getTypeForVariableLikeDeclaration(declaration)
       if (type) {
         if (reportErrors) {
@@ -2821,7 +2821,7 @@ object Checker {
       return type
     }
 
-    def getTypeOfVariableOrParameterOrProperty(symbol: Symbol): Type {
+    def getTypeOfVariableOrParameterOrProperty(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.type) {
         // Handle prototype property
@@ -2875,7 +2875,7 @@ object Checker {
       return links.type
     }
 
-    def getAnnotatedAccessorType(accessor: AccessorDeclaration): Type {
+    def getAnnotatedAccessorType(accessor: AccessorDeclaration): Type = {
       if (accessor) {
         if (accessor.kind == SyntaxKind.GetAccessor) {
           return accessor.type && getTypeFromTypeNode(accessor.type)
@@ -2888,7 +2888,7 @@ object Checker {
       return ()
     }
 
-    def getTypeOfAccessors(symbol: Symbol): Type {
+    def getTypeOfAccessors(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.type) {
         if (!pushTypeResolution(symbol, TypeSystemPropertyName.Type)) {
@@ -2934,7 +2934,7 @@ object Checker {
       return links.type
     }
 
-    def getTypeOfFuncClassEnumModule(symbol: Symbol): Type {
+    def getTypeOfFuncClassEnumModule(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.type) {
         links.type = createObjectType(TypeFlags.Anonymous, symbol)
@@ -2942,7 +2942,7 @@ object Checker {
       return links.type
     }
 
-    def getTypeOfEnumMember(symbol: Symbol): Type {
+    def getTypeOfEnumMember(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.type) {
         links.type = getDeclaredTypeOfEnum(getParentOfSymbol(symbol))
@@ -2950,7 +2950,7 @@ object Checker {
       return links.type
     }
 
-    def getTypeOfAlias(symbol: Symbol): Type {
+    def getTypeOfAlias(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.type) {
         val targetSymbol = resolveAlias(symbol)
@@ -2967,7 +2967,7 @@ object Checker {
       return links.type
     }
 
-    def getTypeOfInstantiatedSymbol(symbol: Symbol): Type {
+    def getTypeOfInstantiatedSymbol(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.type) {
         links.type = instantiateType(getTypeOfSymbol(links.target), links.mapper)
@@ -2975,7 +2975,7 @@ object Checker {
       return links.type
     }
 
-    def getTypeOfSymbol(symbol: Symbol): Type {
+    def getTypeOfSymbol(symbol: Symbol): Type = {
       if (symbol.flags & SymbolFlags.Instantiated) {
         return getTypeOfInstantiatedSymbol(symbol)
       }
@@ -2997,13 +2997,13 @@ object Checker {
       return unknownType
     }
 
-    def getTargetType(type: ObjectType): Type {
+    def getTargetType(type: ObjectType): Type = {
       return type.flags & TypeFlags.Reference ? (<TypeReference>type).target : type
     }
 
-    def hasBaseType(type: InterfaceType, checkBase: InterfaceType) {
+    def hasBaseType(type: InterfaceType, checkBase: InterfaceType) = {
       return check(type)
-      def check(type: InterfaceType): Boolean {
+      def check(type: InterfaceType): Boolean = {
         val target = <InterfaceType>getTargetType(type)
         return target == checkBase || forEach(getBaseTypes(target), check)
       }
@@ -3073,11 +3073,11 @@ object Checker {
       return concatenate(getOuterTypeParametersOfClassOrInterface(symbol), getLocalTypeParametersOfClassOrInterfaceOrTypeAlias(symbol))
     }
 
-    def isConstructorType(type: Type): Boolean {
+    def isConstructorType(type: Type): Boolean = {
       return type.flags & TypeFlags.ObjectType && getSignaturesOfType(type, SignatureKind.Construct).length > 0
     }
 
-    def getBaseTypeNodeOfClass(type: InterfaceType): ExpressionWithTypeArguments {
+    def getBaseTypeNodeOfClass(type: InterfaceType): ExpressionWithTypeArguments = {
       return getClassExtendsHeritageClauseElement(<ClassLikeDeclaration>type.symbol.valueDeclaration)
     }
 
@@ -3101,7 +3101,7 @@ object Checker {
     // unknownType if an error occurred during resolution of the extends expression,
     // nullType if the extends expression is the null value, or
     // an object type with at least one construct signature.
-    def getBaseConstructorTypeOfClass(type: InterfaceType): ObjectType {
+    def getBaseConstructorTypeOfClass(type: InterfaceType): ObjectType = {
       if (!type.resolvedBaseConstructorType) {
         val baseTypeNode = getBaseTypeNodeOfClass(type)
         if (!baseTypeNode) {
@@ -3146,7 +3146,7 @@ object Checker {
       return type.resolvedBaseTypes
     }
 
-    def resolveBaseTypesOfClass(type: InterfaceType): Unit {
+    def resolveBaseTypesOfClass(type: InterfaceType): Unit = {
       type.resolvedBaseTypes = type.resolvedBaseTypes || emptyArray
       val baseConstructorType = getBaseConstructorTypeOfClass(type)
       if (!(baseConstructorType.flags & TypeFlags.ObjectType)) {
@@ -3193,7 +3193,7 @@ object Checker {
       }
     }
 
-    def areAllOuterTypeParametersApplied(type: Type): Boolean {
+    def areAllOuterTypeParametersApplied(type: Type): Boolean = {
       // An unapplied type parameter has its symbol still the same as the matching argument symbol.
       // Since parameters are applied outer-to-inner, only the last outer parameter needs to be checked.
       val outerTypeParameters = (<InterfaceType>type).outerTypeParameters
@@ -3205,7 +3205,7 @@ object Checker {
       return true
     }
 
-    def resolveBaseTypesOfInterface(type: InterfaceType): Unit {
+    def resolveBaseTypesOfInterface(type: InterfaceType): Unit = {
       type.resolvedBaseTypes = type.resolvedBaseTypes || emptyArray
       for (val declaration of type.symbol.declarations) {
         if (declaration.kind == SyntaxKind.InterfaceDeclaration && getInterfaceBaseTypeNodes(<InterfaceDeclaration>declaration)) {
@@ -3237,7 +3237,7 @@ object Checker {
     // Returns true if the trait given by the symbol is free of "this" references. Specifically, the result is
     // true if the trait itself contains no references to "this" in its body, if all base types are interfaces,
     // and if none of the base interfaces have a "this" type.
-    def isIndependentInterface(symbol: Symbol): Boolean {
+    def isIndependentInterface(symbol: Symbol): Boolean = {
       for (val declaration of symbol.declarations) {
         if (declaration.kind == SyntaxKind.InterfaceDeclaration) {
           if (declaration.flags & NodeFlags.ContainsThis) {
@@ -3259,7 +3259,7 @@ object Checker {
       return true
     }
 
-    def getDeclaredTypeOfClassOrInterface(symbol: Symbol): InterfaceType {
+    def getDeclaredTypeOfClassOrInterface(symbol: Symbol): InterfaceType = {
       val links = getSymbolLinks(symbol)
       if (!links.declaredType) {
         val kind = symbol.flags & SymbolFlags.Class ? TypeFlags.Class : TypeFlags.Interface
@@ -3288,7 +3288,7 @@ object Checker {
       return <InterfaceType>links.declaredType
     }
 
-    def getDeclaredTypeOfTypeAlias(symbol: Symbol): Type {
+    def getDeclaredTypeOfTypeAlias(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.declaredType) {
         // Note that we use the links object as the target here because the symbol object is used as the unique
@@ -3316,7 +3316,7 @@ object Checker {
       return links.declaredType
     }
 
-    def getDeclaredTypeOfEnum(symbol: Symbol): Type {
+    def getDeclaredTypeOfEnum(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.declaredType) {
         val type = createType(TypeFlags.Enum)
@@ -3326,7 +3326,7 @@ object Checker {
       return links.declaredType
     }
 
-    def getDeclaredTypeOfTypeParameter(symbol: Symbol): TypeParameter {
+    def getDeclaredTypeOfTypeParameter(symbol: Symbol): TypeParameter = {
       val links = getSymbolLinks(symbol)
       if (!links.declaredType) {
         val type = <TypeParameter>createType(TypeFlags.TypeParameter)
@@ -3339,7 +3339,7 @@ object Checker {
       return <TypeParameter>links.declaredType
     }
 
-    def getDeclaredTypeOfAlias(symbol: Symbol): Type {
+    def getDeclaredTypeOfAlias(symbol: Symbol): Type = {
       val links = getSymbolLinks(symbol)
       if (!links.declaredType) {
         links.declaredType = getDeclaredTypeOfSymbol(resolveAlias(symbol))
@@ -3347,7 +3347,7 @@ object Checker {
       return links.declaredType
     }
 
-    def getDeclaredTypeOfSymbol(symbol: Symbol): Type {
+    def getDeclaredTypeOfSymbol(symbol: Symbol): Type = {
       Debug.assert((symbol.flags & SymbolFlags.Instantiated) == 0)
       if (symbol.flags & (SymbolFlags.Class | SymbolFlags.Interface)) {
         return getDeclaredTypeOfClassOrInterface(symbol)
@@ -3368,7 +3368,7 @@ object Checker {
     }
 
     // A type reference is considered independent if each type argument is considered independent.
-    def isIndependentTypeReference(node: TypeReferenceNode): Boolean {
+    def isIndependentTypeReference(node: TypeReferenceNode): Boolean = {
       if (node.typeArguments) {
         for (val typeNode of node.typeArguments) {
           if (!isIndependentType(typeNode)) {
@@ -3382,7 +3382,7 @@ object Checker {
     // A type is considered independent if it the any, String, Int, Boolean, symbol, or Unit keyword, a String
     // literal type, an array with an element type that is considered independent, or a type reference that is
     // considered independent.
-    def isIndependentType(node: TypeNode): Boolean {
+    def isIndependentType(node: TypeNode): Boolean = {
       switch (node.kind) {
         case SyntaxKind.AnyKeyword:
         case SyntaxKind.StringKeyword:
@@ -3402,13 +3402,13 @@ object Checker {
 
     // A variable-like declaration is considered independent (free of this references) if it has a type annotation
     // that specifies an independent type, or if it has no type annotation and no initializer (and thus of type any).
-    def isIndependentVariableLikeDeclaration(node: VariableLikeDeclaration): Boolean {
+    def isIndependentVariableLikeDeclaration(node: VariableLikeDeclaration): Boolean = {
       return node.type && isIndependentType(node.type) || !node.type && !node.initializer
     }
 
     // A def-like declaration is considered independent (free of this references) if it has a return type
     // annotation that is considered independent and if each parameter is considered independent.
-    def isIndependentFunctionLikeDeclaration(node: FunctionLikeDeclaration): Boolean {
+    def isIndependentFunctionLikeDeclaration(node: FunctionLikeDeclaration): Boolean = {
       if (node.kind != SyntaxKind.Constructor && (!node.type || !isIndependentType(node.type))) {
         return false
       }
@@ -3425,7 +3425,7 @@ object Checker {
     // feasible to perform a complete analysis in all cases. In particular, property members with types
     // inferred from their initializers and def members with inferred return types are conservatively
     // assumed not to be free of "this" references.
-    def isIndependentMember(symbol: Symbol): Boolean {
+    def isIndependentMember(symbol: Symbol): Boolean = {
       if (symbol.declarations && symbol.declarations.length == 1) {
         val declaration = symbol.declarations[0]
         if (declaration) {
@@ -3443,7 +3443,7 @@ object Checker {
       return false
     }
 
-    def createSymbolTable(symbols: Symbol[]): SymbolTable {
+    def createSymbolTable(symbols: Symbol[]): SymbolTable = {
       val result: SymbolTable = {}
       for (val symbol of symbols) {
         result[symbol.name] = symbol
@@ -3453,7 +3453,7 @@ object Checker {
 
     // The mappingThisOnly flag indicates that the only type parameter being mapped is "this". When the flag is true,
     // we check symbols to see if we can quickly conclude they are free of "this" references, thus needing no instantiation.
-    def createInstantiatedSymbolTable(symbols: Symbol[], mapper: TypeMapper, mappingThisOnly: Boolean): SymbolTable {
+    def createInstantiatedSymbolTable(symbols: Symbol[], mapper: TypeMapper, mappingThisOnly: Boolean): SymbolTable = {
       val result: SymbolTable = {}
       for (val symbol of symbols) {
         result[symbol.name] = mappingThisOnly && isIndependentMember(symbol) ? symbol : instantiateSymbol(symbol, mapper)
@@ -3461,7 +3461,7 @@ object Checker {
       return result
     }
 
-    def addInheritedMembers(symbols: SymbolTable, baseSymbols: Symbol[]) {
+    def addInheritedMembers(symbols: SymbolTable, baseSymbols: Symbol[]) = {
       for (val s of baseSymbols) {
         if (!hasProperty(symbols, s.name)) {
           symbols[s.name] = s
@@ -3469,7 +3469,7 @@ object Checker {
       }
     }
 
-    def resolveDeclaredMembers(type: InterfaceType): InterfaceTypeWithDeclaredMembers {
+    def resolveDeclaredMembers(type: InterfaceType): InterfaceTypeWithDeclaredMembers = {
       if (!(<InterfaceTypeWithDeclaredMembers>type).declaredProperties) {
         val symbol = type.symbol
         (<InterfaceTypeWithDeclaredMembers>type).declaredProperties = getNamedMembers(symbol.members)
@@ -3481,7 +3481,7 @@ object Checker {
       return <InterfaceTypeWithDeclaredMembers>type
     }
 
-    def getTypeWithThisArgument(type: ObjectType, thisArgument?: Type) {
+    def getTypeWithThisArgument(type: ObjectType, thisArgument?: Type) = {
       if (type.flags & TypeFlags.Reference) {
         return createTypeReference((<TypeReference>type).target,
           concatenate((<TypeReference>type).typeArguments, [thisArgument || (<TypeReference>type).target.thisType]))
@@ -3489,7 +3489,7 @@ object Checker {
       return type
     }
 
-    def resolveObjectTypeMembers(type: ObjectType, source: InterfaceTypeWithDeclaredMembers, typeParameters: TypeParameter[], typeArguments: Type[]) {
+    def resolveObjectTypeMembers(type: ObjectType, source: InterfaceTypeWithDeclaredMembers, typeParameters: TypeParameter[], typeArguments: Type[]) = {
       var mapper = identityMapper
       var members = source.symbol.members
       var callSignatures = source.declaredCallSignatures
@@ -3522,11 +3522,11 @@ object Checker {
       setObjectTypeMembers(type, members, callSignatures, constructSignatures, stringIndexInfo, numberIndexInfo)
     }
 
-    def resolveClassOrInterfaceMembers(type: InterfaceType): Unit {
+    def resolveClassOrInterfaceMembers(type: InterfaceType): Unit = {
       resolveObjectTypeMembers(type, resolveDeclaredMembers(type), emptyArray, emptyArray)
     }
 
-    def resolveTypeReferenceMembers(type: TypeReference): Unit {
+    def resolveTypeReferenceMembers(type: TypeReference): Unit = {
       val source = resolveDeclaredMembers(type.target)
       val typeParameters = concatenate(source.typeParameters, [source.thisType])
       val typeArguments = type.typeArguments && type.typeArguments.length == typeParameters.length ?
@@ -3547,7 +3547,7 @@ object Checker {
       return sig
     }
 
-    def cloneSignature(sig: Signature): Signature {
+    def cloneSignature(sig: Signature): Signature = {
       return createSignature(sig.declaration, sig.typeParameters, sig.parameters, sig.resolvedReturnType,
         sig.minArgumentCount, sig.hasRestParameter, sig.hasStringLiterals)
     }
@@ -3574,7 +3574,7 @@ object Checker {
       return result
     }
 
-    def createTupleTypeMemberSymbols(memberTypes: Type[]): SymbolTable {
+    def createTupleTypeMemberSymbols(memberTypes: Type[]): SymbolTable = {
       val members: SymbolTable = {}
       for (var i = 0; i < memberTypes.length; i++) {
         val symbol = <TransientSymbol>createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "" + i)
@@ -3584,7 +3584,7 @@ object Checker {
       return members
     }
 
-    def resolveTupleTypeMembers(type: TupleType) {
+    def resolveTupleTypeMembers(type: TupleType) = {
       val arrayElementType = getUnionType(type.elementTypes, /*noSubtypeReduction*/ true)
       // Make the tuple type itself the 'this' type by including an extra type argument
       val arrayType = resolveStructuredTypeMembers(createTypeFromGenericGlobalType(globalArrayType, [arrayElementType, type]))
@@ -3593,7 +3593,7 @@ object Checker {
       setObjectTypeMembers(type, members, arrayType.callSignatures, arrayType.constructSignatures, arrayType.stringIndexInfo, arrayType.numberIndexInfo)
     }
 
-    def findMatchingSignature(signatureList: Signature[], signature: Signature, partialMatch: Boolean, ignoreReturnTypes: Boolean): Signature {
+    def findMatchingSignature(signatureList: Signature[], signature: Signature, partialMatch: Boolean, ignoreReturnTypes: Boolean): Signature = {
       for (val s of signatureList) {
         if (compareSignaturesIdentical(s, signature, partialMatch, ignoreReturnTypes, compareTypesIdentical)) {
           return s
@@ -3658,7 +3658,7 @@ object Checker {
       return result || emptyArray
     }
 
-    def getUnionIndexInfo(types: Type[], kind: IndexKind): IndexInfo {
+    def getUnionIndexInfo(types: Type[], kind: IndexKind): IndexInfo = {
       val indexTypes: Type[] = []
       var isAnyReadonly = false
       for (val type of types) {
@@ -3672,7 +3672,7 @@ object Checker {
       return createIndexInfo(getUnionType(indexTypes), isAnyReadonly)
     }
 
-    def resolveUnionTypeMembers(type: UnionType) {
+    def resolveUnionTypeMembers(type: UnionType) = {
       // The members and properties collections are empty for union types. To get all properties of a union
       // type use getPropertiesOfType (only the language service uses this).
       val callSignatures = getUnionSignatures(type.types, SignatureKind.Call)
@@ -3682,16 +3682,16 @@ object Checker {
       setObjectTypeMembers(type, emptySymbols, callSignatures, constructSignatures, stringIndexInfo, numberIndexInfo)
     }
 
-    def intersectTypes(type1: Type, type2: Type): Type {
+    def intersectTypes(type1: Type, type2: Type): Type = {
       return !type1 ? type2 : !type2 ? type1 : getIntersectionType([type1, type2])
     }
 
-    def intersectIndexInfos(info1: IndexInfo, info2: IndexInfo): IndexInfo {
+    def intersectIndexInfos(info1: IndexInfo, info2: IndexInfo): IndexInfo = {
       return !info1 ? info2 : !info2 ? info1 : createIndexInfo(
         getIntersectionType([info1.type, info2.type]), info1.isReadonly && info2.isReadonly)
     }
 
-    def resolveIntersectionTypeMembers(type: IntersectionType) {
+    def resolveIntersectionTypeMembers(type: IntersectionType) = {
       // The members and properties collections are empty for intersection types. To get all properties of an
       // intersection type use getPropertiesOfType (only the language service uses this).
       var callSignatures: Signature[] = emptyArray
@@ -3707,7 +3707,7 @@ object Checker {
       setObjectTypeMembers(type, emptySymbols, callSignatures, constructSignatures, stringIndexInfo, numberIndexInfo)
     }
 
-    def resolveAnonymousTypeMembers(type: AnonymousType) {
+    def resolveAnonymousTypeMembers(type: AnonymousType) = {
       val symbol = type.symbol
       if (type.target) {
         val members = createInstantiatedSymbolTable(getPropertiesOfObjectType(type.target), type.mapper, /*mappingThisOnly*/ false)
@@ -3756,7 +3756,7 @@ object Checker {
       }
     }
 
-    def resolveStructuredTypeMembers(type: ObjectType): ResolvedType {
+    def resolveStructuredTypeMembers(type: ObjectType): ResolvedType = {
       if (!(<ResolvedType>type).members) {
         if (type.flags & TypeFlags.Reference) {
           resolveTypeReferenceMembers(<TypeReference>type)
@@ -3790,7 +3790,7 @@ object Checker {
 
     /** If the given type is an object type and that type has a property by the given name,
      * return the symbol for that property. Otherwise return (). */
-    def getPropertyOfObjectType(type: Type, name: String): Symbol {
+    def getPropertyOfObjectType(type: Type, name: String): Symbol = {
       if (type.flags & TypeFlags.ObjectType) {
         val resolved = resolveStructuredTypeMembers(<ObjectType>type)
         if (hasProperty(resolved.members, name)) {
@@ -3825,7 +3825,7 @@ object Checker {
      * The apparent type of a type parameter is the base constraint instantiated with the type parameter
      * as the type argument for the 'this' type.
      */
-    def getApparentTypeOfTypeParameter(type: TypeParameter) {
+    def getApparentTypeOfTypeParameter(type: TypeParameter) = {
       if (!type.resolvedApparentType) {
         var constraintType = getConstraintOfTypeParameter(type)
         while (constraintType && constraintType.flags & TypeFlags.TypeParameter) {
@@ -3841,7 +3841,7 @@ object Checker {
      * Boolean, and symbol primitive types, return the corresponding object types. Otherwise return the
      * type itself. Note that the apparent type of a union type is the union type itself.
      */
-    def getApparentType(type: Type): Type {
+    def getApparentType(type: Type): Type = {
       if (type.flags & TypeFlags.TypeParameter) {
         type = getApparentTypeOfTypeParameter(<TypeParameter>type)
       }
@@ -3860,7 +3860,7 @@ object Checker {
       return type
     }
 
-    def createUnionOrIntersectionProperty(containingType: UnionOrIntersectionType, name: String): Symbol {
+    def createUnionOrIntersectionProperty(containingType: UnionOrIntersectionType, name: String): Symbol = {
       val types = containingType.types
       var props: Symbol[]
       // Flags we want to propagate to the result if they exist in all source symbols
@@ -3910,7 +3910,7 @@ object Checker {
       return result
     }
 
-    def getPropertyOfUnionOrIntersectionType(type: UnionOrIntersectionType, name: String): Symbol {
+    def getPropertyOfUnionOrIntersectionType(type: UnionOrIntersectionType, name: String): Symbol = {
       val properties = type.resolvedProperties || (type.resolvedProperties = {})
       if (hasProperty(properties, name)) {
         return properties[name]
@@ -3925,7 +3925,7 @@ object Checker {
     // Return the symbol for the property with the given name in the given type. Creates synthetic union properties when
     // necessary, maps primitive types and type parameters are to their apparent types, and augments with properties from
     // Object and Function as appropriate.
-    def getPropertyOfType(type: Type, name: String): Symbol {
+    def getPropertyOfType(type: Type, name: String): Symbol = {
       type = getApparentType(type)
       if (type.flags & TypeFlags.ObjectType) {
         val resolved = resolveStructuredTypeMembers(type)
@@ -3965,27 +3965,27 @@ object Checker {
       return getSignaturesOfStructuredType(getApparentType(type), kind)
     }
 
-    def getIndexInfoOfStructuredType(type: Type, kind: IndexKind): IndexInfo {
+    def getIndexInfoOfStructuredType(type: Type, kind: IndexKind): IndexInfo = {
       if (type.flags & TypeFlags.StructuredType) {
         val resolved = resolveStructuredTypeMembers(<ObjectType>type)
         return kind == IndexKind.String ? resolved.stringIndexInfo : resolved.numberIndexInfo
       }
     }
 
-    def getIndexTypeOfStructuredType(type: Type, kind: IndexKind): Type {
+    def getIndexTypeOfStructuredType(type: Type, kind: IndexKind): Type = {
       val info = getIndexInfoOfStructuredType(type, kind)
       return info && info.type
     }
 
     // Return the indexing info of the given kind in the given type. Creates synthetic union index types when necessary and
     // maps primitive types and type parameters are to their apparent types.
-    def getIndexInfoOfType(type: Type, kind: IndexKind): IndexInfo {
+    def getIndexInfoOfType(type: Type, kind: IndexKind): IndexInfo = {
       return getIndexInfoOfStructuredType(getApparentType(type), kind)
     }
 
     // Return the index type of the given kind in the given type. Creates synthetic union index types when necessary and
     // maps primitive types and type parameters are to their apparent types.
-    def getIndexTypeOfType(type: Type, kind: IndexKind): Type {
+    def getIndexTypeOfType(type: Type, kind: IndexKind): Type = {
       return getIndexTypeOfStructuredType(getApparentType(type), kind)
     }
 
@@ -4023,7 +4023,7 @@ object Checker {
       return result
     }
 
-    def isOptionalParameter(node: ParameterDeclaration) {
+    def isOptionalParameter(node: ParameterDeclaration) = {
       if (node.flags & NodeFlags.JavaScriptFile) {
         if (node.type && node.type.kind == SyntaxKind.JSDocOptionalType) {
           return true
@@ -4074,7 +4074,7 @@ object Checker {
       }
     }
 
-    def getSignatureFromDeclaration(declaration: SignatureDeclaration): Signature {
+    def getSignatureFromDeclaration(declaration: SignatureDeclaration): Signature = {
       val links = getNodeLinks(declaration)
       if (!links.resolvedSignature) {
         val classType = declaration.kind == SyntaxKind.Constructor ?
@@ -4192,7 +4192,7 @@ object Checker {
       return result
     }
 
-    def resolveExternalModuleTypeByLiteral(name: StringLiteral) {
+    def resolveExternalModuleTypeByLiteral(name: StringLiteral) = {
       val moduleSym = resolveExternalModuleName(name, name)
       if (moduleSym) {
         val resolvedModuleSymbol = resolveExternalModuleSymbol(moduleSym)
@@ -4204,7 +4204,7 @@ object Checker {
       return anyType
     }
 
-    def getReturnTypeOfSignature(signature: Signature): Type {
+    def getReturnTypeOfSignature(signature: Signature): Type = {
       if (!signature.resolvedReturnType) {
         if (!pushTypeResolution(signature, TypeSystemPropertyName.ResolvedReturnType)) {
           return unknownType
@@ -4236,7 +4236,7 @@ object Checker {
       return signature.resolvedReturnType
     }
 
-    def getRestTypeOfSignature(signature: Signature): Type {
+    def getRestTypeOfSignature(signature: Signature): Type = {
       if (signature.hasRestParameter) {
         val type = getTypeOfSymbol(lastOrUndefined(signature.parameters))
         if (type.flags & TypeFlags.Reference && (<TypeReference>type).target == globalArrayType) {
@@ -4246,11 +4246,11 @@ object Checker {
       return anyType
     }
 
-    def getSignatureInstantiation(signature: Signature, typeArguments: Type[]): Signature {
+    def getSignatureInstantiation(signature: Signature, typeArguments: Type[]): Signature = {
       return instantiateSignature(signature, createTypeMapper(signature.typeParameters, typeArguments), /*eraseTypeParameters*/ true)
     }
 
-    def getErasedSignature(signature: Signature): Signature {
+    def getErasedSignature(signature: Signature): Signature = {
       if (!signature.typeParameters) return signature
       if (!signature.erasedSignatureCache) {
         if (signature.target) {
@@ -4263,7 +4263,7 @@ object Checker {
       return signature.erasedSignatureCache
     }
 
-    def getOrCreateTypeFromSignature(signature: Signature): ObjectType {
+    def getOrCreateTypeFromSignature(signature: Signature): ObjectType = {
       // There are two ways to declare a construct signature, one is by declaring a class constructor
       // using the constructor keyword, and the other is declaring a bare construct signature in an
       // object type literal or trait (using the new keyword). Each way of declaring a constructor
@@ -4281,11 +4281,11 @@ object Checker {
       return signature.isolatedSignatureType
     }
 
-    def getIndexSymbol(symbol: Symbol): Symbol {
+    def getIndexSymbol(symbol: Symbol): Symbol = {
       return symbol.members["__index"]
     }
 
-    def getIndexDeclarationOfSymbol(symbol: Symbol, kind: IndexKind): SignatureDeclaration {
+    def getIndexDeclarationOfSymbol(symbol: Symbol, kind: IndexKind): SignatureDeclaration = {
       val syntaxKind = kind == IndexKind.Number ? SyntaxKind.NumberKeyword : SyntaxKind.StringKeyword
       val indexSymbol = getIndexSymbol(symbol)
       if (indexSymbol) {
@@ -4303,11 +4303,11 @@ object Checker {
       return ()
     }
 
-    def createIndexInfo(type: Type, isReadonly: Boolean, declaration?: SignatureDeclaration): IndexInfo {
+    def createIndexInfo(type: Type, isReadonly: Boolean, declaration?: SignatureDeclaration): IndexInfo = {
       return { type, isReadonly, declaration }
     }
 
-    def getIndexInfoOfSymbol(symbol: Symbol, kind: IndexKind): IndexInfo {
+    def getIndexInfoOfSymbol(symbol: Symbol, kind: IndexKind): IndexInfo = {
       val declaration = getIndexDeclarationOfSymbol(symbol, kind)
       if (declaration) {
         return createIndexInfo(declaration.type ? getTypeFromTypeNode(declaration.type) : anyType,
@@ -4316,11 +4316,11 @@ object Checker {
       return ()
     }
 
-    def getConstraintDeclaration(type: TypeParameter) {
+    def getConstraintDeclaration(type: TypeParameter) = {
       return (<TypeParameterDeclaration>getDeclarationOfKind(type.symbol, SyntaxKind.TypeParameter)).constraint
     }
 
-    def hasConstraintReferenceTo(type: Type, target: TypeParameter): Boolean {
+    def hasConstraintReferenceTo(type: Type, target: TypeParameter): Boolean = {
       var checked: Type[]
       while (type && !(type.flags & TypeFlags.ThisType) && type.flags & TypeFlags.TypeParameter && !contains(checked, type)) {
         if (type == target) {
@@ -4333,7 +4333,7 @@ object Checker {
       return false
     }
 
-    def getConstraintOfTypeParameter(typeParameter: TypeParameter): Type {
+    def getConstraintOfTypeParameter(typeParameter: TypeParameter): Type = {
       if (!typeParameter.constraint) {
         if (typeParameter.target) {
           val targetConstraint = getConstraintOfTypeParameter(typeParameter.target)
@@ -4352,11 +4352,11 @@ object Checker {
       return typeParameter.constraint == noConstraintType ? () : typeParameter.constraint
     }
 
-    def getParentSymbolOfTypeParameter(typeParameter: TypeParameter): Symbol {
+    def getParentSymbolOfTypeParameter(typeParameter: TypeParameter): Symbol = {
       return getSymbolOfNode(getDeclarationOfKind(typeParameter.symbol, SyntaxKind.TypeParameter).parent)
     }
 
-    def getTypeListId(types: Type[]) {
+    def getTypeListId(types: Type[]) = {
       if (types) {
         switch (types.length) {
           case 1:
@@ -4381,7 +4381,7 @@ object Checker {
     // It is only necessary to do so if a constituent type might be the () type, the null type, the type
     // of an object literal or the anyFunctionType. This is because there are operations in the type checker
     // that care about the presence of such types at arbitrary depth in a containing type.
-    def getPropagatingFlagsOfTypes(types: Type[]): TypeFlags {
+    def getPropagatingFlagsOfTypes(types: Type[]): TypeFlags = {
       var result: TypeFlags = 0
       for (val type of types) {
         result |= type.flags
@@ -4389,7 +4389,7 @@ object Checker {
       return result & TypeFlags.PropagatingFlags
     }
 
-    def createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference {
+    def createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference = {
       val id = getTypeListId(typeArguments)
       var type = target.instantiations[id]
       if (!type) {
@@ -4402,7 +4402,7 @@ object Checker {
     }
 
     // Get type from reference to class or trait
-    def getTypeFromClassOrInterfaceReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol): Type {
+    def getTypeFromClassOrInterfaceReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol): Type = {
       val type = <InterfaceType>getDeclaredTypeOfSymbol(symbol)
       val typeParameters = type.localTypeParameters
       if (typeParameters) {
@@ -4425,7 +4425,7 @@ object Checker {
     // Get type from reference to type alias. When a type alias is generic, the declared type of the type alias may include
     // references to the type parameters of the alias. We replace those with the actual type arguments by instantiating the
     // declared type. Instantiations are cached using the type identities of the type arguments as the key.
-    def getTypeFromTypeAliasReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol): Type {
+    def getTypeFromTypeAliasReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol): Type = {
       val type = getDeclaredTypeOfSymbol(symbol)
       val links = getSymbolLinks(symbol)
       val typeParameters = links.typeParameters
@@ -4446,7 +4446,7 @@ object Checker {
     }
 
     // Get type from reference to named type that cannot be generic (enum or type parameter)
-    def getTypeFromNonGenericTypeReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol): Type {
+    def getTypeFromNonGenericTypeReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol): Type = {
       if (node.typeArguments) {
         error(node, Diagnostics.Type_0_is_not_generic, symbolToString(symbol))
         return unknownType
@@ -4484,7 +4484,7 @@ object Checker {
       return resolveEntityName(typeReferenceName, SymbolFlags.Type) || unknownSymbol
     }
 
-    def getTypeReferenceType(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol) {
+    def getTypeReferenceType(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference, symbol: Symbol) = {
       if (symbol == unknownSymbol) {
         return unknownType
       }
@@ -4507,7 +4507,7 @@ object Checker {
       return getTypeFromNonGenericTypeReference(node, symbol)
     }
 
-    def getTypeFromTypeReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference): Type {
+    def getTypeFromTypeReference(node: TypeReferenceNode | ExpressionWithTypeArguments | JSDocTypeReference): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         var symbol: Symbol
@@ -4539,7 +4539,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def getTypeFromTypeQueryNode(node: TypeQueryNode): Type {
+    def getTypeFromTypeQueryNode(node: TypeQueryNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         // TypeScript 1.0 spec (April 2014): 3.6.3
@@ -4551,9 +4551,9 @@ object Checker {
       return links.resolvedType
     }
 
-    def getTypeOfGlobalSymbol(symbol: Symbol, arity: Int): ObjectType {
+    def getTypeOfGlobalSymbol(symbol: Symbol, arity: Int): ObjectType = {
 
-      def getTypeDeclaration(symbol: Symbol): Declaration {
+      def getTypeDeclaration(symbol: Symbol): Declaration = {
         val declarations = symbol.declarations
         for (val declaration of declarations) {
           switch (declaration.kind) {
@@ -4580,19 +4580,19 @@ object Checker {
       return <ObjectType>type
     }
 
-    def getGlobalValueSymbol(name: String): Symbol {
+    def getGlobalValueSymbol(name: String): Symbol = {
       return getGlobalSymbol(name, SymbolFlags.Value, Diagnostics.Cannot_find_global_value_0)
     }
 
-    def getGlobalTypeSymbol(name: String): Symbol {
+    def getGlobalTypeSymbol(name: String): Symbol = {
       return getGlobalSymbol(name, SymbolFlags.Type, Diagnostics.Cannot_find_global_type_0)
     }
 
-    def getGlobalSymbol(name: String, meaning: SymbolFlags, diagnostic: DiagnosticMessage): Symbol {
+    def getGlobalSymbol(name: String, meaning: SymbolFlags, diagnostic: DiagnosticMessage): Symbol = {
       return resolveName((), name, meaning, diagnostic, name)
     }
 
-    def getGlobalType(name: String, arity = 0): ObjectType {
+    def getGlobalType(name: String, arity = 0): ObjectType = {
       return getTypeOfGlobalSymbol(getGlobalTypeSymbol(name), arity)
     }
 
@@ -4600,20 +4600,20 @@ object Checker {
      * Returns a type that is inside a package at the global scope, e.g.
      * getExportedTypeFromNamespace('JSX', 'Element') returns the JSX.Element type
      */
-    def getExportedTypeFromNamespace(package: String, name: String): Type {
+    def getExportedTypeFromNamespace(package: String, name: String): Type = {
       val namespaceSymbol = getGlobalSymbol(package, SymbolFlags.Namespace, /*diagnosticMessage*/ ())
       val typeSymbol = namespaceSymbol && getSymbol(namespaceSymbol.exports, name, SymbolFlags.Type)
       return typeSymbol && getDeclaredTypeOfSymbol(typeSymbol)
     }
 
-    def getGlobalESSymbolConstructorSymbol() {
+    def getGlobalESSymbolConstructorSymbol() = {
       return globalESSymbolConstructorSymbol || (globalESSymbolConstructorSymbol = getGlobalValueSymbol("Symbol"))
     }
 
     /**
       * Creates a TypeReference for a generic `TypedPropertyDescriptor<T>`.
       */
-    def createTypedPropertyDescriptorType(propertyType: Type): Type {
+    def createTypedPropertyDescriptorType(propertyType: Type): Type = {
       val globalTypedPropertyDescriptorType = getGlobalTypedPropertyDescriptorType()
       return globalTypedPropertyDescriptorType != emptyGenericType
         ? createTypeReference(<GenericType>globalTypedPropertyDescriptorType, [propertyType])
@@ -4623,23 +4623,23 @@ object Checker {
     /**
      * Instantiates a global type that is generic with some element type, and returns that instantiation.
      */
-    def createTypeFromGenericGlobalType(genericGlobalType: GenericType, typeArguments: Type[]): Type {
+    def createTypeFromGenericGlobalType(genericGlobalType: GenericType, typeArguments: Type[]): Type = {
       return genericGlobalType != emptyGenericType ? createTypeReference(genericGlobalType, typeArguments) : emptyObjectType
     }
 
-    def createIterableType(elementType: Type): Type {
+    def createIterableType(elementType: Type): Type = {
       return createTypeFromGenericGlobalType(globalIterableType, [elementType])
     }
 
-    def createIterableIteratorType(elementType: Type): Type {
+    def createIterableIteratorType(elementType: Type): Type = {
       return createTypeFromGenericGlobalType(globalIterableIteratorType, [elementType])
     }
 
-    def createArrayType(elementType: Type): Type {
+    def createArrayType(elementType: Type): Type = {
       return createTypeFromGenericGlobalType(globalArrayType, [elementType])
     }
 
-    def getTypeFromArrayTypeNode(node: ArrayTypeNode): Type {
+    def getTypeFromArrayTypeNode(node: ArrayTypeNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = createArrayType(getTypeFromTypeNode(node.elementType))
@@ -4647,18 +4647,18 @@ object Checker {
       return links.resolvedType
     }
 
-    def createTupleType(elementTypes: Type[]) {
+    def createTupleType(elementTypes: Type[]) = {
       val id = getTypeListId(elementTypes)
       return tupleTypes[id] || (tupleTypes[id] = createNewTupleType(elementTypes))
     }
 
-    def createNewTupleType(elementTypes: Type[]) {
+    def createNewTupleType(elementTypes: Type[]) = {
       val type = <TupleType>createObjectType(TypeFlags.Tuple | getPropagatingFlagsOfTypes(elementTypes))
       type.elementTypes = elementTypes
       return type
     }
 
-    def getTypeFromTupleTypeNode(node: TupleTypeNode): Type {
+    def getTypeFromTupleTypeNode(node: TupleTypeNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = createTupleType(map(node.elementTypes, getTypeFromTypeNode))
@@ -4666,7 +4666,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def addTypeToSet(typeSet: Type[], type: Type, typeSetKind: TypeFlags) {
+    def addTypeToSet(typeSet: Type[], type: Type, typeSetKind: TypeFlags) = {
       if (type.flags & typeSetKind) {
         addTypesToSet(typeSet, (<UnionOrIntersectionType>type).types, typeSetKind)
       }
@@ -4677,13 +4677,13 @@ object Checker {
 
     // Add the given types to the given type set. Order is preserved, duplicates are removed,
     // and nested types of the given kind are flattened into the set.
-    def addTypesToSet(typeSet: Type[], types: Type[], typeSetKind: TypeFlags) {
+    def addTypesToSet(typeSet: Type[], types: Type[], typeSetKind: TypeFlags) = {
       for (val type of types) {
         addTypeToSet(typeSet, type, typeSetKind)
       }
     }
 
-    def isSubtypeOfAny(candidate: Type, types: Type[]): Boolean {
+    def isSubtypeOfAny(candidate: Type, types: Type[]): Boolean = {
       for (var i = 0, len = types.length; i < len; i++) {
         if (candidate != types[i] && isTypeSubtypeOf(candidate, types[i])) {
           return true
@@ -4692,7 +4692,7 @@ object Checker {
       return false
     }
 
-    def removeSubtypes(types: Type[]) {
+    def removeSubtypes(types: Type[]) = {
       var i = types.length
       while (i > 0) {
         i--
@@ -4702,7 +4702,7 @@ object Checker {
       }
     }
 
-    def containsTypeAny(types: Type[]): Boolean {
+    def containsTypeAny(types: Type[]): Boolean = {
       for (val type of types) {
         if (isTypeAny(type)) {
           return true
@@ -4711,7 +4711,7 @@ object Checker {
       return false
     }
 
-    def removeAllButLast(types: Type[], typeToRemove: Type) {
+    def removeAllButLast(types: Type[], typeToRemove: Type) = {
       var i = types.length
       while (i > 0 && types.length > 1) {
         i--
@@ -4728,7 +4728,7 @@ object Checker {
     // literals and the || and ?: operators). Named types can circularly reference themselves and therefore
     // cannot be deduplicated during their declaration. For example, "type Item = String | (() => Item" is
     // a named type that circularly references itself.
-    def getUnionType(types: Type[], noSubtypeReduction?: Boolean): Type {
+    def getUnionType(types: Type[], noSubtypeReduction?: Boolean): Type = {
       if (types.length == 0) {
         return emptyUnionType
       }
@@ -4756,7 +4756,7 @@ object Checker {
       return type
     }
 
-    def getTypeFromUnionTypeNode(node: UnionTypeNode): Type {
+    def getTypeFromUnionTypeNode(node: UnionTypeNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = getUnionType(map(node.types, getTypeFromTypeNode), /*noSubtypeReduction*/ true)
@@ -4769,7 +4769,7 @@ object Checker {
     // a type alias of the form "type List<T> = T & { next: List<T> }" cannot be reduced during its declaration.
     // Also, unlike union types, the order of the constituent types is preserved in order that overload resolution
     // for intersections of types with signatures can be deterministic.
-    def getIntersectionType(types: Type[]): Type {
+    def getIntersectionType(types: Type[]): Type = {
       if (types.length == 0) {
         return emptyObjectType
       }
@@ -4790,7 +4790,7 @@ object Checker {
       return type
     }
 
-    def getTypeFromIntersectionTypeNode(node: IntersectionTypeNode): Type {
+    def getTypeFromIntersectionTypeNode(node: IntersectionTypeNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = getIntersectionType(map(node.types, getTypeFromTypeNode))
@@ -4798,7 +4798,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def getTypeFromTypeLiteralOrFunctionOrConstructorTypeNode(node: Node): Type {
+    def getTypeFromTypeLiteralOrFunctionOrConstructorTypeNode(node: Node): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         // Deferred resolution of members is handled by resolveObjectTypeMembers
@@ -4807,7 +4807,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def getStringLiteralTypeForText(text: String): StringLiteralType {
+    def getStringLiteralTypeForText(text: String): StringLiteralType = {
       if (hasProperty(stringLiteralTypes, text)) {
         return stringLiteralTypes[text]
       }
@@ -4817,7 +4817,7 @@ object Checker {
       return type
     }
 
-    def getTypeFromStringLiteralTypeNode(node: StringLiteralTypeNode): Type {
+    def getTypeFromStringLiteralTypeNode(node: StringLiteralTypeNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = getStringLiteralTypeForText(node.text)
@@ -4825,7 +4825,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def getTypeFromJSDocVariadicType(node: JSDocVariadicType): Type {
+    def getTypeFromJSDocVariadicType(node: JSDocVariadicType): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         val type = getTypeFromTypeNode(node.type)
@@ -4834,7 +4834,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def getTypeFromJSDocTupleType(node: JSDocTupleType): Type {
+    def getTypeFromJSDocTupleType(node: JSDocTupleType): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         val types = map(node.types, getTypeFromTypeNode)
@@ -4843,7 +4843,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def getThisType(node: TypeNode): Type {
+    def getThisType(node: TypeNode): Type = {
       val container = getThisContainer(node, /*includeArrowFunctions*/ false)
       val parent = container && container.parent
       if (parent && (isClassLike(parent) || parent.kind == SyntaxKind.InterfaceDeclaration)) {
@@ -4856,7 +4856,7 @@ object Checker {
       return unknownType
     }
 
-    def getTypeFromThisTypeNode(node: TypeNode): Type {
+    def getTypeFromThisTypeNode(node: TypeNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = getThisType(node)
@@ -4864,18 +4864,18 @@ object Checker {
       return links.resolvedType
     }
 
-    def getPredicateType(node: TypePredicateNode): Type {
+    def getPredicateType(node: TypePredicateNode): Type = {
       return createPredicateType(getSymbolOfNode(node), createTypePredicateFromTypePredicateNode(node))
     }
 
-    def createPredicateType(symbol: Symbol, predicate: ThisTypePredicate | IdentifierTypePredicate) {
+    def createPredicateType(symbol: Symbol, predicate: ThisTypePredicate | IdentifierTypePredicate) = {
         val type = createType(TypeFlags.Boolean | TypeFlags.PredicateType) as PredicateType
         type.symbol = symbol
         type.predicate = predicate
         return type
     }
 
-    def getTypeFromPredicateTypeNode(node: TypePredicateNode): Type {
+    def getTypeFromPredicateTypeNode(node: TypePredicateNode): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = getPredicateType(node)
@@ -4883,7 +4883,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def getTypeFromTypeNode(node: TypeNode): Type {
+    def getTypeFromTypeNode(node: TypeNode): Type = {
       switch (node.kind) {
         case SyntaxKind.AnyKeyword:
         case SyntaxKind.JSDocAllType:
@@ -4961,15 +4961,15 @@ object Checker {
       return items
     }
 
-    def createUnaryTypeMapper(source: Type, target: Type): TypeMapper {
+    def createUnaryTypeMapper(source: Type, target: Type): TypeMapper = {
       return t => t == source ? target : t
     }
 
-    def createBinaryTypeMapper(source1: Type, target1: Type, source2: Type, target2: Type): TypeMapper {
+    def createBinaryTypeMapper(source1: Type, target1: Type, source2: Type, target2: Type): TypeMapper = {
       return t => t == source1 ? target1 : t == source2 ? target2 : t
     }
 
-    def createTypeMapper(sources: Type[], targets: Type[]): TypeMapper {
+    def createTypeMapper(sources: Type[], targets: Type[]): TypeMapper = {
       switch (sources.length) {
         case 1: return createUnaryTypeMapper(sources[0], targets[0])
         case 2: return createBinaryTypeMapper(sources[0], targets[0], sources[1], targets[1])
@@ -4984,15 +4984,15 @@ object Checker {
       }
     }
 
-    def createUnaryTypeEraser(source: Type): TypeMapper {
+    def createUnaryTypeEraser(source: Type): TypeMapper = {
       return t => t == source ? anyType : t
     }
 
-    def createBinaryTypeEraser(source1: Type, source2: Type): TypeMapper {
+    def createBinaryTypeEraser(source1: Type, source2: Type): TypeMapper = {
       return t => t == source1 || t == source2 ? anyType : t
     }
 
-    def createTypeEraser(sources: Type[]): TypeMapper {
+    def createTypeEraser(sources: Type[]): TypeMapper = {
       switch (sources.length) {
         case 1: return createUnaryTypeEraser(sources[0])
         case 2: return createBinaryTypeEraser(sources[0], sources[1])
@@ -5007,7 +5007,7 @@ object Checker {
       }
     }
 
-    def getInferenceMapper(context: InferenceContext): TypeMapper {
+    def getInferenceMapper(context: InferenceContext): TypeMapper = {
       if (!context.mapper) {
         val mapper: TypeMapper = t => {
           val typeParameters = context.typeParameters
@@ -5025,15 +5025,15 @@ object Checker {
       return context.mapper
     }
 
-    def identityMapper(type: Type): Type {
+    def identityMapper(type: Type): Type = {
       return type
     }
 
-    def combineTypeMappers(mapper1: TypeMapper, mapper2: TypeMapper): TypeMapper {
+    def combineTypeMappers(mapper1: TypeMapper, mapper2: TypeMapper): TypeMapper = {
       return t => instantiateType(mapper1(t), mapper2)
     }
 
-    def cloneTypeParameter(typeParameter: TypeParameter): TypeParameter {
+    def cloneTypeParameter(typeParameter: TypeParameter): TypeParameter = {
       val result = <TypeParameter>createType(TypeFlags.TypeParameter)
       result.symbol = typeParameter.symbol
       result.target = typeParameter
@@ -5057,7 +5057,7 @@ object Checker {
       }
     }
 
-    def instantiateSignature(signature: Signature, mapper: TypeMapper, eraseTypeParameters?: Boolean): Signature {
+    def instantiateSignature(signature: Signature, mapper: TypeMapper, eraseTypeParameters?: Boolean): Signature = {
       var freshTypeParameters: TypeParameter[]
       if (signature.typeParameters && !eraseTypeParameters) {
         // First create a fresh set of type parameters, then include a mapping from the old to the
@@ -5078,7 +5078,7 @@ object Checker {
       return result
     }
 
-    def instantiateSymbol(symbol: Symbol, mapper: TypeMapper): Symbol {
+    def instantiateSymbol(symbol: Symbol, mapper: TypeMapper): Symbol = {
       if (symbol.flags & SymbolFlags.Instantiated) {
         val links = getSymbolLinks(symbol)
         // If symbol being instantiated is itself a instantiation, fetch the original target and combine the
@@ -5102,7 +5102,7 @@ object Checker {
       return result
     }
 
-    def instantiateAnonymousType(type: AnonymousType, mapper: TypeMapper): ObjectType {
+    def instantiateAnonymousType(type: AnonymousType, mapper: TypeMapper): ObjectType = {
       if (mapper.instantiations) {
         val cachedType = mapper.instantiations[type.id]
         if (cachedType) {
@@ -5120,7 +5120,7 @@ object Checker {
       return result
     }
 
-    def instantiateType(type: Type, mapper: TypeMapper): Type {
+    def instantiateType(type: Type, mapper: TypeMapper): Type = {
       if (type && mapper != identityMapper) {
         if (type.flags & TypeFlags.TypeParameter) {
           return mapper(<TypeParameter>type)
@@ -5149,13 +5149,13 @@ object Checker {
       return type
     }
 
-    def instantiateIndexInfo(info: IndexInfo, mapper: TypeMapper): IndexInfo {
+    def instantiateIndexInfo(info: IndexInfo, mapper: TypeMapper): IndexInfo = {
       return info && createIndexInfo(instantiateType(info.type, mapper), info.isReadonly, info.declaration)
     }
 
     // Returns true if the given expression contains (at any level of nesting) a def or arrow expression
     // that is subject to contextual typing.
-    def isContextSensitive(node: Expression | MethodDeclaration | ObjectLiteralElement): Boolean {
+    def isContextSensitive(node: Expression | MethodDeclaration | ObjectLiteralElement): Boolean = {
       Debug.assert(node.kind != SyntaxKind.MethodDeclaration || isObjectLiteralMethod(node))
       switch (node.kind) {
         case SyntaxKind.FunctionExpression:
@@ -5183,11 +5183,11 @@ object Checker {
       return false
     }
 
-    def isContextSensitiveFunctionLikeDeclaration(node: FunctionLikeDeclaration) {
+    def isContextSensitiveFunctionLikeDeclaration(node: FunctionLikeDeclaration) = {
       return !node.typeParameters && node.parameters.length && !forEach(node.parameters, p => p.type)
     }
 
-    def getTypeWithoutSignatures(type: Type): Type {
+    def getTypeWithoutSignatures(type: Type): Type = {
       if (type.flags & TypeFlags.ObjectType) {
         val resolved = resolveStructuredTypeMembers(<ObjectType>type)
         if (resolved.constructSignatures.length) {
@@ -5204,31 +5204,31 @@ object Checker {
 
     // TYPE CHECKING
 
-    def isTypeIdenticalTo(source: Type, target: Type): Boolean {
+    def isTypeIdenticalTo(source: Type, target: Type): Boolean = {
       return checkTypeRelatedTo(source, target, identityRelation, /*errorNode*/ ())
     }
 
-    def compareTypesIdentical(source: Type, target: Type): Ternary {
+    def compareTypesIdentical(source: Type, target: Type): Ternary = {
       return checkTypeRelatedTo(source, target, identityRelation, /*errorNode*/ ()) ? Ternary.True : Ternary.False
     }
 
-    def compareTypesAssignable(source: Type, target: Type): Ternary {
+    def compareTypesAssignable(source: Type, target: Type): Ternary = {
       return checkTypeRelatedTo(source, target, assignableRelation, /*errorNode*/ ()) ? Ternary.True : Ternary.False
     }
 
-    def isTypeSubtypeOf(source: Type, target: Type): Boolean {
+    def isTypeSubtypeOf(source: Type, target: Type): Boolean = {
       return checkTypeSubtypeOf(source, target, /*errorNode*/ ())
     }
 
-    def isTypeAssignableTo(source: Type, target: Type): Boolean {
+    def isTypeAssignableTo(source: Type, target: Type): Boolean = {
       return checkTypeAssignableTo(source, target, /*errorNode*/ ())
     }
 
-    def checkTypeSubtypeOf(source: Type, target: Type, errorNode: Node, headMessage?: DiagnosticMessage, containingMessageChain?: DiagnosticMessageChain): Boolean {
+    def checkTypeSubtypeOf(source: Type, target: Type, errorNode: Node, headMessage?: DiagnosticMessage, containingMessageChain?: DiagnosticMessageChain): Boolean = {
       return checkTypeRelatedTo(source, target, subtypeRelation, errorNode, headMessage, containingMessageChain)
     }
 
-    def checkTypeAssignableTo(source: Type, target: Type, errorNode: Node, headMessage?: DiagnosticMessage, containingMessageChain?: DiagnosticMessageChain): Boolean {
+    def checkTypeAssignableTo(source: Type, target: Type, errorNode: Node, headMessage?: DiagnosticMessage, containingMessageChain?: DiagnosticMessageChain): Boolean = {
       return checkTypeRelatedTo(source, target, assignableRelation, errorNode, headMessage, containingMessageChain)
     }
 
@@ -5305,7 +5305,7 @@ object Checker {
       return result
     }
 
-    def isImplementationCompatibleWithOverload(implementation: Signature, overload: Signature): Boolean {
+    def isImplementationCompatibleWithOverload(implementation: Signature, overload: Signature): Boolean = {
       val erasedSource = getErasedSignature(implementation)
       val erasedTarget = getErasedSignature(overload)
 
@@ -5322,14 +5322,14 @@ object Checker {
       return false
     }
 
-    def getNumNonRestParameters(signature: Signature) {
+    def getNumNonRestParameters(signature: Signature) = {
       val numParams = signature.parameters.length
       return signature.hasRestParameter ?
         numParams - 1 :
         numParams
     }
 
-    def getNumParametersToCheckForSignatureRelatability(source: Signature, sourceNonRestParamCount: Int, target: Signature, targetNonRestParamCount: Int) {
+    def getNumParametersToCheckForSignatureRelatability(source: Signature, sourceNonRestParamCount: Int, target: Signature, targetNonRestParamCount: Int) = {
       if (source.hasRestParameter == target.hasRestParameter) {
         if (source.hasRestParameter) {
           // If both have rest parameters, get the max and add 1 to
@@ -5389,12 +5389,12 @@ object Checker {
       }
       return result != Ternary.False
 
-      def reportError(message: DiagnosticMessage, arg0?: String, arg1?: String, arg2?: String): Unit {
+      def reportError(message: DiagnosticMessage, arg0?: String, arg1?: String, arg2?: String): Unit = {
         Debug.assert(!!errorNode)
         errorInfo = chainDiagnosticMessages(errorInfo, message, arg0, arg1, arg2)
       }
 
-      def reportRelationError(message: DiagnosticMessage, source: Type, target: Type) {
+      def reportRelationError(message: DiagnosticMessage, source: Type, target: Type) = {
         var sourceType = typeToString(source)
         var targetType = typeToString(target)
         if (sourceType == targetType) {
@@ -5408,7 +5408,7 @@ object Checker {
       // Ternary.True if they are related with no assumptions,
       // Ternary.Maybe if they are related with assumptions of other relationships, or
       // Ternary.False if they are not related.
-      def isRelatedTo(source: Type, target: Type, reportErrors?: Boolean, headMessage?: DiagnosticMessage): Ternary {
+      def isRelatedTo(source: Type, target: Type, reportErrors?: Boolean, headMessage?: DiagnosticMessage): Ternary = {
         var result: Ternary
         // both types are the same - covers 'they are the same primitive type or both are Any' or the same type parameter cases
         if (source == target) return Ternary.True
@@ -5548,7 +5548,7 @@ object Checker {
         return Ternary.False
       }
 
-      def isIdenticalTo(source: Type, target: Type): Ternary {
+      def isIdenticalTo(source: Type, target: Type): Ternary = {
         var result: Ternary
         if (source.flags & TypeFlags.ObjectType && target.flags & TypeFlags.ObjectType) {
           if (source.flags & TypeFlags.Reference && target.flags & TypeFlags.Reference && (<TypeReference>source).target == (<TypeReference>target).target) {
@@ -5574,7 +5574,7 @@ object Checker {
       // is considered known if the object type is empty and the check is for assignability, if the object type has
       // index signatures, or if the property is actually declared in the object type. In a union or intersection
       // type, a property is considered known if it is known in any constituent type.
-      def isKnownProperty(type: Type, name: String): Boolean {
+      def isKnownProperty(type: Type, name: String): Boolean = {
         if (type.flags & TypeFlags.ObjectType) {
           val resolved = resolveStructuredTypeMembers(type)
           if (relation == assignableRelation && (type == globalObjectType || resolved.properties.length == 0) ||
@@ -5592,7 +5592,7 @@ object Checker {
         return false
       }
 
-      def hasExcessProperties(source: FreshObjectLiteralType, target: Type, reportErrors: Boolean): Boolean {
+      def hasExcessProperties(source: FreshObjectLiteralType, target: Type, reportErrors: Boolean): Boolean = {
         if (!(target.flags & TypeFlags.ObjectLiteralPatternWithComputedProperties) && maybeTypeOfKind(target, TypeFlags.ObjectType)) {
           for (val prop of getPropertiesOfObjectType(source)) {
             if (!isKnownProperty(target, prop.name)) {
@@ -5612,7 +5612,7 @@ object Checker {
         return false
       }
 
-      def eachTypeRelatedToSomeType(source: UnionOrIntersectionType, target: UnionOrIntersectionType): Ternary {
+      def eachTypeRelatedToSomeType(source: UnionOrIntersectionType, target: UnionOrIntersectionType): Ternary = {
         var result = Ternary.True
         val sourceTypes = source.types
         for (val sourceType of sourceTypes) {
@@ -5625,7 +5625,7 @@ object Checker {
         return result
       }
 
-      def typeRelatedToSomeType(source: Type, target: UnionOrIntersectionType, reportErrors: Boolean): Ternary {
+      def typeRelatedToSomeType(source: Type, target: UnionOrIntersectionType, reportErrors: Boolean): Ternary = {
         val targetTypes = target.types
         for (var i = 0, len = targetTypes.length; i < len; i++) {
           val related = isRelatedTo(source, targetTypes[i], reportErrors && i == len - 1)
@@ -5636,7 +5636,7 @@ object Checker {
         return Ternary.False
       }
 
-      def typeRelatedToEachType(source: Type, target: UnionOrIntersectionType, reportErrors: Boolean): Ternary {
+      def typeRelatedToEachType(source: Type, target: UnionOrIntersectionType, reportErrors: Boolean): Ternary = {
         var result = Ternary.True
         val targetTypes = target.types
         for (val targetType of targetTypes) {
@@ -5649,7 +5649,7 @@ object Checker {
         return result
       }
 
-      def someTypeRelatedToType(source: UnionOrIntersectionType, target: Type, reportErrors: Boolean): Ternary {
+      def someTypeRelatedToType(source: UnionOrIntersectionType, target: Type, reportErrors: Boolean): Ternary = {
         val sourceTypes = source.types
         for (var i = 0, len = sourceTypes.length; i < len; i++) {
           val related = isRelatedTo(sourceTypes[i], target, reportErrors && i == len - 1)
@@ -5660,7 +5660,7 @@ object Checker {
         return Ternary.False
       }
 
-      def eachTypeRelatedToType(source: UnionOrIntersectionType, target: Type, reportErrors: Boolean): Ternary {
+      def eachTypeRelatedToType(source: UnionOrIntersectionType, target: Type, reportErrors: Boolean): Ternary = {
         var result = Ternary.True
         val sourceTypes = source.types
         for (val sourceType of sourceTypes) {
@@ -5673,7 +5673,7 @@ object Checker {
         return result
       }
 
-      def typeArgumentsRelatedTo(source: TypeReference, target: TypeReference, reportErrors: Boolean): Ternary {
+      def typeArgumentsRelatedTo(source: TypeReference, target: TypeReference, reportErrors: Boolean): Ternary = {
         val sources = source.typeArguments || emptyArray
         val targets = target.typeArguments || emptyArray
         if (sources.length != targets.length && relation == identityRelation) {
@@ -5696,7 +5696,7 @@ object Checker {
       // Third, check if both types are part of deeply nested chains of generic type instantiations and if so assume the types are
       // equal and infinitely expanding. Fourth, if we have reached a depth of 100 nested comparisons, assume we have runaway recursion
       // and issue an error. Otherwise, actually compare the structure of the two types.
-      def objectTypeRelatedTo(source: Type, originalSource: Type, target: Type, reportErrors: Boolean): Ternary {
+      def objectTypeRelatedTo(source: Type, originalSource: Type, target: Type, reportErrors: Boolean): Ternary = {
         if (overflow) {
           return Ternary.False
         }
@@ -5773,7 +5773,7 @@ object Checker {
         return result
       }
 
-      def propertiesRelatedTo(source: Type, target: Type, reportErrors: Boolean): Ternary {
+      def propertiesRelatedTo(source: Type, target: Type, reportErrors: Boolean): Ternary = {
         if (relation == identityRelation) {
           return propertiesIdenticalTo(source, target)
         }
@@ -5857,7 +5857,7 @@ object Checker {
         return result
       }
 
-      def propertiesIdenticalTo(source: Type, target: Type): Ternary {
+      def propertiesIdenticalTo(source: Type, target: Type): Ternary = {
         if (!(source.flags & TypeFlags.ObjectType && target.flags & TypeFlags.ObjectType)) {
           return Ternary.False
         }
@@ -5881,7 +5881,7 @@ object Checker {
         return result
       }
 
-      def signaturesRelatedTo(source: Type, target: Type, kind: SignatureKind, reportErrors: Boolean): Ternary {
+      def signaturesRelatedTo(source: Type, target: Type, kind: SignatureKind, reportErrors: Boolean): Ternary = {
         if (relation == identityRelation) {
           return signaturesIdenticalTo(source, target, kind)
         }
@@ -5932,11 +5932,11 @@ object Checker {
       /**
        * See signatureAssignableTo, compareSignaturesIdentical
        */
-      def signatureRelatedTo(source: Signature, target: Signature, reportErrors: Boolean): Ternary {
+      def signatureRelatedTo(source: Signature, target: Signature, reportErrors: Boolean): Ternary = {
         return compareSignaturesRelated(source, target, /*ignoreReturnTypes*/ false, reportErrors, reportError, isRelatedTo)
       }
 
-      def signaturesIdenticalTo(source: Type, target: Type, kind: SignatureKind): Ternary {
+      def signaturesIdenticalTo(source: Type, target: Type, kind: SignatureKind): Ternary = {
         val sourceSignatures = getSignaturesOfType(source, kind)
         val targetSignatures = getSignaturesOfType(target, kind)
         if (sourceSignatures.length != targetSignatures.length) {
@@ -5953,7 +5953,7 @@ object Checker {
         return result
       }
 
-      def stringIndexTypesRelatedTo(source: Type, originalSource: Type, target: Type, reportErrors: Boolean): Ternary {
+      def stringIndexTypesRelatedTo(source: Type, originalSource: Type, target: Type, reportErrors: Boolean): Ternary = {
         if (relation == identityRelation) {
           return indexTypesIdenticalTo(IndexKind.String, source, target)
         }
@@ -5983,7 +5983,7 @@ object Checker {
         return Ternary.True
       }
 
-      def numberIndexTypesRelatedTo(source: Type, originalSource: Type, target: Type, reportErrors: Boolean): Ternary {
+      def numberIndexTypesRelatedTo(source: Type, originalSource: Type, target: Type, reportErrors: Boolean): Ternary = {
         if (relation == identityRelation) {
           return indexTypesIdenticalTo(IndexKind.Number, source, target)
         }
@@ -6022,7 +6022,7 @@ object Checker {
         return Ternary.True
       }
 
-      def indexTypesIdenticalTo(indexKind: IndexKind, source: Type, target: Type): Ternary {
+      def indexTypesIdenticalTo(indexKind: IndexKind, source: Type, target: Type): Ternary = {
         val targetInfo = getIndexInfoOfType(target, indexKind)
         val sourceInfo = getIndexInfoOfType(source, indexKind)
         if (!sourceInfo && !targetInfo) {
@@ -6034,7 +6034,7 @@ object Checker {
         return Ternary.False
       }
 
-      def enumRelatedTo(source: Type, target: Type) {
+      def enumRelatedTo(source: Type, target: Type) = {
         if (source.symbol.name != target.symbol.name ||
           source.symbol.flags & SymbolFlags.ConstEnum ||
           target.symbol.flags & SymbolFlags.ConstEnum) {
@@ -6057,7 +6057,7 @@ object Checker {
     }
 
     // Return true if the given type is the constructor type for an abstract class
-    def isAbstractConstructorType(type: Type) {
+    def isAbstractConstructorType(type: Type) = {
       if (type.flags & TypeFlags.Anonymous) {
         val symbol = type.symbol
         if (symbol && symbol.flags & SymbolFlags.Class) {
@@ -6075,7 +6075,7 @@ object Checker {
     // though highly unlikely, for this test to be true in a situation where a chain of instantiations is not infinitely expanding.
     // Effectively, we will generate a false positive when two types are structurally equal to at least 10 levels, but unequal at
     // some level beyond that.
-    def isDeeplyNestedGeneric(type: Type, stack: Type[], depth: Int): Boolean {
+    def isDeeplyNestedGeneric(type: Type, stack: Type[], depth: Int): Boolean = {
       // We track type references (created by createTypeReference) and instantiated types (created by instantiateType)
       if (type.flags & (TypeFlags.Reference | TypeFlags.Instantiated) && depth >= 5) {
         val symbol = type.symbol
@@ -6091,11 +6091,11 @@ object Checker {
       return false
     }
 
-    def isPropertyIdenticalTo(sourceProp: Symbol, targetProp: Symbol): Boolean {
+    def isPropertyIdenticalTo(sourceProp: Symbol, targetProp: Symbol): Boolean = {
       return compareProperties(sourceProp, targetProp, compareTypesIdentical) != Ternary.False
     }
 
-    def compareProperties(sourceProp: Symbol, targetProp: Symbol, compareTypes: (source: Type, target: Type) => Ternary): Ternary {
+    def compareProperties(sourceProp: Symbol, targetProp: Symbol, compareTypes: (source: Type, target: Type) => Ternary): Ternary = {
       // Two members are considered identical when
       // - they are public properties with identical names, optionality, and types,
       // - they are private or protected properties originating in the same declaration and having identical types
@@ -6123,7 +6123,7 @@ object Checker {
       return compareTypes(getTypeOfSymbol(sourceProp), getTypeOfSymbol(targetProp))
     }
 
-    def isMatchingSignature(source: Signature, target: Signature, partialMatch: Boolean) {
+    def isMatchingSignature(source: Signature, target: Signature, partialMatch: Boolean) = {
       // A source signature matches a target signature if the two signatures have the same Int of required,
       // optional, and rest parameters.
       if (source.parameters.length == target.parameters.length &&
@@ -6145,7 +6145,7 @@ object Checker {
     /**
      * See signatureRelatedTo, compareSignaturesIdentical
      */
-    def compareSignaturesIdentical(source: Signature, target: Signature, partialMatch: Boolean, ignoreReturnTypes: Boolean, compareTypes: (s: Type, t: Type) => Ternary): Ternary {
+    def compareSignaturesIdentical(source: Signature, target: Signature, partialMatch: Boolean, ignoreReturnTypes: Boolean, compareTypes: (s: Type, t: Type) => Ternary): Ternary = {
       // TODO (drosen): De-duplicate code between related functions.
       if (source == target) {
         return Ternary.True
@@ -6182,22 +6182,22 @@ object Checker {
       return result
     }
 
-    def isRestParameterIndex(signature: Signature, parameterIndex: Int) {
+    def isRestParameterIndex(signature: Signature, parameterIndex: Int) = {
       return signature.hasRestParameter && parameterIndex >= signature.parameters.length - 1
     }
 
-    def isSupertypeOfEach(candidate: Type, types: Type[]): Boolean {
+    def isSupertypeOfEach(candidate: Type, types: Type[]): Boolean = {
       for (val type of types) {
         if (candidate != type && !isTypeSubtypeOf(type, candidate)) return false
       }
       return true
     }
 
-    def getCommonSupertype(types: Type[]): Type {
+    def getCommonSupertype(types: Type[]): Type = {
       return forEach(types, t => isSupertypeOfEach(t, types) ? t : ())
     }
 
-    def reportNoCommonSupertypeError(types: Type[], errorLocation: Node, errorMessageChainHead: DiagnosticMessageChain): Unit {
+    def reportNoCommonSupertypeError(types: Type[], errorLocation: Node, errorMessageChainHead: DiagnosticMessageChain): Unit = {
       // The downfallType/bestSupertypeDownfallType is the first type that caused a particular candidate
       // to not be the common supertype. So if it weren't for this one downfallType (and possibly others),
       // the type in question could have been the common supertype.
@@ -6238,22 +6238,22 @@ object Checker {
         errorMessageChainHead)
     }
 
-    def isArrayType(type: Type): Boolean {
+    def isArrayType(type: Type): Boolean = {
       return type.flags & TypeFlags.Reference && (<TypeReference>type).target == globalArrayType
     }
 
-    def isArrayLikeType(type: Type): Boolean {
+    def isArrayLikeType(type: Type): Boolean = {
       // A type is array-like if it is a reference to the global Array or global ReadonlyArray type,
       // or if it is not the () or null type and if it is assignable to ReadonlyArray<any>
       return type.flags & TypeFlags.Reference && ((<TypeReference>type).target == globalArrayType || (<TypeReference>type).target == globalReadonlyArrayType) ||
         !(type.flags & (TypeFlags.Undefined | TypeFlags.Null)) && isTypeAssignableTo(type, anyReadonlyArrayType)
     }
 
-    def isTupleLikeType(type: Type): Boolean {
+    def isTupleLikeType(type: Type): Boolean = {
       return !!getPropertyOfType(type, "0")
     }
 
-    def isStringLiteralType(type: Type) {
+    def isStringLiteralType(type: Type) = {
       return type.flags & TypeFlags.StringLiteral
     }
 
@@ -6265,7 +6265,7 @@ object Checker {
       return !!(type.flags & TypeFlags.Tuple)
     }
 
-    def getRegularTypeOfObjectLiteral(type: Type): Type {
+    def getRegularTypeOfObjectLiteral(type: Type): Type = {
       if (type.flags & TypeFlags.FreshObjectLiteral) {
         var regularType = (<FreshObjectLiteralType>type).regularType
         if (!regularType) {
@@ -6284,7 +6284,7 @@ object Checker {
       return type
     }
 
-    def getWidenedTypeOfObjectLiteral(type: Type): Type {
+    def getWidenedTypeOfObjectLiteral(type: Type): Type = {
       val properties = getPropertiesOfObjectType(type)
       val members: SymbolTable = {}
       forEach(properties, p => {
@@ -6308,7 +6308,7 @@ object Checker {
         numberIndexInfo && createIndexInfo(getWidenedType(numberIndexInfo.type), numberIndexInfo.isReadonly))
     }
 
-    def getWidenedType(type: Type): Type {
+    def getWidenedType(type: Type): Type = {
       if (type.flags & TypeFlags.RequiresWidening) {
         if (type.flags & (TypeFlags.Undefined | TypeFlags.Null)) {
           return anyType
@@ -6343,7 +6343,7 @@ object Checker {
      * an object literal property (arbitrarily deeply), this def reports an error. If no error is
      * reported, reportImplicitAnyError is a suitable fallback to report a general error.
      */
-    def reportWideningErrorsInType(type: Type): Boolean {
+    def reportWideningErrorsInType(type: Type): Boolean = {
       var errorReported = false
       if (type.flags & TypeFlags.Union) {
         for (val t of (<UnionType>type).types) {
@@ -6376,7 +6376,7 @@ object Checker {
       return errorReported
     }
 
-    def reportImplicitAnyError(declaration: Declaration, type: Type) {
+    def reportImplicitAnyError(declaration: Declaration, type: Type) = {
       val typeAsString = typeToString(getWidenedType(type))
       var diagnostic: DiagnosticMessage
       switch (declaration.kind) {
@@ -6408,7 +6408,7 @@ object Checker {
       error(declaration, diagnostic, declarationNameToString(declaration.name), typeAsString)
     }
 
-    def reportErrorsFromWidening(declaration: Declaration, type: Type) {
+    def reportErrorsFromWidening(declaration: Declaration, type: Type) = {
       if (produceDiagnostics && compilerOptions.noImplicitAny && type.flags & TypeFlags.ContainsUndefinedOrNull) {
         // Report implicit any error within type if possible, otherwise report error on declaration
         if (!reportWideningErrorsInType(type)) {
@@ -6417,7 +6417,7 @@ object Checker {
       }
     }
 
-    def forEachMatchingParameterType(source: Signature, target: Signature, callback: (s: Type, t: Type) => Unit) {
+    def forEachMatchingParameterType(source: Signature, target: Signature, callback: (s: Type, t: Type) => Unit) = {
       var sourceMax = source.parameters.length
       var targetMax = target.parameters.length
       var count: Int
@@ -6444,7 +6444,7 @@ object Checker {
       }
     }
 
-    def createInferenceContext(typeParameters: TypeParameter[], inferUnionTypes: Boolean): InferenceContext {
+    def createInferenceContext(typeParameters: TypeParameter[], inferUnionTypes: Boolean): InferenceContext = {
       val inferences = map(typeParameters, createTypeInferencesObject)
 
       return {
@@ -6455,7 +6455,7 @@ object Checker {
       }
     }
 
-    def createTypeInferencesObject(): TypeInferences {
+    def createTypeInferencesObject(): TypeInferences = {
       return {
         primary: (),
         secondary: (),
@@ -6463,14 +6463,14 @@ object Checker {
       }
     }
 
-    def inferTypes(context: InferenceContext, source: Type, target: Type) {
+    def inferTypes(context: InferenceContext, source: Type, target: Type) = {
       var sourceStack: Type[]
       var targetStack: Type[]
       var depth = 0
       var inferiority = 0
       inferFromTypes(source, target)
 
-      def isInProcess(source: Type, target: Type) {
+      def isInProcess(source: Type, target: Type) = {
         for (var i = 0; i < depth; i++) {
           if (source == sourceStack[i] && target == targetStack[i]) {
             return true
@@ -6479,7 +6479,7 @@ object Checker {
         return false
       }
 
-      def inferFromTypes(source: Type, target: Type) {
+      def inferFromTypes(source: Type, target: Type) = {
         if (source.flags & TypeFlags.Union && target.flags & TypeFlags.Union ||
           source.flags & TypeFlags.Intersection && target.flags & TypeFlags.Intersection) {
           // Source and target are both unions or both intersections. First, find each
@@ -6620,7 +6620,7 @@ object Checker {
         }
       }
 
-      def inferFromProperties(source: Type, target: Type) {
+      def inferFromProperties(source: Type, target: Type) = {
         val properties = getPropertiesOfObjectType(target)
         for (val targetProp of properties) {
           val sourceProp = getPropertyOfObjectType(source, targetProp.name)
@@ -6630,7 +6630,7 @@ object Checker {
         }
       }
 
-      def inferFromSignatures(source: Type, target: Type, kind: SignatureKind) {
+      def inferFromSignatures(source: Type, target: Type, kind: SignatureKind) = {
         val sourceSignatures = getSignaturesOfType(source, kind)
         val targetSignatures = getSignaturesOfType(target, kind)
         val sourceLen = sourceSignatures.length
@@ -6641,12 +6641,12 @@ object Checker {
         }
       }
 
-      def inferFromSignature(source: Signature, target: Signature) {
+      def inferFromSignature(source: Signature, target: Signature) = {
         forEachMatchingParameterType(source, target, inferFromTypes)
         inferFromTypes(getReturnTypeOfSignature(source), getReturnTypeOfSignature(target))
       }
 
-      def inferFromIndexTypes(source: Type, target: Type, sourceKind: IndexKind, targetKind: IndexKind) {
+      def inferFromIndexTypes(source: Type, target: Type, sourceKind: IndexKind, targetKind: IndexKind) = {
         val targetIndexType = getIndexTypeOfType(target, targetKind)
         if (targetIndexType) {
           val sourceIndexType = getIndexTypeOfType(source, sourceKind)
@@ -6657,7 +6657,7 @@ object Checker {
       }
     }
 
-    def typeIdenticalToSomeType(type: Type, types: Type[]): Boolean {
+    def typeIdenticalToSomeType(type: Type, types: Type[]): Boolean = {
       for (val t of types) {
         if (isTypeIdenticalTo(t, type)) {
           return true
@@ -6670,7 +6670,7 @@ object Checker {
      * Return a new union or intersection type computed by removing a given set of types
      * from a given union or intersection type.
      */
-    def removeTypesFromUnionOrIntersection(type: UnionOrIntersectionType, typesToRemove: Type[]) {
+    def removeTypesFromUnionOrIntersection(type: UnionOrIntersectionType, typesToRemove: Type[]) = {
       val reducedTypes: Type[] = []
       for (val t of type.types) {
         if (!typeIdenticalToSomeType(t, typesToRemove)) {
@@ -6685,7 +6685,7 @@ object Checker {
       return inferences.primary || inferences.secondary || emptyArray
     }
 
-    def getInferredType(context: InferenceContext, index: Int): Type {
+    def getInferredType(context: InferenceContext, index: Int): Type = {
       var inferredType = context.inferredTypes[index]
       var inferenceSucceeded: Boolean
       if (!inferredType) {
@@ -6735,7 +6735,7 @@ object Checker {
 
     // EXPRESSION TYPE CHECKING
 
-    def getResolvedSymbol(node: Identifier): Symbol {
+    def getResolvedSymbol(node: Identifier): Symbol = {
       val links = getNodeLinks(node)
       if (!links.resolvedSymbol) {
         links.resolvedSymbol = (!nodeIsMissing(node) && resolveName(node, node.text, SymbolFlags.Value | SymbolFlags.ExportValue, Diagnostics.Cannot_find_name_0, node)) || unknownSymbol
@@ -6743,7 +6743,7 @@ object Checker {
       return links.resolvedSymbol
     }
 
-    def isInTypeQuery(node: Node): Boolean {
+    def isInTypeQuery(node: Node): Boolean = {
       // TypeScript 1.0 spec (April 2014): 3.6.3
       // A type query consists of the keyword typeof followed by an expression.
       // The expression is restricted to a single identifier or a sequence of identifiers separated by periods
@@ -6762,12 +6762,12 @@ object Checker {
       Debug.fail("should not get here")
     }
 
-    def hasInitializer(node: VariableLikeDeclaration): Boolean {
+    def hasInitializer(node: VariableLikeDeclaration): Boolean = {
       return !!(node.initializer || isBindingPattern(node.parent) && hasInitializer(<VariableLikeDeclaration>node.parent.parent))
     }
 
     // Check if a given variable is assigned within a given syntax node
-    def isVariableAssignedWithin(symbol: Symbol, node: Node): Boolean {
+    def isVariableAssignedWithin(symbol: Symbol, node: Node): Boolean = {
       val links = getNodeLinks(node)
       if (links.assignmentChecks) {
         val cachedResult = links.assignmentChecks[symbol.id]
@@ -6780,7 +6780,7 @@ object Checker {
       }
       return links.assignmentChecks[symbol.id] = isAssignedIn(node)
 
-      def isAssignedInBinaryExpression(node: BinaryExpression) {
+      def isAssignedInBinaryExpression(node: BinaryExpression) = {
         if (node.operatorToken.kind >= SyntaxKind.FirstAssignment && node.operatorToken.kind <= SyntaxKind.LastAssignment) {
           val n = skipParenthesizedNodes(node.left)
           if (n.kind == SyntaxKind.Identifier && getResolvedSymbol(<Identifier>n) == symbol) {
@@ -6790,14 +6790,14 @@ object Checker {
         return forEachChild(node, isAssignedIn)
       }
 
-      def isAssignedInVariableDeclaration(node: VariableLikeDeclaration) {
+      def isAssignedInVariableDeclaration(node: VariableLikeDeclaration) = {
         if (!isBindingPattern(node.name) && getSymbolOfNode(node) == symbol && hasInitializer(node)) {
           return true
         }
         return forEachChild(node, isAssignedIn)
       }
 
-      def isAssignedIn(node: Node): Boolean {
+      def isAssignedIn(node: Node): Boolean = {
         switch (node.kind) {
           case SyntaxKind.BinaryExpression:
             return isAssignedInBinaryExpression(<BinaryExpression>node)
@@ -6855,7 +6855,7 @@ object Checker {
     }
 
     // Get the narrowed type of a given symbol at a given location
-    def getNarrowedTypeOfSymbol(symbol: Symbol, node: Node) {
+    def getNarrowedTypeOfSymbol(symbol: Symbol, node: Node) = {
       var type = getTypeOfSymbol(symbol)
       // Only narrow when symbol is variable of type any or an object, union, or type parameter type
       if (node && symbol.flags & SymbolFlags.Variable) {
@@ -6929,7 +6929,7 @@ object Checker {
 
       return type
 
-      def narrowTypeByEquality(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type {
+      def narrowTypeByEquality(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type = {
         // Check that we have 'typeof <symbol>' on the left and String literal on the right
         if (expr.left.kind != SyntaxKind.TypeOfExpression || expr.right.kind != SyntaxKind.StringLiteral) {
           return type
@@ -6966,12 +6966,12 @@ object Checker {
         }
         return getUnionType(filter((type as UnionType).types, filterUnion), /*noSubtypeReduction*/ true)
 
-        def filterUnion(type: Type) {
+        def filterUnion(type: Type) = {
           return assumeTrue == !!(type.flags & flags)
         }
       }
 
-      def narrowTypeByAnd(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type {
+      def narrowTypeByAnd(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type = {
         if (assumeTrue) {
           // The assumed result is true, therefore we narrow assuming each operand to be true.
           return narrowType(narrowType(type, expr.left, /*assumeTrue*/ true), expr.right, /*assumeTrue*/ true)
@@ -6986,7 +6986,7 @@ object Checker {
         }
       }
 
-      def narrowTypeByOr(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type {
+      def narrowTypeByOr(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type = {
         if (assumeTrue) {
           // The assumed result is true. This means either the first operand was true, or the first operand was false
           // and the second operand was true. We narrow with those assumptions and union the two resulting types.
@@ -7001,7 +7001,7 @@ object Checker {
         }
       }
 
-      def narrowTypeByInstanceof(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type {
+      def narrowTypeByInstanceof(type: Type, expr: BinaryExpression, assumeTrue: Boolean): Type = {
         // Check that type is not any, assumed result is true, and we have variable symbol on the left
         if (isTypeAny(type) || expr.left.kind != SyntaxKind.Identifier || getResolvedSymbol(<Identifier>expr.left) != symbol) {
           return type
@@ -7044,7 +7044,7 @@ object Checker {
         return type
       }
 
-      def getNarrowedType(originalType: Type, narrowedTypeCandidate: Type, assumeTrue: Boolean) {
+      def getNarrowedType(originalType: Type, narrowedTypeCandidate: Type, assumeTrue: Boolean) = {
         if (!assumeTrue) {
           if (originalType.flags & TypeFlags.Union) {
             return getUnionType(filter((<UnionType>originalType).types, t => !isTypeSubtypeOf(t, narrowedTypeCandidate)))
@@ -7069,7 +7069,7 @@ object Checker {
         return originalType
       }
 
-      def narrowTypeByTypePredicate(type: Type, expr: CallExpression, assumeTrue: Boolean): Type {
+      def narrowTypeByTypePredicate(type: Type, expr: CallExpression, assumeTrue: Boolean): Type = {
         if (type.flags & TypeFlags.Any) {
           return type
         }
@@ -7094,7 +7094,7 @@ object Checker {
         return type
       }
 
-      def narrowTypeByTypePredicateMember(type: Type, expr: ElementAccessExpression | PropertyAccessExpression, assumeTrue: Boolean): Type {
+      def narrowTypeByTypePredicateMember(type: Type, expr: ElementAccessExpression | PropertyAccessExpression, assumeTrue: Boolean): Type = {
         if (type.flags & TypeFlags.Any) {
           return type
         }
@@ -7106,7 +7106,7 @@ object Checker {
         return narrowTypeByThisTypePredicate(type, (memberType as PredicateType).predicate as ThisTypePredicate, expr, assumeTrue)
       }
 
-      def narrowTypeByThisTypePredicate(type: Type, predicate: ThisTypePredicate, expression: Expression, assumeTrue: Boolean): Type {
+      def narrowTypeByThisTypePredicate(type: Type, predicate: ThisTypePredicate, expression: Expression, assumeTrue: Boolean): Type = {
         if (expression.kind == SyntaxKind.ElementAccessExpression || expression.kind == SyntaxKind.PropertyAccessExpression) {
           val accessExpression = expression as ElementAccessExpression | PropertyAccessExpression
           val possibleIdentifier = skipParenthesizedNodes(accessExpression.expression)
@@ -7117,7 +7117,7 @@ object Checker {
         return type
       }
 
-      def getSymbolAtTypePredicatePosition(expr: Expression): Symbol {
+      def getSymbolAtTypePredicatePosition(expr: Expression): Symbol = {
         expr = skipParenthesizedNodes(expr)
         switch (expr.kind) {
           case SyntaxKind.Identifier:
@@ -7129,7 +7129,7 @@ object Checker {
 
       // Narrow the given type based on the given expression having the assumed Boolean value. The returned type
       // will be a subtype or the same type as the argument.
-      def narrowType(type: Type, expr: Expression, assumeTrue: Boolean): Type {
+      def narrowType(type: Type, expr: Expression, assumeTrue: Boolean): Type = {
         switch (expr.kind) {
           case SyntaxKind.CallExpression:
             return narrowTypeByTypePredicate(type, <CallExpression>expr, assumeTrue)
@@ -7163,14 +7163,14 @@ object Checker {
       }
     }
 
-    def skipParenthesizedNodes(expression: Expression): Expression {
+    def skipParenthesizedNodes(expression: Expression): Expression = {
       while (expression.kind == SyntaxKind.ParenthesizedExpression) {
         expression = (expression as ParenthesizedExpression).expression
       }
       return expression
     }
 
-    def checkIdentifier(node: Identifier): Type {
+    def checkIdentifier(node: Identifier): Type = {
       val symbol = getResolvedSymbol(node)
 
       // As noted in ECMAScript 6 language spec, arrow functions never have an arguments objects.
@@ -7224,7 +7224,7 @@ object Checker {
       return getNarrowedTypeOfSymbol(localOrExportSymbol, node)
     }
 
-    def isInsideFunction(node: Node, threshold: Node): Boolean {
+    def isInsideFunction(node: Node, threshold: Node): Boolean = {
       var current = node
       while (current && current != threshold) {
         if (isFunctionLike(current)) {
@@ -7236,7 +7236,7 @@ object Checker {
       return false
     }
 
-    def checkNestedBlockScopedBinding(node: Identifier, symbol: Symbol): Unit {
+    def checkNestedBlockScopedBinding(node: Identifier, symbol: Symbol): Unit = {
       if (languageVersion >= ScriptTarget.ES6 ||
         (symbol.flags & (SymbolFlags.BlockScopedVariable | SymbolFlags.Class)) == 0 ||
         symbol.valueDeclaration.parent.kind == SyntaxKind.CatchClause) {
@@ -7284,7 +7284,7 @@ object Checker {
       }
     }
 
-    def isAssignedInBodyOfForStatement(node: Identifier, container: ForStatement): Boolean {
+    def isAssignedInBodyOfForStatement(node: Identifier, container: ForStatement): Boolean = {
       var current: Node = node
       // skip parenthesized nodes
       while (current.parent.kind == SyntaxKind.ParenthesizedExpression) {
@@ -7319,7 +7319,7 @@ object Checker {
       return false
     }
 
-    def captureLexicalThis(node: Node, container: Node): Unit {
+    def captureLexicalThis(node: Node, container: Node): Unit = {
       getNodeLinks(node).flags |= NodeCheckFlags.LexicalThis
       if (container.kind == SyntaxKind.PropertyDeclaration || container.kind == SyntaxKind.Constructor) {
         val classNode = container.parent
@@ -7330,7 +7330,7 @@ object Checker {
       }
     }
 
-    def checkThisExpression(node: Node): Type {
+    def checkThisExpression(node: Node): Type = {
       // Stop at the first arrow def so that we can
       // tell whether 'this' needs to be captured.
       var container = getThisContainer(node, /* includeArrowFunctions */ true)
@@ -7414,7 +7414,7 @@ object Checker {
       return anyType
     }
 
-    def getTypeForThisExpressionFromJSDoc(node: Node) {
+    def getTypeForThisExpressionFromJSDoc(node: Node) = {
       val typeTag = getJSDocTypeTag(node)
       if (typeTag && typeTag.typeExpression && typeTag.typeExpression.type && typeTag.typeExpression.type.kind == SyntaxKind.JSDocFunctionType) {
         val jsDocFunctionType = <JSDocFunctionType>typeTag.typeExpression.type
@@ -7424,7 +7424,7 @@ object Checker {
       }
     }
 
-    def isInConstructorArgumentInitializer(node: Node, constructorDecl: Node): Boolean {
+    def isInConstructorArgumentInitializer(node: Node, constructorDecl: Node): Boolean = {
       for (var n = node; n && n != constructorDecl; n = n.parent) {
         if (n.kind == SyntaxKind.Parameter) {
           return true
@@ -7433,7 +7433,7 @@ object Checker {
       return false
     }
 
-    def checkSuperExpression(node: Node): Type {
+    def checkSuperExpression(node: Node): Type = {
       val isCallExpression = node.parent.kind == SyntaxKind.CallExpression && (<CallExpression>node.parent).expression == node
 
       var container = getSuperContainer(node, /*stopOnFunctions*/ true)
@@ -7588,7 +7588,7 @@ object Checker {
         ? getBaseConstructorTypeOfClass(classType)
         : baseClassType
 
-      def isLegalUsageOfSuperExpression(container: Node): Boolean {
+      def isLegalUsageOfSuperExpression(container: Node): Boolean = {
         if (!container) {
           return false
         }
@@ -7629,7 +7629,7 @@ object Checker {
     }
 
     // Return contextual type of parameter or () if no contextual type is available
-    def getContextuallyTypedParameterType(parameter: ParameterDeclaration): Type {
+    def getContextuallyTypedParameterType(parameter: ParameterDeclaration): Type = {
       val func = parameter.parent
       if (isFunctionExpressionOrArrowFunction(func) || isObjectLiteralMethod(func)) {
         if (isContextSensitive(func)) {
@@ -7660,7 +7660,7 @@ object Checker {
     // contextually typed def expression, the contextual type of an initializer expression is the contextual type
     // of the parameter. Otherwise, in a variable or parameter declaration with a binding pattern name, the contextual
     // type of an initializer expression is the type implied by the binding pattern.
-    def getContextualTypeForInitializerExpression(node: Expression): Type {
+    def getContextualTypeForInitializerExpression(node: Expression): Type = {
       val declaration = <VariableLikeDeclaration>node.parent
       if (node == declaration.initializer) {
         if (declaration.type) {
@@ -7679,7 +7679,7 @@ object Checker {
       return ()
     }
 
-    def getContextualTypeForReturnExpression(node: Expression): Type {
+    def getContextualTypeForReturnExpression(node: Expression): Type = {
       val func = getContainingFunction(node)
       if (func && !func.asteriskToken) {
         return getContextualReturnType(func)
@@ -7688,7 +7688,7 @@ object Checker {
       return ()
     }
 
-    def getContextualTypeForYieldOperand(node: YieldExpression): Type {
+    def getContextualTypeForYieldOperand(node: YieldExpression): Type = {
       val func = getContainingFunction(node)
       if (func) {
         val contextualReturnType = getContextualReturnType(func)
@@ -7702,7 +7702,7 @@ object Checker {
       return ()
     }
 
-    def isInParameterInitializerBeforeContainingFunction(node: Node) {
+    def isInParameterInitializerBeforeContainingFunction(node: Node) = {
       while (node.parent && !isFunctionLike(node.parent)) {
         if (node.parent.kind == SyntaxKind.Parameter && (<ParameterDeclaration>node.parent).initializer == node) {
           return true
@@ -7714,7 +7714,7 @@ object Checker {
       return false
     }
 
-    def getContextualReturnType(functionDecl: FunctionLikeDeclaration): Type {
+    def getContextualReturnType(functionDecl: FunctionLikeDeclaration): Type = {
       // If the containing def has a return type annotation, is a constructor, or is a get accessor whose
       // corresponding set accessor has a type annotation, return statements in the def are contextually typed
       if (functionDecl.type ||
@@ -7734,7 +7734,7 @@ object Checker {
     }
 
     // In a typed def call, an argument or substitution expression is contextually typed by the type of the corresponding parameter.
-    def getContextualTypeForArgument(callTarget: CallLikeExpression, arg: Expression): Type {
+    def getContextualTypeForArgument(callTarget: CallLikeExpression, arg: Expression): Type = {
       val args = getEffectiveCallArguments(callTarget)
       val argIndex = indexOf(args, arg)
       if (argIndex >= 0) {
@@ -7744,7 +7744,7 @@ object Checker {
       return ()
     }
 
-    def getContextualTypeForSubstitutionExpression(template: TemplateExpression, substitutionExpression: Expression) {
+    def getContextualTypeForSubstitutionExpression(template: TemplateExpression, substitutionExpression: Expression) = {
       if (template.parent.kind == SyntaxKind.TaggedTemplateExpression) {
         return getContextualTypeForArgument(<TaggedTemplateExpression>template.parent, substitutionExpression)
       }
@@ -7752,7 +7752,7 @@ object Checker {
       return ()
     }
 
-    def getContextualTypeForBinaryOperand(node: Expression): Type {
+    def getContextualTypeForBinaryOperand(node: Expression): Type = {
       val binaryExpression = <BinaryExpression>node.parent
       val operator = binaryExpression.operatorToken.kind
       if (operator >= SyntaxKind.FirstAssignment && operator <= SyntaxKind.LastAssignment) {
@@ -7782,7 +7782,7 @@ object Checker {
     // Apply a mapping def to a contextual type and return the resulting type. If the contextual type
     // is a union type, the mapping def is applied to each constituent type and a union of the resulting
     // types is returned.
-    def applyToContextualType(type: Type, mapper: (t: Type) => Type): Type {
+    def applyToContextualType(type: Type, mapper: (t: Type) => Type): Type = {
       if (!(type.flags & TypeFlags.Union)) {
         return mapper(type)
       }
@@ -7806,35 +7806,35 @@ object Checker {
       return mappedTypes ? getUnionType(mappedTypes) : mappedType
     }
 
-    def getTypeOfPropertyOfContextualType(type: Type, name: String) {
+    def getTypeOfPropertyOfContextualType(type: Type, name: String) = {
       return applyToContextualType(type, t => {
         val prop = t.flags & TypeFlags.StructuredType ? getPropertyOfType(t, name) : ()
         return prop ? getTypeOfSymbol(prop) : ()
       })
     }
 
-    def getIndexTypeOfContextualType(type: Type, kind: IndexKind) {
+    def getIndexTypeOfContextualType(type: Type, kind: IndexKind) = {
       return applyToContextualType(type, t => getIndexTypeOfStructuredType(t, kind))
     }
 
-    def contextualTypeIsStringLiteralType(type: Type): Boolean {
+    def contextualTypeIsStringLiteralType(type: Type): Boolean = {
       return !!(type.flags & TypeFlags.Union ? forEach((<UnionType>type).types, isStringLiteralType) : isStringLiteralType(type))
     }
 
     // Return true if the given contextual type is a tuple-like type
-    def contextualTypeIsTupleLikeType(type: Type): Boolean {
+    def contextualTypeIsTupleLikeType(type: Type): Boolean = {
       return !!(type.flags & TypeFlags.Union ? forEach((<UnionType>type).types, isTupleLikeType) : isTupleLikeType(type))
     }
 
     // Return true if the given contextual type provides an index signature of the given kind
-    def contextualTypeHasIndexSignature(type: Type, kind: IndexKind): Boolean {
+    def contextualTypeHasIndexSignature(type: Type, kind: IndexKind): Boolean = {
       return !!(type.flags & TypeFlags.Union ? forEach((<UnionType>type).types, t => getIndexInfoOfStructuredType(t, kind)) : getIndexInfoOfStructuredType(type, kind))
     }
 
     // In an object literal contextually typed by a type T, the contextual type of a property assignment is the type of
     // the matching property in T, if one exists. Otherwise, it is the type of the numeric index signature in T, if one
     // exists. Otherwise, it is the type of the String index signature in T, if one exists.
-    def getContextualTypeForObjectLiteralMethod(node: MethodDeclaration): Type {
+    def getContextualTypeForObjectLiteralMethod(node: MethodDeclaration): Type = {
       Debug.assert(isObjectLiteralMethod(node))
       if (isInsideWithStatementBody(node)) {
         // We cannot answer semantic questions within a with block, do not proceed any further
@@ -7844,7 +7844,7 @@ object Checker {
       return getContextualTypeForObjectLiteralElement(node)
     }
 
-    def getContextualTypeForObjectLiteralElement(element: ObjectLiteralElement) {
+    def getContextualTypeForObjectLiteralElement(element: ObjectLiteralElement) = {
       val objectLiteral = <ObjectLiteralExpression>element.parent
       val type = getApparentTypeOfContextualType(objectLiteral)
       if (type) {
@@ -7870,7 +7870,7 @@ object Checker {
     // the type of the property with the numeric name N in T, if one exists. Otherwise, if T has a numeric index signature,
     // it is the type of the numeric index signature in T. Otherwise, in ES6 and higher, the contextual type is the iterated
     // type of T.
-    def getContextualTypeForElementExpression(node: Expression): Type {
+    def getContextualTypeForElementExpression(node: Expression): Type = {
       val arrayLiteral = <ArrayLiteralExpression>node.parent
       val type = getApparentTypeOfContextualType(arrayLiteral)
       if (type) {
@@ -7883,12 +7883,12 @@ object Checker {
     }
 
     // In a contextually typed conditional expression, the true/false expressions are contextually typed by the same type.
-    def getContextualTypeForConditionalOperand(node: Expression): Type {
+    def getContextualTypeForConditionalOperand(node: Expression): Type = {
       val conditional = <ConditionalExpression>node.parent
       return node == conditional.whenTrue || node == conditional.whenFalse ? getContextualType(conditional) : ()
     }
 
-    def getContextualTypeForJsxAttribute(attribute: JsxAttribute | JsxSpreadAttribute) {
+    def getContextualTypeForJsxAttribute(attribute: JsxAttribute | JsxSpreadAttribute) = {
       val kind = attribute.kind
       val jsxElement = attribute.parent as JsxOpeningLikeElement
       val attrsType = getJsxElementAttributesType(jsxElement)
@@ -7908,7 +7908,7 @@ object Checker {
 
     // Return the contextual type for a given expression node. During overload resolution, a contextual type may temporarily
     // be "pushed" onto a node using the contextualType property.
-    def getApparentTypeOfContextualType(node: Expression): Type {
+    def getApparentTypeOfContextualType(node: Expression): Type = {
       val type = getContextualType(node)
       return type && getApparentType(type)
     }
@@ -7930,7 +7930,7 @@ object Checker {
      * @param node the expression whose contextual type will be returned.
      * @returns the contextual type of an expression.
      */
-    def getContextualType(node: Expression): Type {
+    def getContextualType(node: Expression): Type = {
       if (isInsideWithStatementBody(node)) {
         // We cannot answer semantic questions within a with block, do not proceed any further
         return ()
@@ -7981,7 +7981,7 @@ object Checker {
 
     // If the given type is an object or union type, if that type has a single signature, and if
     // that signature is non-generic, return the signature. Otherwise return ().
-    def getNonGenericSignature(type: Type): Signature {
+    def getNonGenericSignature(type: Type): Signature = {
       val signatures = getSignaturesOfStructuredType(type, SignatureKind.Call)
       if (signatures.length == 1) {
         val signature = signatures[0]
@@ -7995,7 +7995,7 @@ object Checker {
       return node.kind == SyntaxKind.FunctionExpression || node.kind == SyntaxKind.ArrowFunction
     }
 
-    def getContextualSignatureForFunctionLikeDeclaration(node: FunctionLikeDeclaration): Signature {
+    def getContextualSignatureForFunctionLikeDeclaration(node: FunctionLikeDeclaration): Signature = {
       // Only def expressions, arrow functions, and object literal methods are contextually typed.
       return isFunctionExpressionOrArrowFunction(node) || isObjectLiteralMethod(node)
         ? getContextualSignature(<FunctionExpression>node)
@@ -8007,7 +8007,7 @@ object Checker {
     // If the contextual type is a union type, get the signature from each type possible and if they are
     // all identical ignoring their return type, the result is same signature but with return type as
     // union type of return types from these signatures
-    def getContextualSignature(node: FunctionExpression | MethodDeclaration): Signature {
+    def getContextualSignature(node: FunctionExpression | MethodDeclaration): Signature = {
       Debug.assert(node.kind != SyntaxKind.MethodDeclaration || isObjectLiteralMethod(node))
       val type = isObjectLiteralMethod(node)
         ? getContextualTypeForObjectLiteralMethod(node)
@@ -8064,14 +8064,14 @@ object Checker {
      *
      * isInferentialContext is detecting if we are in case 3
      */
-    def isInferentialContext(mapper: TypeMapper) {
+    def isInferentialContext(mapper: TypeMapper) = {
       return mapper && mapper.context
     }
 
     // A node is an assignment target if it is on the left hand side of an '=' token, if it is parented by a property
     // assignment in an object literal that is an assignment target, or if it is parented by an array literal that is
     // an assignment target. Examples include 'a = xxx', '{ p: a } = xxx', '[{ p: a}] = xxx'.
-    def isAssignmentTarget(node: Node): Boolean {
+    def isAssignmentTarget(node: Node): Boolean = {
       val parent = node.parent
       if (parent.kind == SyntaxKind.BinaryExpression && (<BinaryExpression>parent).operatorToken.kind == SyntaxKind.EqualsToken && (<BinaryExpression>parent).left == node) {
         return true
@@ -8085,7 +8085,7 @@ object Checker {
       return false
     }
 
-    def checkSpreadElementExpression(node: SpreadElementExpression, contextualMapper?: TypeMapper): Type {
+    def checkSpreadElementExpression(node: SpreadElementExpression, contextualMapper?: TypeMapper): Type = {
       // It is usually not safe to call checkExpressionCached if we can be contextually typing.
       // You can tell that we are contextually typing because of the contextualMapper parameter.
       // While it is true that a spread element can have a contextual type, it does not do anything
@@ -8096,12 +8096,12 @@ object Checker {
       return checkIteratedTypeOrElementType(arrayOrIterableType, node.expression, /*allowStringInput*/ false)
     }
 
-    def hasDefaultValue(node: BindingElement | Expression): Boolean {
+    def hasDefaultValue(node: BindingElement | Expression): Boolean = {
       return (node.kind == SyntaxKind.BindingElement && !!(<BindingElement>node).initializer) ||
         (node.kind == SyntaxKind.BinaryExpression && (<BinaryExpression>node).operatorToken.kind == SyntaxKind.EqualsToken)
     }
 
-    def checkArrayLiteral(node: ArrayLiteralExpression, contextualMapper?: TypeMapper): Type {
+    def checkArrayLiteral(node: ArrayLiteralExpression, contextualMapper?: TypeMapper): Type = {
       val elements = node.elements
       var hasSpreadElement = false
       val elementTypes: Type[] = []
@@ -8169,21 +8169,21 @@ object Checker {
       return createArrayType(elementTypes.length ? getUnionType(elementTypes) : undefinedType)
     }
 
-    def isNumericName(name: DeclarationName): Boolean {
+    def isNumericName(name: DeclarationName): Boolean = {
       return name.kind == SyntaxKind.ComputedPropertyName ? isNumericComputedName(<ComputedPropertyName>name) : isNumericLiteralName((<Identifier>name).text)
     }
 
-    def isNumericComputedName(name: ComputedPropertyName): Boolean {
+    def isNumericComputedName(name: ComputedPropertyName): Boolean = {
       // It seems odd to consider an expression of type Any to result in a numeric name,
       // but this behavior is consistent with checkIndexedAccess
       return isTypeAnyOrAllConstituentTypesHaveKind(checkComputedPropertyName(name), TypeFlags.NumberLike)
     }
 
-    def isTypeAnyOrAllConstituentTypesHaveKind(type: Type, kind: TypeFlags): Boolean {
+    def isTypeAnyOrAllConstituentTypesHaveKind(type: Type, kind: TypeFlags): Boolean = {
       return isTypeAny(type) || isTypeOfKind(type, kind)
     }
 
-    def isNumericLiteralName(name: String) {
+    def isNumericLiteralName(name: String) = {
       // The intent of numeric names is that
       //   - they are names with text in a numeric form, and that
       //   - setting properties/indexing with them is always equivalent to doing so with the numeric literal 'numLit',
@@ -8208,7 +8208,7 @@ object Checker {
       return (+name).toString() == name
     }
 
-    def checkComputedPropertyName(node: ComputedPropertyName): Type {
+    def checkComputedPropertyName(node: ComputedPropertyName): Type = {
       val links = getNodeLinks(node.expression)
       if (!links.resolvedType) {
         links.resolvedType = checkExpression(node.expression)
@@ -8226,7 +8226,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def checkObjectLiteral(node: ObjectLiteralExpression, contextualMapper?: TypeMapper): Type {
+    def checkObjectLiteral(node: ObjectLiteralExpression, contextualMapper?: TypeMapper): Type = {
       val inDestructuringPattern = isAssignmentTarget(node)
       // Grammar checking
       checkGrammarObjectLiteralExpression(node, inDestructuringPattern)
@@ -8333,7 +8333,7 @@ object Checker {
       }
       return result
 
-      def getIndexInfo(kind: IndexKind) {
+      def getIndexInfo(kind: IndexKind) = {
         if (contextualType && contextualTypeHasIndexSignature(contextualType, kind)) {
           val propTypes: Type[] = []
           for (var i = 0; i < propertiesArray.length; i++) {
@@ -8357,12 +8357,12 @@ object Checker {
       }
     }
 
-    def checkJsxSelfClosingElement(node: JsxSelfClosingElement) {
+    def checkJsxSelfClosingElement(node: JsxSelfClosingElement) = {
       checkJsxOpeningLikeElement(node)
       return jsxElementType || anyType
     }
 
-    def checkJsxElement(node: JsxElement) {
+    def checkJsxElement(node: JsxElement) = {
       // Check attributes
       checkJsxOpeningLikeElement(node.openingElement)
 
@@ -8390,7 +8390,7 @@ object Checker {
     /**
      * Returns true iff the JSX element name would be a valid JS identifier, ignoring restrictions about keywords not being identifiers
      */
-    def isUnhyphenatedJsxName(name: String) {
+    def isUnhyphenatedJsxName(name: String) = {
       // - is the only character supported in JSX attribute names that isn't valid in JavaScript identifiers
       return name.indexOf("-") < 0
     }
@@ -8398,7 +8398,7 @@ object Checker {
     /**
      * Returns true iff React would emit this tag name as a String rather than an identifier or qualified name
      */
-    def isJsxIntrinsicIdentifier(tagName: Identifier | QualifiedName) {
+    def isJsxIntrinsicIdentifier(tagName: Identifier | QualifiedName) = {
       if (tagName.kind == SyntaxKind.QualifiedName) {
         return false
       }
@@ -8407,7 +8407,7 @@ object Checker {
       }
     }
 
-    def checkJsxAttribute(node: JsxAttribute, elementAttributesType: Type, nameTable: Map<Boolean>) {
+    def checkJsxAttribute(node: JsxAttribute, elementAttributesType: Type, nameTable: Map<Boolean>) = {
       var correspondingPropType: Type = ()
 
       // Look up the corresponding property for this attribute
@@ -8451,7 +8451,7 @@ object Checker {
       return exprType
     }
 
-    def checkJsxSpreadAttribute(node: JsxSpreadAttribute, elementAttributesType: Type, nameTable: Map<Boolean>) {
+    def checkJsxSpreadAttribute(node: JsxSpreadAttribute, elementAttributesType: Type, nameTable: Map<Boolean>) = {
       val type = checkExpression(node.expression)
       val props = getPropertiesOfType(type)
       for (val prop of props) {
@@ -8470,14 +8470,14 @@ object Checker {
       return type
     }
 
-    def getJsxType(name: String) {
+    def getJsxType(name: String) = {
       if (jsxTypes[name] == ()) {
         return jsxTypes[name] = getExportedTypeFromNamespace(JsxNames.JSX, name) || unknownType
       }
       return jsxTypes[name]
     }
 
-    def getJsxTagSymbol(node: JsxOpeningLikeElement | JsxClosingElement): Symbol {
+    def getJsxTagSymbol(node: JsxOpeningLikeElement | JsxClosingElement): Symbol = {
       if (isJsxIntrinsicIdentifier(node.tagName)) {
         return getIntrinsicTagSymbol(node)
       }
@@ -8492,7 +8492,7 @@ object Checker {
       * String index signature (in which case nodeLinks.jsxFlags will be IntrinsicIndexedElement).
       * May also return unknownSymbol if both of these lookups fail.
       */
-    def getIntrinsicTagSymbol(node: JsxOpeningLikeElement | JsxClosingElement): Symbol {
+    def getIntrinsicTagSymbol(node: JsxOpeningLikeElement | JsxClosingElement): Symbol = {
       val links = getNodeLinks(node)
       if (!links.resolvedSymbol) {
         val intrinsicElementsType = getJsxType(JsxNames.IntrinsicElements)
@@ -8530,7 +8530,7 @@ object Checker {
      * element is not a class element, or the class element type cannot be determined, returns '()'.
      * For example, in the element <MyClass>, the element instance type is `MyClass` (not `typeof MyClass`).
      */
-    def getJsxElementInstanceType(node: JsxOpeningLikeElement) {
+    def getJsxElementInstanceType(node: JsxOpeningLikeElement) = {
       val valueType = checkExpression(node.tagName)
 
       if (isTypeAny(valueType)) {
@@ -8559,7 +8559,7 @@ object Checker {
     ///   non-intrinsic elements' attributes type is 'any'),
     /// or '' if it has 0 properties (which means every
     ///   non-intrinsic elements' attributes type is the element instance type)
-    def getJsxElementPropertiesName() {
+    def getJsxElementPropertiesName() = {
       // JSX
       val jsxNamespace = getGlobalSymbol(JsxNames.JSX, SymbolFlags.Namespace, /*diagnosticMessage*/())
       // JSX.ElementAttributesProperty [symbol]
@@ -8595,7 +8595,7 @@ object Checker {
      * Given an opening/self-closing element, get the 'element attributes type', i.e. the type that tells
      * us which attributes are valid on a given element.
      */
-    def getJsxElementAttributesType(node: JsxOpeningLikeElement): Type {
+    def getJsxElementAttributesType(node: JsxOpeningLikeElement): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedJsxType) {
         if (isJsxIntrinsicIdentifier(node.tagName)) {
@@ -8702,13 +8702,13 @@ object Checker {
      * of the element attributes type. Will return unknownSymbol for attributes
      * that have no matching element attributes type property.
      */
-    def getJsxAttributePropertySymbol(attrib: JsxAttribute): Symbol {
+    def getJsxAttributePropertySymbol(attrib: JsxAttribute): Symbol = {
       val attributesType = getJsxElementAttributesType(<JsxOpeningElement>attrib.parent)
       val prop = getPropertyOfType(attributesType, attrib.name.text)
       return prop || unknownSymbol
     }
 
-    def getJsxGlobalElementClassType(): Type {
+    def getJsxGlobalElementClassType(): Type = {
       if (!jsxElementClassType) {
         jsxElementClassType = getExportedTypeFromNamespace(JsxNames.JSX, JsxNames.ElementClass)
       }
@@ -8721,7 +8721,7 @@ object Checker {
       return intrinsics ? getPropertiesOfType(intrinsics) : emptyArray
     }
 
-    def checkJsxPreconditions(errorNode: Node) {
+    def checkJsxPreconditions(errorNode: Node) = {
       // Preconditions for using JSX
       if ((compilerOptions.jsx || JsxEmit.None) == JsxEmit.None) {
         error(errorNode, Diagnostics.Cannot_use_JSX_unless_the_jsx_flag_is_provided)
@@ -8734,7 +8734,7 @@ object Checker {
       }
     }
 
-    def checkJsxOpeningLikeElement(node: JsxOpeningLikeElement) {
+    def checkJsxOpeningLikeElement(node: JsxOpeningLikeElement) = {
       checkGrammarJsxElement(node)
       checkJsxPreconditions(node)
 
@@ -8781,7 +8781,7 @@ object Checker {
       }
     }
 
-    def checkJsxExpression(node: JsxExpression) {
+    def checkJsxExpression(node: JsxExpression) = {
       if (node.expression) {
         return checkExpression(node.expression)
       }
@@ -8792,11 +8792,11 @@ object Checker {
 
     // If a symbol is a synthesized symbol with no value declaration, we assume it is a property. Example of this are the synthesized
     // '.prototype' property as well as synthesized tuple index properties.
-    def getDeclarationKindFromSymbol(s: Symbol) {
+    def getDeclarationKindFromSymbol(s: Symbol) = {
       return s.valueDeclaration ? s.valueDeclaration.kind : SyntaxKind.PropertyDeclaration
     }
 
-    def getDeclarationFlagsFromSymbol(s: Symbol): NodeFlags {
+    def getDeclarationFlagsFromSymbol(s: Symbol): NodeFlags = {
       return s.valueDeclaration ? getCombinedNodeFlags(s.valueDeclaration) : s.flags & SymbolFlags.Prototype ? NodeFlags.Public | NodeFlags.Static : 0
     }
 
@@ -8808,7 +8808,7 @@ object Checker {
      * @param type The type of left.
      * @param prop The symbol for the right hand side of the property access.
      */
-    def checkClassPropertyAccess(node: PropertyAccessExpression | QualifiedName, left: Expression | QualifiedName, type: Type, prop: Symbol): Boolean {
+    def checkClassPropertyAccess(node: PropertyAccessExpression | QualifiedName, left: Expression | QualifiedName, type: Type, prop: Symbol): Boolean = {
       val flags = getDeclarationFlagsFromSymbol(prop)
       val declaringClass = <InterfaceType>getDeclaredTypeOfSymbol(getParentOfSymbol(prop))
 
@@ -8892,15 +8892,15 @@ object Checker {
       return true
     }
 
-    def checkPropertyAccessExpression(node: PropertyAccessExpression) {
+    def checkPropertyAccessExpression(node: PropertyAccessExpression) = {
       return checkPropertyAccessExpressionOrQualifiedName(node, node.expression, node.name)
     }
 
-    def checkQualifiedName(node: QualifiedName) {
+    def checkQualifiedName(node: QualifiedName) = {
       return checkPropertyAccessExpressionOrQualifiedName(node, node.left, node.right)
     }
 
-    def checkPropertyAccessExpressionOrQualifiedName(node: PropertyAccessExpression | QualifiedName, left: Expression | QualifiedName, right: Identifier) {
+    def checkPropertyAccessExpressionOrQualifiedName(node: PropertyAccessExpression | QualifiedName, left: Expression | QualifiedName, right: Identifier) = {
       val type = checkExpression(left)
       if (isTypeAny(type)) {
         return type
@@ -8927,7 +8927,7 @@ object Checker {
       return getTypeOfSymbol(prop)
     }
 
-    def isValidPropertyAccess(node: PropertyAccessExpression | QualifiedName, propertyName: String): Boolean {
+    def isValidPropertyAccess(node: PropertyAccessExpression | QualifiedName, propertyName: String): Boolean = {
       val left = node.kind == SyntaxKind.PropertyAccessExpression
         ? (<PropertyAccessExpression>node).expression
         : (<QualifiedName>node).left
@@ -8945,7 +8945,7 @@ object Checker {
     /**
      * Return the symbol of the for-in variable declared or referenced by the given for-in statement.
      */
-    def getForInVariableSymbol(node: ForInStatement): Symbol {
+    def getForInVariableSymbol(node: ForInStatement): Symbol = {
       val initializer = node.initializer
       if (initializer.kind == SyntaxKind.VariableDeclarationList) {
         val variable = (<VariableDeclarationList>initializer).declarations[0]
@@ -8962,7 +8962,7 @@ object Checker {
     /**
      * Return true if the given type is considered to have numeric property names.
      */
-    def hasNumericPropertyNames(type: Type) {
+    def hasNumericPropertyNames(type: Type) = {
       return getIndexTypeOfType(type, IndexKind.Number) && !getIndexTypeOfType(type, IndexKind.String)
     }
 
@@ -8970,7 +8970,7 @@ object Checker {
      * Return true if given node is an expression consisting of an identifier (possibly parenthesized)
      * that references a for-in variable for an object with numeric property names.
      */
-    def isForInVariableForNumericPropertyNames(expr: Expression) {
+    def isForInVariableForNumericPropertyNames(expr: Expression) = {
       val e = skipParenthesizedNodes(expr)
       if (e.kind == SyntaxKind.Identifier) {
         val symbol = getResolvedSymbol(<Identifier>e)
@@ -8992,7 +8992,7 @@ object Checker {
       return false
     }
 
-    def checkIndexedAccess(node: ElementAccessExpression): Type {
+    def checkIndexedAccess(node: ElementAccessExpression): Type = {
       // Grammar checking
       if (!node.argumentExpression) {
         val sourceFile = getSourceFileOfNode(node)
@@ -9090,7 +9090,7 @@ object Checker {
      *  to this symbol, as long as it is a proper symbol reference.
      * Otherwise, returns ().
      */
-    def getPropertyNameForIndexedAccess(indexArgumentExpression: Expression, indexArgumentType: Type): String {
+    def getPropertyNameForIndexedAccess(indexArgumentExpression: Expression, indexArgumentType: Type): String = {
       if (indexArgumentExpression.kind == SyntaxKind.StringLiteral || indexArgumentExpression.kind == SyntaxKind.NumericLiteral) {
         return (<LiteralExpression>indexArgumentExpression).text
       }
@@ -9115,7 +9115,7 @@ object Checker {
      *   3. The property access is of the primitive type symbol.
      *   4. Symbol in this context resolves to the global Symbol object
      */
-    def checkThatExpressionIsProperSymbolReference(expression: Expression, expressionType: Type, reportError: Boolean): Boolean {
+    def checkThatExpressionIsProperSymbolReference(expression: Expression, expressionType: Type, reportError: Boolean): Boolean = {
       if (expressionType == unknownType) {
         // There is already an error, so no need to report one.
         return false
@@ -9157,7 +9157,7 @@ object Checker {
       return true
     }
 
-    def resolveUntypedCall(node: CallLikeExpression): Signature {
+    def resolveUntypedCall(node: CallLikeExpression): Signature = {
       if (node.kind == SyntaxKind.TaggedTemplateExpression) {
         checkExpression((<TaggedTemplateExpression>node).template)
       }
@@ -9169,7 +9169,7 @@ object Checker {
       return anySignature
     }
 
-    def resolveErrorCall(node: CallLikeExpression): Signature {
+    def resolveErrorCall(node: CallLikeExpression): Signature = {
       resolveUntypedCall(node)
       return unknownSignature
     }
@@ -9182,7 +9182,7 @@ object Checker {
     // trait B extends A { (x: 'foo'): String }
     // val b: B
     // b('foo') // <- here overloads should be processed as [(x:'foo'): String, (x: String): Unit]
-    def reorderCandidates(signatures: Signature[], result: Signature[]): Unit {
+    def reorderCandidates(signatures: Signature[], result: Signature[]): Unit = {
       var lastParent: Node
       var lastSymbol: Symbol
       var cutoffIndex = 0
@@ -9228,7 +9228,7 @@ object Checker {
       }
     }
 
-    def getSpreadArgumentIndex(args: Expression[]): Int {
+    def getSpreadArgumentIndex(args: Expression[]): Int = {
       for (var i = 0; i < args.length; i++) {
         val arg = args[i]
         if (arg && arg.kind == SyntaxKind.SpreadElementExpression) {
@@ -9238,7 +9238,7 @@ object Checker {
       return -1
     }
 
-    def hasCorrectArity(node: CallLikeExpression, args: Expression[], signature: Signature) {
+    def hasCorrectArity(node: CallLikeExpression, args: Expression[], signature: Signature) = {
       var adjustedArgCount: Int;      // Apparent Int of arguments we will have in this call
       var typeArguments: NodeArray<TypeNode>;  // Type arguments (() if none)
       var callIsIncomplete: Boolean;       // In incomplete call we want to be lenient when we have too few arguments
@@ -9319,7 +9319,7 @@ object Checker {
     }
 
     // If type has a single call signature and no other members, return that signature. Otherwise, return ().
-    def getSingleCallSignature(type: Type): Signature {
+    def getSingleCallSignature(type: Type): Signature = {
       if (type.flags & TypeFlags.ObjectType) {
         val resolved = resolveStructuredTypeMembers(<ObjectType>type)
         if (resolved.callSignatures.length == 1 && resolved.constructSignatures.length == 0 &&
@@ -9331,7 +9331,7 @@ object Checker {
     }
 
     // Instantiate a generic signature in the context of a non-generic signature (section 3.8.5 in TypeScript spec)
-    def instantiateSignatureInContextOf(signature: Signature, contextualSignature: Signature, contextualMapper: TypeMapper): Signature {
+    def instantiateSignatureInContextOf(signature: Signature, contextualSignature: Signature, contextualMapper: TypeMapper): Signature = {
       val context = createInferenceContext(signature.typeParameters, /*inferUnionTypes*/ true)
       forEachMatchingParameterType(contextualSignature, signature, (source, target) => {
         // Type parameters from outer context referenced by source type are fixed by instantiation of the source type
@@ -9340,7 +9340,7 @@ object Checker {
       return getSignatureInstantiation(signature, getInferredTypes(context))
     }
 
-    def inferTypeArguments(node: CallLikeExpression, signature: Signature, args: Expression[], excludeArgument: Boolean[], context: InferenceContext): Unit {
+    def inferTypeArguments(node: CallLikeExpression, signature: Signature, args: Expression[], excludeArgument: Boolean[], context: InferenceContext): Unit = {
       val typeParameters = signature.typeParameters
       val inferenceMapper = getInferenceMapper(context)
 
@@ -9408,7 +9408,7 @@ object Checker {
       getInferredTypes(context)
     }
 
-    def checkTypeArguments(signature: Signature, typeArgumentNodes: TypeNode[], typeArgumentTypes: Type[], reportErrors: Boolean, headMessage?: DiagnosticMessage): Boolean {
+    def checkTypeArguments(signature: Signature, typeArgumentNodes: TypeNode[], typeArgumentTypes: Type[], reportErrors: Boolean, headMessage?: DiagnosticMessage): Boolean = {
       val typeParameters = signature.typeParameters
       var typeArgumentsAreAssignable = true
       var mapper: TypeMapper
@@ -9438,7 +9438,7 @@ object Checker {
       return typeArgumentsAreAssignable
     }
 
-    def checkApplicableSignature(node: CallLikeExpression, args: Expression[], signature: Signature, relation: Map<RelationComparisonResult>, excludeArgument: Boolean[], reportErrors: Boolean) {
+    def checkApplicableSignature(node: CallLikeExpression, args: Expression[], signature: Signature, relation: Map<RelationComparisonResult>, excludeArgument: Boolean[], reportErrors: Boolean) = {
       val argCount = getEffectiveArgumentCount(node, args, signature)
       for (var i = 0; i < argCount; i++) {
         val arg = getEffectiveArgument(node, args, i)
@@ -9515,7 +9515,7 @@ object Checker {
       *     us to match a property decorator.
       * Otherwise, the argument count is the length of the 'args' array.
       */
-    def getEffectiveArgumentCount(node: CallLikeExpression, args: Expression[], signature: Signature) {
+    def getEffectiveArgumentCount(node: CallLikeExpression, args: Expression[], signature: Signature) = {
       if (node.kind == SyntaxKind.Decorator) {
         switch (node.parent.kind) {
           case SyntaxKind.ClassDeclaration:
@@ -9567,7 +9567,7 @@ object Checker {
       *  type is the type of the static or instance side of the parent class for class
       *  element, depending on whether the element is declared static.
       */
-    def getEffectiveDecoratorFirstArgumentType(node: Node): Type {
+    def getEffectiveDecoratorFirstArgumentType(node: Node): Type = {
       // The first argument to a decorator is its `target`.
       if (node.kind == SyntaxKind.ClassDeclaration) {
         // For a class decorator, the `target` is the type of the class (e.g. the
@@ -9616,7 +9616,7 @@ object Checker {
       *  be a symbol type or the String type.
       * A class decorator does not have a second argument type.
       */
-    def getEffectiveDecoratorSecondArgumentType(node: Node) {
+    def getEffectiveDecoratorSecondArgumentType(node: Node) = {
       // The second argument to a decorator is its `propertyKey`
       if (node.kind == SyntaxKind.ClassDeclaration) {
         Debug.fail("Class decorators should not have a second synthetic argument.")
@@ -9675,7 +9675,7 @@ object Checker {
       *  `TypedPropertyDescriptor<T>` instantiated with the type of the member.
       * Class and property decorators do not have a third effective argument.
       */
-    def getEffectiveDecoratorThirdArgumentType(node: Node) {
+    def getEffectiveDecoratorThirdArgumentType(node: Node) = {
       // The third argument to a decorator is either its `descriptor` for a method decorator
       // or its `parameterIndex` for a parameter decorator
       if (node.kind == SyntaxKind.ClassDeclaration) {
@@ -9709,7 +9709,7 @@ object Checker {
     /**
       * Returns the effective argument type for the provided argument to a decorator.
       */
-    def getEffectiveDecoratorArgumentType(node: Decorator, argIndex: Int): Type {
+    def getEffectiveDecoratorArgumentType(node: Decorator, argIndex: Int): Type = {
       if (argIndex == 0) {
         return getEffectiveDecoratorFirstArgumentType(node.parent)
       }
@@ -9727,7 +9727,7 @@ object Checker {
     /**
       * Gets the effective argument type for an argument in a call expression.
       */
-    def getEffectiveArgumentType(node: CallLikeExpression, argIndex: Int, arg: Expression): Type {
+    def getEffectiveArgumentType(node: CallLikeExpression, argIndex: Int, arg: Expression): Type = {
       // Decorators provide special arguments, a tagged template expression provides
       // a special first argument, and String literals get String literal types
       // unless we're reporting errors
@@ -9746,7 +9746,7 @@ object Checker {
     /**
       * Gets the effective argument expression for an argument in a call expression.
       */
-    def getEffectiveArgument(node: CallLikeExpression, args: Expression[], argIndex: Int) {
+    def getEffectiveArgument(node: CallLikeExpression, args: Expression[], argIndex: Int) = {
       // For a decorator or the first argument of a tagged template expression we return ().
       if (node.kind == SyntaxKind.Decorator ||
         (argIndex == 0 && node.kind == SyntaxKind.TaggedTemplateExpression)) {
@@ -9759,7 +9759,7 @@ object Checker {
     /**
       * Gets the error node to use when reporting errors for an effective argument.
       */
-    def getEffectiveArgumentErrorNode(node: CallLikeExpression, argIndex: Int, arg: Expression) {
+    def getEffectiveArgumentErrorNode(node: CallLikeExpression, argIndex: Int, arg: Expression) = {
       if (node.kind == SyntaxKind.Decorator) {
         // For a decorator, we use the expression of the decorator for error reporting.
         return (<Decorator>node).expression
@@ -9773,7 +9773,7 @@ object Checker {
       }
     }
 
-    def resolveCall(node: CallLikeExpression, signatures: Signature[], candidatesOutArray: Signature[], headMessage?: DiagnosticMessage): Signature {
+    def resolveCall(node: CallLikeExpression, signatures: Signature[], candidatesOutArray: Signature[], headMessage?: DiagnosticMessage): Signature = {
       val isTaggedTemplate = node.kind == SyntaxKind.TaggedTemplateExpression
       val isDecorator = node.kind == SyntaxKind.Decorator
 
@@ -9931,7 +9931,7 @@ object Checker {
 
       return resolveErrorCall(node)
 
-      def reportError(message: DiagnosticMessage, arg0?: String, arg1?: String, arg2?: String): Unit {
+      def reportError(message: DiagnosticMessage, arg0?: String, arg1?: String, arg2?: String): Unit = {
         var errorInfo: DiagnosticMessageChain
         errorInfo = chainDiagnosticMessages(errorInfo, message, arg0, arg1, arg2)
         if (headMessage) {
@@ -9941,7 +9941,7 @@ object Checker {
         diagnostics.add(createDiagnosticForNodeFromMessageChain(node, errorInfo))
       }
 
-      def chooseOverload(candidates: Signature[], relation: Map<RelationComparisonResult>) {
+      def chooseOverload(candidates: Signature[], relation: Map<RelationComparisonResult>) = {
         for (val originalCandidate of candidates) {
           if (!hasCorrectArity(node, args, originalCandidate)) {
             continue
@@ -10009,7 +10009,7 @@ object Checker {
 
     }
 
-    def resolveCallExpression(node: CallExpression, candidatesOutArray: Signature[]): Signature {
+    def resolveCallExpression(node: CallExpression, candidatesOutArray: Signature[]): Signature = {
       if (node.expression.kind == SyntaxKind.SuperKeyword) {
         val superType = checkSuperExpression(node.expression)
         if (superType != unknownType) {
@@ -10067,7 +10067,7 @@ object Checker {
       return resolveCall(node, callSignatures, candidatesOutArray)
     }
 
-    def resolveNewExpression(node: NewExpression, candidatesOutArray: Signature[]): Signature {
+    def resolveNewExpression(node: NewExpression, candidatesOutArray: Signature[]): Signature = {
       if (node.arguments && languageVersion < ScriptTarget.ES5) {
         val spreadIndex = getSpreadArgumentIndex(node.arguments)
         if (spreadIndex >= 0) {
@@ -10134,7 +10134,7 @@ object Checker {
       return resolveErrorCall(node)
     }
 
-    def resolveTaggedTemplateExpression(node: TaggedTemplateExpression, candidatesOutArray: Signature[]): Signature {
+    def resolveTaggedTemplateExpression(node: TaggedTemplateExpression, candidatesOutArray: Signature[]): Signature = {
       val tagType = checkExpression(node.tag)
       val apparentType = getApparentType(tagType)
 
@@ -10160,7 +10160,7 @@ object Checker {
     /**
       * Gets the localized diagnostic head message to use for errors when resolving a decorator as a call expression.
       */
-    def getDiagnosticHeadMessageForDecoratorResolution(node: Decorator) {
+    def getDiagnosticHeadMessageForDecoratorResolution(node: Decorator) = {
       switch (node.parent.kind) {
         case SyntaxKind.ClassDeclaration:
         case SyntaxKind.ClassExpression:
@@ -10182,7 +10182,7 @@ object Checker {
     /**
       * Resolves a decorator as if it were a call expression.
       */
-    def resolveDecorator(node: Decorator, candidatesOutArray: Signature[]): Signature {
+    def resolveDecorator(node: Decorator, candidatesOutArray: Signature[]): Signature = {
       val funcType = checkExpression(node.expression)
       val apparentType = getApparentType(funcType)
       if (apparentType == unknownType) {
@@ -10208,7 +10208,7 @@ object Checker {
 
     // candidatesOutArray is passed by signature help in the language service, and collectCandidates
     // must fill it up with the appropriate candidate signatures
-    def getResolvedSignature(node: CallLikeExpression, candidatesOutArray?: Signature[]): Signature {
+    def getResolvedSignature(node: CallLikeExpression, candidatesOutArray?: Signature[]): Signature = {
       val links = getNodeLinks(node)
       // If getResolvedSignature has already been called, we will have cached the resolvedSignature.
       // However, it is possible that either candidatesOutArray was not passed in the first time,
@@ -10236,7 +10236,7 @@ object Checker {
       return links.resolvedSignature
     }
 
-    def getInferredClassType(symbol: Symbol) {
+    def getInferredClassType(symbol: Symbol) = {
       val links = getSymbolLinks(symbol)
       if (!links.inferredClassType) {
         links.inferredClassType = createAnonymousType((), symbol.members, emptyArray, emptyArray, /*stringIndexType*/ (), /*numberIndexType*/ ())
@@ -10249,7 +10249,7 @@ object Checker {
      * @param node The call/new expression to be checked.
      * @returns On success, the expression's signature's return type. On failure, anyType.
      */
-    def checkCallExpression(node: CallExpression): Type {
+    def checkCallExpression(node: CallExpression): Type = {
       // Grammar checking; stop grammar-checking if checkGrammarTypeArguments return true
       checkGrammarTypeArguments(node, node.typeArguments) || checkGrammarArguments(node, node.arguments)
 
@@ -10293,11 +10293,11 @@ object Checker {
       return getReturnTypeOfSignature(signature)
     }
 
-    def checkTaggedTemplateExpression(node: TaggedTemplateExpression): Type {
+    def checkTaggedTemplateExpression(node: TaggedTemplateExpression): Type = {
       return getReturnTypeOfSignature(getResolvedSignature(node))
     }
 
-    def checkAssertion(node: AssertionExpression) {
+    def checkAssertion(node: AssertionExpression) = {
       val exprType = getRegularTypeOfObjectLiteral(checkExpression(node.expression))
       val targetType = getTypeFromTypeNode(node.type)
       if (produceDiagnostics && targetType != unknownType) {
@@ -10313,13 +10313,13 @@ object Checker {
       return targetType
     }
 
-    def getTypeAtPosition(signature: Signature, pos: Int): Type {
+    def getTypeAtPosition(signature: Signature, pos: Int): Type = {
       return signature.hasRestParameter ?
         pos < signature.parameters.length - 1 ? getTypeOfSymbol(signature.parameters[pos]) : getRestTypeOfSignature(signature) :
         pos < signature.parameters.length ? getTypeOfSymbol(signature.parameters[pos]) : anyType
     }
 
-    def assignContextualParameterTypes(signature: Signature, context: Signature, mapper: TypeMapper) {
+    def assignContextualParameterTypes(signature: Signature, context: Signature, mapper: TypeMapper) = {
       val len = signature.parameters.length - (signature.hasRestParameter ? 1 : 0)
       for (var i = 0; i < len; i++) {
         val parameter = signature.parameters[i]
@@ -10335,7 +10335,7 @@ object Checker {
 
     // When contextual typing assigns a type to a parameter that contains a binding pattern, we also need to push
     // the destructured type into the contained binding elements.
-    def assignBindingElementTypes(node: VariableLikeDeclaration) {
+    def assignBindingElementTypes(node: VariableLikeDeclaration) = {
       if (isBindingPattern(node.name)) {
         for (val element of (<BindingPattern>node.name).elements) {
           if (element.kind != SyntaxKind.OmittedExpression) {
@@ -10348,7 +10348,7 @@ object Checker {
       }
     }
 
-    def assignTypeToParameterAndFixTypeParameters(parameter: Symbol, contextualType: Type, mapper: TypeMapper) {
+    def assignTypeToParameterAndFixTypeParameters(parameter: Symbol, contextualType: Type, mapper: TypeMapper) = {
       val links = getSymbolLinks(parameter)
       if (!links.type) {
         links.type = instantiateType(contextualType, mapper)
@@ -10388,7 +10388,7 @@ object Checker {
       }
     }
 
-    def getReturnTypeFromJSDocComment(func: SignatureDeclaration | FunctionDeclaration): Type {
+    def getReturnTypeFromJSDocComment(func: SignatureDeclaration | FunctionDeclaration): Type = {
       val returnTag = getJSDocReturnTag(func)
       if (returnTag && returnTag.typeExpression) {
         return getTypeFromTypeNode(returnTag.typeExpression.type)
@@ -10397,7 +10397,7 @@ object Checker {
       return ()
     }
 
-    def createPromiseType(promisedType: Type): Type {
+    def createPromiseType(promisedType: Type): Type = {
       // creates a `Promise<T>` type where `T` is the promisedType argument
       val globalPromiseType = getGlobalPromiseType()
       if (globalPromiseType != emptyGenericType) {
@@ -10409,7 +10409,7 @@ object Checker {
       return emptyObjectType
     }
 
-    def getReturnTypeFromBody(func: FunctionLikeDeclaration, contextualMapper?: TypeMapper): Type {
+    def getReturnTypeFromBody(func: FunctionLikeDeclaration, contextualMapper?: TypeMapper): Type = {
       val contextualSignature = getContextualSignatureForFunctionLikeDeclaration(func)
       if (!func.body) {
         return unknownType
@@ -10554,7 +10554,7 @@ object Checker {
      * An exception to this rule is if the def implementation consists of a single 'throw' statement.
      * @param returnType - return type of the def, can be () if return type is not explicitly specified
      */
-    def checkAllCodePathsInNonVoidFunctionReturnOrThrow(func: FunctionLikeDeclaration, returnType: Type): Unit {
+    def checkAllCodePathsInNonVoidFunctionReturnOrThrow(func: FunctionLikeDeclaration, returnType: Type): Unit = {
       if (!produceDiagnostics) {
         return
       }
@@ -10595,7 +10595,7 @@ object Checker {
       }
     }
 
-    def checkFunctionExpressionOrObjectLiteralMethod(node: FunctionExpression | MethodDeclaration, contextualMapper?: TypeMapper): Type {
+    def checkFunctionExpressionOrObjectLiteralMethod(node: FunctionExpression | MethodDeclaration, contextualMapper?: TypeMapper): Type = {
       Debug.assert(node.kind != SyntaxKind.MethodDeclaration || isObjectLiteralMethod(node))
 
       // Grammar checking
@@ -10653,7 +10653,7 @@ object Checker {
       return type
     }
 
-    def checkFunctionExpressionOrObjectLiteralMethodDeferred(node: ArrowFunction | FunctionExpression | MethodDeclaration) {
+    def checkFunctionExpressionOrObjectLiteralMethodDeferred(node: ArrowFunction | FunctionExpression | MethodDeclaration) = {
       Debug.assert(node.kind != SyntaxKind.MethodDeclaration || isObjectLiteralMethod(node))
 
       val isAsync = isAsyncFunctionLike(node)
@@ -10696,7 +10696,7 @@ object Checker {
       }
     }
 
-    def checkArithmeticOperandType(operand: Node, type: Type, diagnostic: DiagnosticMessage): Boolean {
+    def checkArithmeticOperandType(operand: Node, type: Type, diagnostic: DiagnosticMessage): Boolean = {
       if (!isTypeAnyOrAllConstituentTypesHaveKind(type, TypeFlags.NumberLike)) {
         error(operand, diagnostic)
         return false
@@ -10704,7 +10704,7 @@ object Checker {
       return true
     }
 
-    def isReadonlySymbol(symbol: Symbol): Boolean {
+    def isReadonlySymbol(symbol: Symbol): Boolean = {
       // The following symbols are considered read-only:
       // Properties with a 'readonly' modifier
       // Variables declared with 'val'
@@ -10716,7 +10716,7 @@ object Checker {
         (symbol.flags & SymbolFlags.EnumMember) != 0
     }
 
-    def isReferenceToReadonlyEntity(expr: Expression, symbol: Symbol): Boolean {
+    def isReferenceToReadonlyEntity(expr: Expression, symbol: Symbol): Boolean = {
       if (isReadonlySymbol(symbol)) {
         // Allow assignments to readonly properties within constructors of the same class declaration.
         if (symbol.flags & SymbolFlags.Property &&
@@ -10730,7 +10730,7 @@ object Checker {
       return false
     }
 
-    def isReferenceThroughNamespaceImport(expr: Expression): Boolean {
+    def isReferenceThroughNamespaceImport(expr: Expression): Boolean = {
       if (expr.kind == SyntaxKind.PropertyAccessExpression || expr.kind == SyntaxKind.ElementAccessExpression) {
         val node = skipParenthesizedNodes((expr as PropertyAccessExpression | ElementAccessExpression).expression)
         if (node.kind == SyntaxKind.Identifier) {
@@ -10744,7 +10744,7 @@ object Checker {
       return false
     }
 
-    def checkReferenceExpression(expr: Expression, invalidReferenceMessage: DiagnosticMessage, constantVariableMessage: DiagnosticMessage): Boolean {
+    def checkReferenceExpression(expr: Expression, invalidReferenceMessage: DiagnosticMessage, constantVariableMessage: DiagnosticMessage): Boolean = {
       // References are combinations of identifiers, parentheses, and property accesses.
       val node = skipParenthesizedNodes(expr)
       if (node.kind != SyntaxKind.Identifier && node.kind != SyntaxKind.PropertyAccessExpression && node.kind != SyntaxKind.ElementAccessExpression) {
@@ -10779,22 +10779,22 @@ object Checker {
       return true
     }
 
-    def checkDeleteExpression(node: DeleteExpression): Type {
+    def checkDeleteExpression(node: DeleteExpression): Type = {
       checkExpression(node.expression)
       return booleanType
     }
 
-    def checkTypeOfExpression(node: TypeOfExpression): Type {
+    def checkTypeOfExpression(node: TypeOfExpression): Type = {
       checkExpression(node.expression)
       return stringType
     }
 
-    def checkVoidExpression(node: VoidExpression): Type {
+    def checkVoidExpression(node: VoidExpression): Type = {
       checkExpression(node.expression)
       return undefinedType
     }
 
-    def checkAwaitExpression(node: AwaitExpression): Type {
+    def checkAwaitExpression(node: AwaitExpression): Type = {
       // Grammar checking
       if (produceDiagnostics) {
         if (!(node.flags & NodeFlags.AwaitContext)) {
@@ -10810,7 +10810,7 @@ object Checker {
       return checkAwaitedType(operandType, node)
     }
 
-    def checkPrefixUnaryExpression(node: PrefixUnaryExpression): Type {
+    def checkPrefixUnaryExpression(node: PrefixUnaryExpression): Type = {
       val operandType = checkExpression(node.operand)
       switch (node.operator) {
         case SyntaxKind.PlusToken:
@@ -10836,7 +10836,7 @@ object Checker {
       return unknownType
     }
 
-    def checkPostfixUnaryExpression(node: PostfixUnaryExpression): Type {
+    def checkPostfixUnaryExpression(node: PostfixUnaryExpression): Type = {
       val operandType = checkExpression(node.operand)
       val ok = checkArithmeticOperandType(node.operand, operandType, Diagnostics.An_arithmetic_operand_must_be_of_type_any_number_or_an_enum_type)
       if (ok) {
@@ -10850,7 +10850,7 @@ object Checker {
 
     // Return true if type might be of the given kind. A union or intersection type might be of a given
     // kind if at least one constituent type is of the given kind.
-    def maybeTypeOfKind(type: Type, kind: TypeFlags): Boolean {
+    def maybeTypeOfKind(type: Type, kind: TypeFlags): Boolean = {
       if (type.flags & kind) {
         return true
       }
@@ -10868,7 +10868,7 @@ object Checker {
     // Return true if type is of the given kind. A union type is of a given kind if all constituent types
     // are of the given kind. An intersection type is of a given kind if at least one constituent type is
     // of the given kind.
-    def isTypeOfKind(type: Type, kind: TypeFlags): Boolean {
+    def isTypeOfKind(type: Type, kind: TypeFlags): Boolean = {
       if (type.flags & kind) {
         return true
       }
@@ -10892,15 +10892,15 @@ object Checker {
       return false
     }
 
-    def isConstEnumObjectType(type: Type): Boolean {
+    def isConstEnumObjectType(type: Type): Boolean = {
       return type.flags & (TypeFlags.ObjectType | TypeFlags.Anonymous) && type.symbol && isConstEnumSymbol(type.symbol)
     }
 
-    def isConstEnumSymbol(symbol: Symbol): Boolean {
+    def isConstEnumSymbol(symbol: Symbol): Boolean = {
       return (symbol.flags & SymbolFlags.ConstEnum) != 0
     }
 
-    def checkInstanceOfExpression(left: Expression, right: Expression, leftType: Type, rightType: Type): Type {
+    def checkInstanceOfExpression(left: Expression, right: Expression, leftType: Type, rightType: Type): Type = {
       // TypeScript 1.0 spec (April 2014): 4.15.4
       // The instanceof operator requires the left operand to be of type Any, an object type, or a type parameter type,
       // and the right operand to be of type Any or a subtype of the 'Function' trait type.
@@ -10916,7 +10916,7 @@ object Checker {
       return booleanType
     }
 
-    def checkInExpression(left: Expression, right: Expression, leftType: Type, rightType: Type): Type {
+    def checkInExpression(left: Expression, right: Expression, leftType: Type, rightType: Type): Type = {
       // TypeScript 1.0 spec (April 2014): 4.15.5
       // The in operator requires the left operand to be of type Any, the String primitive type, or the Number primitive type,
       // and the right operand to be of type Any, an object type, or a type parameter type.
@@ -10930,7 +10930,7 @@ object Checker {
       return booleanType
     }
 
-    def checkObjectLiteralAssignment(node: ObjectLiteralExpression, sourceType: Type, contextualMapper?: TypeMapper): Type {
+    def checkObjectLiteralAssignment(node: ObjectLiteralExpression, sourceType: Type, contextualMapper?: TypeMapper): Type = {
       val properties = node.properties
       for (val p of properties) {
         if (p.kind == SyntaxKind.PropertyAssignment || p.kind == SyntaxKind.ShorthandPropertyAssignment) {
@@ -10968,7 +10968,7 @@ object Checker {
       return sourceType
     }
 
-    def checkArrayLiteralAssignment(node: ArrayLiteralExpression, sourceType: Type, contextualMapper?: TypeMapper): Type {
+    def checkArrayLiteralAssignment(node: ArrayLiteralExpression, sourceType: Type, contextualMapper?: TypeMapper): Type = {
       // This elementType will be used if the specific property corresponding to this index is not
       // present (aka the tuple element property). This call also checks that the parentType is in
       // fact an iterable or array (depending on target language).
@@ -11015,7 +11015,7 @@ object Checker {
       return sourceType
     }
 
-    def checkDestructuringAssignment(exprOrAssignment: Expression | ShorthandPropertyAssignment, sourceType: Type, contextualMapper?: TypeMapper): Type {
+    def checkDestructuringAssignment(exprOrAssignment: Expression | ShorthandPropertyAssignment, sourceType: Type, contextualMapper?: TypeMapper): Type = {
       var target: Expression
       if (exprOrAssignment.kind == SyntaxKind.ShorthandPropertyAssignment) {
         val prop = <ShorthandPropertyAssignment>exprOrAssignment
@@ -11041,7 +11041,7 @@ object Checker {
       return checkReferenceAssignment(target, sourceType, contextualMapper)
     }
 
-    def checkReferenceAssignment(target: Expression, sourceType: Type, contextualMapper?: TypeMapper): Type {
+    def checkReferenceAssignment(target: Expression, sourceType: Type, contextualMapper?: TypeMapper): Type = {
       val targetType = checkExpression(target, contextualMapper)
       if (checkReferenceExpression(target, Diagnostics.Invalid_left_hand_side_of_assignment_expression, Diagnostics.Left_hand_side_of_assignment_expression_cannot_be_a_constant_or_a_read_only_property)) {
         checkTypeAssignableTo(sourceType, targetType, target, /*headMessage*/ ())
@@ -11049,11 +11049,11 @@ object Checker {
       return sourceType
     }
 
-    def checkBinaryExpression(node: BinaryExpression, contextualMapper?: TypeMapper) {
+    def checkBinaryExpression(node: BinaryExpression, contextualMapper?: TypeMapper) = {
       return checkBinaryLikeExpression(node.left, node.operatorToken, node.right, contextualMapper, node)
     }
 
-    def checkBinaryLikeExpression(left: Expression, operatorToken: Node, right: Expression, contextualMapper?: TypeMapper, errorNode?: Node) {
+    def checkBinaryLikeExpression(left: Expression, operatorToken: Node, right: Expression, contextualMapper?: TypeMapper, errorNode?: Node) = {
       val operator = operatorToken.kind
       if (operator == SyntaxKind.EqualsToken && (left.kind == SyntaxKind.ObjectLiteralExpression || left.kind == SyntaxKind.ArrayLiteralExpression)) {
         return checkDestructuringAssignment(left, checkExpression(right, contextualMapper), contextualMapper)
@@ -11188,7 +11188,7 @@ object Checker {
       }
 
       // Return true if there was no error, false if there was an error.
-      def checkForDisallowedESSymbolOperand(operator: SyntaxKind): Boolean {
+      def checkForDisallowedESSymbolOperand(operator: SyntaxKind): Boolean = {
         val offendingSymbolOperand =
           maybeTypeOfKind(leftType, TypeFlags.ESSymbol) ? left :
             maybeTypeOfKind(rightType, TypeFlags.ESSymbol) ? right :
@@ -11201,7 +11201,7 @@ object Checker {
         return true
       }
 
-      def getSuggestedBooleanOperator(operator: SyntaxKind): SyntaxKind {
+      def getSuggestedBooleanOperator(operator: SyntaxKind): SyntaxKind = {
         switch (operator) {
           case SyntaxKind.BarToken:
           case SyntaxKind.BarEqualsToken:
@@ -11217,7 +11217,7 @@ object Checker {
         }
       }
 
-      def checkAssignmentOperator(valueType: Type): Unit {
+      def checkAssignmentOperator(valueType: Type): Unit = {
         if (produceDiagnostics && operator >= SyntaxKind.FirstAssignment && operator <= SyntaxKind.LastAssignment) {
           // TypeScript 1.0 spec (April 2014): 4.17
           // An assignment of the form
@@ -11236,12 +11236,12 @@ object Checker {
         }
       }
 
-      def reportOperatorError() {
+      def reportOperatorError() = {
         error(errorNode || operatorToken, Diagnostics.Operator_0_cannot_be_applied_to_types_1_and_2, tokenToString(operatorToken.kind), typeToString(leftType), typeToString(rightType))
       }
     }
 
-    def isYieldExpressionInClass(node: YieldExpression): Boolean {
+    def isYieldExpressionInClass(node: YieldExpression): Boolean = {
       var current: Node = node
       var parent = node.parent
       while (parent) {
@@ -11259,7 +11259,7 @@ object Checker {
       return false
     }
 
-    def checkYieldExpression(node: YieldExpression): Type {
+    def checkYieldExpression(node: YieldExpression): Type = {
       // Grammar checking
       if (produceDiagnostics) {
         if (!(node.flags & NodeFlags.YieldContext) || isYieldExpressionInClass(node)) {
@@ -11301,14 +11301,14 @@ object Checker {
       return anyType
     }
 
-    def checkConditionalExpression(node: ConditionalExpression, contextualMapper?: TypeMapper): Type {
+    def checkConditionalExpression(node: ConditionalExpression, contextualMapper?: TypeMapper): Type = {
       checkExpression(node.condition)
       val type1 = checkExpression(node.whenTrue, contextualMapper)
       val type2 = checkExpression(node.whenFalse, contextualMapper)
       return getUnionType([type1, type2])
     }
 
-    def checkStringLiteralExpression(node: StringLiteral): Type {
+    def checkStringLiteralExpression(node: StringLiteral): Type = {
       val contextualType = getContextualType(node)
       if (contextualType && contextualTypeIsStringLiteralType(contextualType)) {
         return getStringLiteralTypeForText(node.text)
@@ -11317,7 +11317,7 @@ object Checker {
       return stringType
     }
 
-    def checkTemplateExpression(node: TemplateExpression): Type {
+    def checkTemplateExpression(node: TemplateExpression): Type = {
       // We just want to check each expressions, but we are unconcerned with
       // the type of each expression, as any value may be coerced into a String.
       // It is worth asking whether this is what we really want though.
@@ -11330,7 +11330,7 @@ object Checker {
       return stringType
     }
 
-    def checkExpressionWithContextualType(node: Expression, contextualType: Type, contextualMapper?: TypeMapper): Type {
+    def checkExpressionWithContextualType(node: Expression, contextualType: Type, contextualMapper?: TypeMapper): Type = {
       val saveContextualType = node.contextualType
       node.contextualType = contextualType
       val result = checkExpression(node, contextualMapper)
@@ -11338,7 +11338,7 @@ object Checker {
       return result
     }
 
-    def checkExpressionCached(node: Expression, contextualMapper?: TypeMapper): Type {
+    def checkExpressionCached(node: Expression, contextualMapper?: TypeMapper): Type = {
       val links = getNodeLinks(node)
       if (!links.resolvedType) {
         links.resolvedType = checkExpression(node, contextualMapper)
@@ -11346,7 +11346,7 @@ object Checker {
       return links.resolvedType
     }
 
-    def checkPropertyAssignment(node: PropertyAssignment, contextualMapper?: TypeMapper): Type {
+    def checkPropertyAssignment(node: PropertyAssignment, contextualMapper?: TypeMapper): Type = {
       // Do not use hasDynamicName here, because that returns false for well known symbols.
       // We want to perform checkComputedPropertyName for all computed properties, including
       // well known symbols.
@@ -11357,7 +11357,7 @@ object Checker {
       return checkExpression((<PropertyAssignment>node).initializer, contextualMapper)
     }
 
-    def checkObjectLiteralMethod(node: MethodDeclaration, contextualMapper?: TypeMapper): Type {
+    def checkObjectLiteralMethod(node: MethodDeclaration, contextualMapper?: TypeMapper): Type = {
       // Grammar checking
       checkGrammarMethod(node)
 
@@ -11372,7 +11372,7 @@ object Checker {
       return instantiateTypeWithSingleGenericCallSignature(node, uninstantiatedType, contextualMapper)
     }
 
-    def instantiateTypeWithSingleGenericCallSignature(node: Expression | MethodDeclaration, type: Type, contextualMapper?: TypeMapper) {
+    def instantiateTypeWithSingleGenericCallSignature(node: Expression | MethodDeclaration, type: Type, contextualMapper?: TypeMapper) = {
       if (isInferentialContext(contextualMapper)) {
         val signature = getSingleCallSignature(type)
         if (signature && signature.typeParameters) {
@@ -11396,7 +11396,7 @@ object Checker {
     // object, it serves as an indicator that all contained def and arrow expressions should be considered to
     // have the wildcard def type; this form of type check is used during overload resolution to exclude
     // contextually typed def and arrow expressions in the initial phase.
-    def checkExpression(node: Expression | QualifiedName, contextualMapper?: TypeMapper): Type {
+    def checkExpression(node: Expression | QualifiedName, contextualMapper?: TypeMapper): Type = {
       var type: Type
       if (node.kind == SyntaxKind.QualifiedName) {
         type = checkQualifiedName(<QualifiedName>node)
@@ -11423,13 +11423,13 @@ object Checker {
       return type
     }
 
-    def checkNumericLiteral(node: LiteralExpression): Type {
+    def checkNumericLiteral(node: LiteralExpression): Type = {
       // Grammar checking
       checkGrammarNumericLiteral(node)
       return numberType
     }
 
-    def checkExpressionWorker(node: Expression, contextualMapper: TypeMapper): Type {
+    def checkExpressionWorker(node: Expression, contextualMapper: TypeMapper): Type = {
       switch (node.kind) {
         case SyntaxKind.Identifier:
           return checkIdentifier(<Identifier>node)
@@ -11511,7 +11511,7 @@ object Checker {
 
     // DECLARATION AND STATEMENT TYPE CHECKING
 
-    def checkTypeParameter(node: TypeParameterDeclaration) {
+    def checkTypeParameter(node: TypeParameterDeclaration) = {
       // Grammar Checking
       if (node.expression) {
         grammarErrorOnFirstToken(node.expression, Diagnostics.Type_expected)
@@ -11524,7 +11524,7 @@ object Checker {
       }
     }
 
-    def checkParameter(node: ParameterDeclaration) {
+    def checkParameter(node: ParameterDeclaration) = {
       // Grammar checking
       // It is a SyntaxError if the Identifier "eval" or the Identifier "arguments" occurs as the
       // Identifier in a PropertySetParameterList of a PropertyAssignment that is contained in strict code
@@ -11552,7 +11552,7 @@ object Checker {
       }
     }
 
-    def isSyntacticallyValidGenerator(node: SignatureDeclaration): Boolean {
+    def isSyntacticallyValidGenerator(node: SignatureDeclaration): Boolean = {
       if (!(<FunctionLikeDeclaration>node).asteriskToken || !(<FunctionLikeDeclaration>node).body) {
         return false
       }
@@ -11562,7 +11562,7 @@ object Checker {
         node.kind == SyntaxKind.FunctionExpression
     }
 
-    def getTypePredicateParameterIndex(parameterList: NodeArray<ParameterDeclaration>, parameter: Identifier): Int {
+    def getTypePredicateParameterIndex(parameterList: NodeArray<ParameterDeclaration>, parameter: Identifier): Int = {
       if (parameterList) {
         for (var i = 0; i < parameterList.length; i++) {
           val param = parameterList[i]
@@ -11576,7 +11576,7 @@ object Checker {
       return -1
     }
 
-    def checkTypePredicate(node: TypePredicateNode) {
+    def checkTypePredicate(node: TypePredicateNode) = {
       val parent = getTypePredicateParent(node)
       if (!parent) {
         return
@@ -11622,7 +11622,7 @@ object Checker {
       }
     }
 
-    def getTypePredicateParent(node: Node): SignatureDeclaration {
+    def getTypePredicateParent(node: Node): SignatureDeclaration = {
       switch (node.parent.kind) {
         case SyntaxKind.ArrowFunction:
         case SyntaxKind.CallSignature:
@@ -11662,7 +11662,7 @@ object Checker {
       }
     }
 
-    def checkSignatureDeclaration(node: SignatureDeclaration) {
+    def checkSignatureDeclaration(node: SignatureDeclaration) = {
       // Grammar checking
       if (node.kind == SyntaxKind.IndexSignature) {
         checkGrammarIndexSignature(<SignatureDeclaration>node)
@@ -11720,7 +11720,7 @@ object Checker {
       }
     }
 
-    def checkTypeForDuplicateIndexSignatures(node: Node) {
+    def checkTypeForDuplicateIndexSignatures(node: Node) = {
       if (node.kind == SyntaxKind.InterfaceDeclaration) {
         val nodeSymbol = getSymbolOfNode(node)
         // in case of merging trait declaration it is possible that we'll enter this check procedure several times for every declaration
@@ -11763,14 +11763,14 @@ object Checker {
       }
     }
 
-    def checkPropertyDeclaration(node: PropertyDeclaration) {
+    def checkPropertyDeclaration(node: PropertyDeclaration) = {
       // Grammar checking
       checkGrammarDecorators(node) || checkGrammarModifiers(node) || checkGrammarProperty(node) || checkGrammarComputedPropertyName(node.name)
 
       checkVariableLikeDeclaration(node)
     }
 
-    def checkMethodDeclaration(node: MethodDeclaration) {
+    def checkMethodDeclaration(node: MethodDeclaration) = {
       // Grammar checking
       checkGrammarMethod(node) || checkGrammarComputedPropertyName(node.name)
 
@@ -11784,7 +11784,7 @@ object Checker {
       }
     }
 
-    def checkConstructorDeclaration(node: ConstructorDeclaration) {
+    def checkConstructorDeclaration(node: ConstructorDeclaration) = {
       // Grammar check on signature of constructor and modifier of the constructor is done in checkSignatureDeclaration def.
       checkSignatureDeclaration(node)
       // Grammar check for checking only related to constructorDeclaration
@@ -11809,11 +11809,11 @@ object Checker {
         return
       }
 
-      def containsSuperCallAsComputedPropertyName(n: Declaration): Boolean {
+      def containsSuperCallAsComputedPropertyName(n: Declaration): Boolean = {
         return n.name && containsSuperCall(n.name)
       }
 
-      def containsSuperCall(n: Node): Boolean {
+      def containsSuperCall(n: Node): Boolean = {
         if (isSuperCallExpression(n)) {
           return true
         }
@@ -11826,7 +11826,7 @@ object Checker {
         return forEachChild(n, containsSuperCall)
       }
 
-      def markThisReferencesAsErrors(n: Node): Unit {
+      def markThisReferencesAsErrors(n: Node): Unit = {
         if (n.kind == SyntaxKind.ThisKeyword) {
           error(n, Diagnostics.this_cannot_be_referenced_in_current_location)
         }
@@ -11835,7 +11835,7 @@ object Checker {
         }
       }
 
-      def isInstancePropertyWithInitializer(n: Node): Boolean {
+      def isInstancePropertyWithInitializer(n: Node): Boolean = {
         return n.kind == SyntaxKind.PropertyDeclaration &&
           !(n.flags & NodeFlags.Static) &&
           !!(<PropertyDeclaration>n).initializer
@@ -11889,7 +11889,7 @@ object Checker {
       }
     }
 
-    def checkAccessorDeclaration(node: AccessorDeclaration) {
+    def checkAccessorDeclaration(node: AccessorDeclaration) = {
       if (produceDiagnostics) {
         // Grammar checking accessors
         checkGrammarFunctionLikeDeclaration(node) || checkGrammarAccessor(node) || checkGrammarComputedPropertyName(node.name)
@@ -11945,15 +11945,15 @@ object Checker {
       }
     }
 
-    def checkAccessorDeferred(node: AccessorDeclaration) {
+    def checkAccessorDeferred(node: AccessorDeclaration) = {
       checkSourceElement(node.body)
     }
 
-    def checkMissingDeclaration(node: Node) {
+    def checkMissingDeclaration(node: Node) = {
       checkDecorators(node)
     }
 
-    def checkTypeArgumentConstraints(typeParameters: TypeParameter[], typeArgumentNodes: TypeNode[]): Boolean {
+    def checkTypeArgumentConstraints(typeParameters: TypeParameter[], typeArgumentNodes: TypeNode[]): Boolean = {
       var typeArguments: Type[]
       var mapper: TypeMapper
       var result = true
@@ -11975,7 +11975,7 @@ object Checker {
       return result
     }
 
-    def checkTypeReferenceNode(node: TypeReferenceNode | ExpressionWithTypeArguments) {
+    def checkTypeReferenceNode(node: TypeReferenceNode | ExpressionWithTypeArguments) = {
       checkGrammarTypeArguments(node, node.typeArguments)
       val type = getTypeFromTypeReference(node)
       if (type != unknownType && node.typeArguments) {
@@ -11989,11 +11989,11 @@ object Checker {
       }
     }
 
-    def checkTypeQuery(node: TypeQueryNode) {
+    def checkTypeQuery(node: TypeQueryNode) = {
       getTypeFromTypeQueryNode(node)
     }
 
-    def checkTypeLiteral(node: TypeLiteralNode) {
+    def checkTypeLiteral(node: TypeLiteralNode) = {
       forEach(node.members, checkSourceElement)
       if (produceDiagnostics) {
         val type = getTypeFromTypeLiteralOrFunctionOrConstructorTypeNode(node)
@@ -12002,11 +12002,11 @@ object Checker {
       }
     }
 
-    def checkArrayType(node: ArrayTypeNode) {
+    def checkArrayType(node: ArrayTypeNode) = {
       checkSourceElement(node.elementType)
     }
 
-    def checkTupleType(node: TupleTypeNode) {
+    def checkTupleType(node: TupleTypeNode) = {
       // Grammar checking
       val hasErrorFromDisallowedTrailingComma = checkGrammarForDisallowedTrailingComma(node.elementTypes)
       if (!hasErrorFromDisallowedTrailingComma && node.elementTypes.length == 0) {
@@ -12016,15 +12016,15 @@ object Checker {
       forEach(node.elementTypes, checkSourceElement)
     }
 
-    def checkUnionOrIntersectionType(node: UnionOrIntersectionTypeNode) {
+    def checkUnionOrIntersectionType(node: UnionOrIntersectionTypeNode) = {
       forEach(node.types, checkSourceElement)
     }
 
-    def isPrivateWithinAmbient(node: Node): Boolean {
+    def isPrivateWithinAmbient(node: Node): Boolean = {
       return (node.flags & NodeFlags.Private) && isInAmbientContext(node)
     }
 
-    def getEffectiveDeclarationFlags(n: Node, flagsToCheck: NodeFlags): NodeFlags {
+    def getEffectiveDeclarationFlags(n: Node, flagsToCheck: NodeFlags): NodeFlags = {
       var flags = getCombinedNodeFlags(n)
 
       // children of classes (even ambient classes) should not be marked as ambient or export
@@ -12043,12 +12043,12 @@ object Checker {
       return flags & flagsToCheck
     }
 
-    def checkFunctionOrConstructorSymbol(symbol: Symbol): Unit {
+    def checkFunctionOrConstructorSymbol(symbol: Symbol): Unit = {
       if (!produceDiagnostics) {
         return
       }
 
-      def getCanonicalOverload(overloads: Declaration[], implementation: FunctionLikeDeclaration) {
+      def getCanonicalOverload(overloads: Declaration[], implementation: FunctionLikeDeclaration) = {
         // Consider the canonical set of flags to be the flags of the bodyDeclaration or the first declaration
         // Error on all deviations from this canonical set of flags
         // The caveat is that if some overloads are defined in lib.d.ts, we don't want to
@@ -12058,7 +12058,7 @@ object Checker {
         return implementationSharesContainerWithFirstOverload ? implementation : overloads[0]
       }
 
-      def checkFlagAgreementBetweenOverloads(overloads: Declaration[], implementation: FunctionLikeDeclaration, flagsToCheck: NodeFlags, someOverloadFlags: NodeFlags, allOverloadFlags: NodeFlags): Unit {
+      def checkFlagAgreementBetweenOverloads(overloads: Declaration[], implementation: FunctionLikeDeclaration, flagsToCheck: NodeFlags, someOverloadFlags: NodeFlags, allOverloadFlags: NodeFlags): Unit = {
         // Error if some overloads have a flag that is not shared by all overloads. To find the
         // deviations, we XOR someOverloadFlags with allOverloadFlags
         val someButNotAllOverloadFlags = someOverloadFlags ^ allOverloadFlags
@@ -12083,7 +12083,7 @@ object Checker {
         }
       }
 
-      def checkQuestionTokenAgreementBetweenOverloads(overloads: Declaration[], implementation: FunctionLikeDeclaration, someHaveQuestionToken: Boolean, allHaveQuestionToken: Boolean): Unit {
+      def checkQuestionTokenAgreementBetweenOverloads(overloads: Declaration[], implementation: FunctionLikeDeclaration, someHaveQuestionToken: Boolean, allHaveQuestionToken: Boolean): Unit = {
         if (someHaveQuestionToken != allHaveQuestionToken) {
           val canonicalHasQuestionToken = hasQuestionToken(getCanonicalOverload(overloads, implementation))
           forEach(overloads, o => {
@@ -12108,7 +12108,7 @@ object Checker {
       val declarations = symbol.declarations
       val isConstructor = (symbol.flags & SymbolFlags.Constructor) != 0
 
-      def reportImplementationExpectedError(node: FunctionLikeDeclaration): Unit {
+      def reportImplementationExpectedError(node: FunctionLikeDeclaration): Unit = {
         if (node.name && nodeIsMissing(node.name)) {
           return
         }
@@ -12255,7 +12255,7 @@ object Checker {
       }
     }
 
-    def checkExportsOnMergedDeclarations(node: Node): Unit {
+    def checkExportsOnMergedDeclarations(node: Node): Unit = {
       if (!produceDiagnostics) {
         return
       }
@@ -12320,7 +12320,7 @@ object Checker {
         }
       }
 
-      def getDeclarationSpaces(d: Declaration): SymbolFlags {
+      def getDeclarationSpaces(d: Declaration): SymbolFlags = {
         switch (d.kind) {
           case SyntaxKind.InterfaceDeclaration:
             return SymbolFlags.ExportType
@@ -12342,7 +12342,7 @@ object Checker {
       }
     }
 
-    def checkNonThenableType(type: Type, location?: Node, message?: DiagnosticMessage) {
+    def checkNonThenableType(type: Type, location?: Node, message?: DiagnosticMessage) = {
       type = getWidenedType(type)
       if (!isTypeAny(type) && isTypeAssignableTo(type, getGlobalThenableType())) {
         if (location) {
@@ -12364,7 +12364,7 @@ object Checker {
       * @param type The type of the promise.
       * @remarks The "promised type" of a type is the type of the "value" parameter of the "onfulfilled" callback.
       */
-    def getPromisedType(promise: Type): Type {
+    def getPromisedType(promise: Type): Type = {
       //
       //  { // promise
       //    then( // thenFunction
@@ -12412,7 +12412,7 @@ object Checker {
       return valueParameterType
     }
 
-    def getTypeOfFirstParameterOfSignature(signature: Signature) {
+    def getTypeOfFirstParameterOfSignature(signature: Signature) = {
       return getTypeAtPosition(signature, 0)
     }
 
@@ -12423,14 +12423,14 @@ object Checker {
       * Promise-like type; otherwise, it is the type of the expression. This is used to reflect
       * The runtime behavior of the `await` keyword.
       */
-    def getAwaitedType(type: Type) {
+    def getAwaitedType(type: Type) = {
       return checkAwaitedType(type, /*location*/ (), /*message*/ ())
     }
 
-    def checkAwaitedType(type: Type, location?: Node, message?: DiagnosticMessage) {
+    def checkAwaitedType(type: Type, location?: Node, message?: DiagnosticMessage) = {
       return checkAwaitedTypeWorker(type)
 
-      def checkAwaitedTypeWorker(type: Type): Type {
+      def checkAwaitedTypeWorker(type: Type): Type = {
         if (type.flags & TypeFlags.Union) {
           val types: Type[] = []
           for (val constituentType of (<UnionType>type).types) {
@@ -12522,7 +12522,7 @@ object Checker {
      * @param returnType The return type of a FunctionLikeDeclaration
      * @param location The node on which to report the error.
      */
-    def checkCorrectPromiseType(returnType: Type, location: Node) {
+    def checkCorrectPromiseType(returnType: Type, location: Node) = {
       if (returnType == unknownType) {
         // The return type already had some other error, so we ignore and return
         // the unknown type.
@@ -12558,7 +12558,7 @@ object Checker {
       * a `resolve` def as one of its arguments and results in an object with a
       * callable `then` signature.
       */
-    def checkAsyncFunctionReturnType(node: FunctionLikeDeclaration): Type {
+    def checkAsyncFunctionReturnType(node: FunctionLikeDeclaration): Type = {
       if (languageVersion >= ScriptTarget.ES6) {
         val returnType = getTypeFromTypeNode(node.type)
         return checkCorrectPromiseType(returnType, node.type)
@@ -12639,7 +12639,7 @@ object Checker {
     }
 
     /** Check a decorator */
-    def checkDecorator(node: Decorator): Unit {
+    def checkDecorator(node: Decorator): Unit = {
       val signature = getResolvedSignature(node)
       val returnType = getReturnTypeOfSignature(signature)
       if (returnType.flags & TypeFlags.Any) {
@@ -12689,7 +12689,7 @@ object Checker {
     }
 
     /** Checks a type reference node as an expression. */
-    def checkTypeNodeAsExpression(node: TypeNode) {
+    def checkTypeNodeAsExpression(node: TypeNode) = {
       // When we are emitting type metadata for decorators, we need to try to check the type
       // as if it were an expression so that we can emit the type in a value position when we
       // serialize the type metadata.
@@ -12713,16 +12713,16 @@ object Checker {
       * Checks the type annotation of an accessor declaration or property declaration as
       * an expression if it is a type reference to a type with a value declaration.
       */
-    def checkTypeAnnotationAsExpression(node: VariableLikeDeclaration) {
+    def checkTypeAnnotationAsExpression(node: VariableLikeDeclaration) = {
       checkTypeNodeAsExpression((<PropertyDeclaration>node).type)
     }
 
-    def checkReturnTypeAnnotationAsExpression(node: FunctionLikeDeclaration) {
+    def checkReturnTypeAnnotationAsExpression(node: FunctionLikeDeclaration) = {
       checkTypeNodeAsExpression(node.type)
     }
 
     /** Checks the type annotation of the parameters of a def/method or the constructor of a class as expressions */
-    def checkParameterTypeAnnotationsAsExpressions(node: FunctionLikeDeclaration) {
+    def checkParameterTypeAnnotationsAsExpressions(node: FunctionLikeDeclaration) = {
       // ensure all type annotations with a value declaration are checked as an expression
       for (val parameter of node.parameters) {
         checkTypeAnnotationAsExpression(parameter)
@@ -12730,7 +12730,7 @@ object Checker {
     }
 
     /** Check the decorators of a node */
-    def checkDecorators(node: Node): Unit {
+    def checkDecorators(node: Node): Unit = {
       if (!node.decorators) {
         return
       }
@@ -12772,7 +12772,7 @@ object Checker {
       forEach(node.decorators, checkDecorator)
     }
 
-    def checkFunctionDeclaration(node: FunctionDeclaration): Unit {
+    def checkFunctionDeclaration(node: FunctionDeclaration): Unit = {
       if (produceDiagnostics) {
         checkFunctionOrMethodDeclaration(node) || checkGrammarForGenerator(node)
 
@@ -12783,7 +12783,7 @@ object Checker {
       }
     }
 
-    def checkFunctionOrMethodDeclaration(node: FunctionDeclaration | MethodDeclaration): Unit {
+    def checkFunctionOrMethodDeclaration(node: FunctionDeclaration | MethodDeclaration): Unit = {
       checkDecorators(node)
       checkSignatureDeclaration(node)
       val isAsync = isAsyncFunctionLike(node)
@@ -12848,7 +12848,7 @@ object Checker {
       }
     }
 
-    def checkBlock(node: Block) {
+    def checkBlock(node: Block) = {
       // Grammar checking for SyntaxKind.Block
       if (node.kind == SyntaxKind.Block) {
         checkGrammarStatementInAmbientContext(node)
@@ -12856,7 +12856,7 @@ object Checker {
       forEach(node.statements, checkSourceElement)
     }
 
-    def checkCollisionWithArgumentsInGeneratedCode(node: SignatureDeclaration) {
+    def checkCollisionWithArgumentsInGeneratedCode(node: SignatureDeclaration) = {
       // no rest parameters \ declaration context \ overload - no codegen impact
       if (!hasRestParameter(node) || isInAmbientContext(node) || nodeIsMissing((<FunctionLikeDeclaration>node).body)) {
         return
@@ -12869,7 +12869,7 @@ object Checker {
       })
     }
 
-    def needCollisionCheckForIdentifier(node: Node, identifier: Identifier, name: String): Boolean {
+    def needCollisionCheckForIdentifier(node: Node, identifier: Identifier, name: String): Boolean = {
       if (!(identifier && identifier.text == name)) {
         return false
       }
@@ -12898,14 +12898,14 @@ object Checker {
       return true
     }
 
-    def checkCollisionWithCapturedThisVariable(node: Node, name: Identifier): Unit {
+    def checkCollisionWithCapturedThisVariable(node: Node, name: Identifier): Unit = {
       if (needCollisionCheckForIdentifier(node, name, "_this")) {
         potentialThisCollisions.push(node)
       }
     }
 
     // this def will run after checking the source file so 'CaptureThis' is correct for all nodes
-    def checkIfThisIsCapturedInEnclosingScope(node: Node): Unit {
+    def checkIfThisIsCapturedInEnclosingScope(node: Node): Unit = {
       var current = node
       while (current) {
         if (getNodeCheckFlags(current) & NodeCheckFlags.CaptureThis) {
@@ -12922,7 +12922,7 @@ object Checker {
       }
     }
 
-    def checkCollisionWithCapturedSuperVariable(node: Node, name: Identifier) {
+    def checkCollisionWithCapturedSuperVariable(node: Node, name: Identifier) = {
       if (!needCollisionCheckForIdentifier(node, name, "_super")) {
         return
       }
@@ -12945,7 +12945,7 @@ object Checker {
       }
     }
 
-    def checkCollisionWithRequireExportsInGeneratedCode(node: Node, name: Identifier) {
+    def checkCollisionWithRequireExportsInGeneratedCode(node: Node, name: Identifier) = {
       if (!needCollisionCheckForIdentifier(node, name, "require") && !needCollisionCheckForIdentifier(node, name, "exports")) {
         return
       }
@@ -12964,7 +12964,7 @@ object Checker {
       }
     }
 
-    def checkCollisionWithGlobalPromiseInGeneratedCode(node: Node, name: Identifier): Unit {
+    def checkCollisionWithGlobalPromiseInGeneratedCode(node: Node, name: Identifier): Unit = {
       if (!needCollisionCheckForIdentifier(node, name, "Promise")) {
         return
       }
@@ -12983,7 +12983,7 @@ object Checker {
       }
     }
 
-    def checkVarDeclaredNamesNotShadowed(node: VariableDeclaration | BindingElement) {
+    def checkVarDeclaredNamesNotShadowed(node: VariableDeclaration | BindingElement) = {
       // - ScriptBody : StatementList
       // It is a Syntax Error if any element of the LexicallyDeclaredNames of StatementList
       // also occurs in the VarDeclaredNames of StatementList.
@@ -13057,7 +13057,7 @@ object Checker {
     }
 
     // Check that a parameter initializer contains no references to parameters declared to the right of itself
-    def checkParameterInitializer(node: VariableLikeDeclaration): Unit {
+    def checkParameterInitializer(node: VariableLikeDeclaration): Unit = {
       if (getRootDeclaration(node).kind != SyntaxKind.Parameter) {
         return
       }
@@ -13065,7 +13065,7 @@ object Checker {
       val func = getContainingFunction(node)
       visit(node.initializer)
 
-      def visit(n: Node) {
+      def visit(n: Node) = {
         if (n.kind == SyntaxKind.Identifier) {
           val referencedSymbol = getNodeLinks(n).resolvedSymbol
           // check FunctionLikeDeclaration.locals (stores parameters\def local variable)
@@ -13092,7 +13092,7 @@ object Checker {
     }
 
     // Check variable, parameter, or property declaration
-    def checkVariableLikeDeclaration(node: VariableLikeDeclaration) {
+    def checkVariableLikeDeclaration(node: VariableLikeDeclaration) = {
       checkDecorators(node)
       checkSourceElement(node.type)
       // For a computed property, just check the initializer and exit
@@ -13165,24 +13165,24 @@ object Checker {
       }
     }
 
-    def checkVariableDeclaration(node: VariableDeclaration) {
+    def checkVariableDeclaration(node: VariableDeclaration) = {
       checkGrammarVariableDeclaration(node)
       return checkVariableLikeDeclaration(node)
     }
 
-    def checkBindingElement(node: BindingElement) {
+    def checkBindingElement(node: BindingElement) = {
       checkGrammarBindingElement(<BindingElement>node)
       return checkVariableLikeDeclaration(node)
     }
 
-    def checkVariableStatement(node: VariableStatement) {
+    def checkVariableStatement(node: VariableStatement) = {
       // Grammar checking
       checkGrammarDecorators(node) || checkGrammarModifiers(node) || checkGrammarVariableDeclarationList(node.declarationList) || checkGrammarForDisallowedLetOrConstStatement(node)
 
       forEach(node.declarationList.declarations, checkSourceElement)
     }
 
-    def checkGrammarDisallowedModifiersOnObjectLiteralExpressionMethod(node: Node) {
+    def checkGrammarDisallowedModifiersOnObjectLiteralExpressionMethod(node: Node) = {
       // We only disallow modifier on a method declaration if it is a property of object-literal-expression
       if (node.modifiers && node.parent.kind == SyntaxKind.ObjectLiteralExpression) {
         if (isAsyncFunctionLike(node)) {
@@ -13196,14 +13196,14 @@ object Checker {
       }
     }
 
-    def checkExpressionStatement(node: ExpressionStatement) {
+    def checkExpressionStatement(node: ExpressionStatement) = {
       // Grammar checking
       checkGrammarStatementInAmbientContext(node)
 
       checkExpression(node.expression)
     }
 
-    def checkIfStatement(node: IfStatement) {
+    def checkIfStatement(node: IfStatement) = {
       // Grammar checking
       checkGrammarStatementInAmbientContext(node)
 
@@ -13217,7 +13217,7 @@ object Checker {
       checkSourceElement(node.elseStatement)
     }
 
-    def checkDoStatement(node: DoStatement) {
+    def checkDoStatement(node: DoStatement) = {
       // Grammar checking
       checkGrammarStatementInAmbientContext(node)
 
@@ -13225,7 +13225,7 @@ object Checker {
       checkExpression(node.expression)
     }
 
-    def checkWhileStatement(node: WhileStatement) {
+    def checkWhileStatement(node: WhileStatement) = {
       // Grammar checking
       checkGrammarStatementInAmbientContext(node)
 
@@ -13233,7 +13233,7 @@ object Checker {
       checkSourceElement(node.statement)
     }
 
-    def checkForStatement(node: ForStatement) {
+    def checkForStatement(node: ForStatement) = {
       // Grammar checking
       if (!checkGrammarStatementInAmbientContext(node)) {
         if (node.initializer && node.initializer.kind == SyntaxKind.VariableDeclarationList) {
@@ -13255,7 +13255,7 @@ object Checker {
       checkSourceElement(node.statement)
     }
 
-    def checkForOfStatement(node: ForOfStatement): Unit {
+    def checkForOfStatement(node: ForOfStatement): Unit = {
       checkGrammarForInOrForOfStatement(node)
 
       // Check the LHS and RHS
@@ -13295,7 +13295,7 @@ object Checker {
       checkSourceElement(node.statement)
     }
 
-    def checkForInStatement(node: ForInStatement) {
+    def checkForInStatement(node: ForInStatement) = {
       // Grammar checking
       checkGrammarForInOrForOfStatement(node)
 
@@ -13342,7 +13342,7 @@ object Checker {
       checkSourceElement(node.statement)
     }
 
-    def checkForInOrForOfVariableDeclaration(iterationStatement: ForInStatement | ForOfStatement): Unit {
+    def checkForInOrForOfVariableDeclaration(iterationStatement: ForInStatement | ForOfStatement): Unit = {
       val variableDeclarationList = <VariableDeclarationList>iterationStatement.initializer
       // checkGrammarForInOrForOfStatement will check that there is exactly one declaration.
       if (variableDeclarationList.declarations.length >= 1) {
@@ -13351,12 +13351,12 @@ object Checker {
       }
     }
 
-    def checkRightHandSideOfForOf(rhsExpression: Expression): Type {
+    def checkRightHandSideOfForOf(rhsExpression: Expression): Type = {
       val expressionType = getTypeOfExpression(rhsExpression)
       return checkIteratedTypeOrElementType(expressionType, rhsExpression, /*allowStringInput*/ true)
     }
 
-    def checkIteratedTypeOrElementType(inputType: Type, errorNode: Node, allowStringInput: Boolean): Type {
+    def checkIteratedTypeOrElementType(inputType: Type, errorNode: Node, allowStringInput: Boolean): Type = {
       if (isTypeAny(inputType)) {
         return inputType
       }
@@ -13383,7 +13383,7 @@ object Checker {
     /**
      * When errorNode is (), it means we should not report any errors.
      */
-    def checkElementTypeOfIterable(iterable: Type, errorNode: Node): Type {
+    def checkElementTypeOfIterable(iterable: Type, errorNode: Node): Type = {
       val elementType = getElementTypeOfIterable(iterable, errorNode)
       // Now even though we have extracted the iteratedType, we will have to validate that the type
       // passed in is actually an Iterable.
@@ -13415,7 +13415,7 @@ object Checker {
      * type. This is different from returning anyType, because that would signify that we have matched the
      * whole pattern and that T (above) is 'any'.
      */
-    def getElementTypeOfIterable(type: Type, errorNode: Node): Type {
+    def getElementTypeOfIterable(type: Type, errorNode: Node): Type = {
       if (isTypeAny(type)) {
         return ()
       }
@@ -13461,7 +13461,7 @@ object Checker {
      *  }
      *
      */
-    def getElementTypeOfIterator(type: Type, errorNode: Node): Type {
+    def getElementTypeOfIterator(type: Type, errorNode: Node): Type = {
       if (isTypeAny(type)) {
         return ()
       }
@@ -13507,7 +13507,7 @@ object Checker {
       return typeAsIterator.iteratorElementType
     }
 
-    def getElementTypeOfIterableIterator(type: Type): Type {
+    def getElementTypeOfIterableIterator(type: Type): Type = {
       if (isTypeAny(type)) {
         return ()
       }
@@ -13539,7 +13539,7 @@ object Checker {
      *   1. Some constituent is neither a String nor an array.
      *   2. Some constituent is a String and target is less than ES5 (because in ES3 String is not indexable).
      */
-    def checkElementTypeOfArrayOrString(arrayOrStringType: Type, errorNode: Node): Type {
+    def checkElementTypeOfArrayOrString(arrayOrStringType: Type, errorNode: Node): Type = {
       Debug.assert(languageVersion < ScriptTarget.ES6)
 
       // After we remove all types that are StringLike, we will know if there was a String constituent
@@ -13593,18 +13593,18 @@ object Checker {
       return arrayElementType
     }
 
-    def checkBreakOrContinueStatement(node: BreakOrContinueStatement) {
+    def checkBreakOrContinueStatement(node: BreakOrContinueStatement) = {
       // Grammar checking
       checkGrammarStatementInAmbientContext(node) || checkGrammarBreakOrContinueStatement(node)
 
       // TODO: Check that target label is valid
     }
 
-    def isGetAccessorWithAnnotatedSetAccessor(node: FunctionLikeDeclaration) {
+    def isGetAccessorWithAnnotatedSetAccessor(node: FunctionLikeDeclaration) = {
       return !!(node.kind == SyntaxKind.GetAccessor && getSetAccessorTypeAnnotationNode(<AccessorDeclaration>getDeclarationOfKind(node.symbol, SyntaxKind.SetAccessor)))
     }
 
-    def checkReturnStatement(node: ReturnStatement) {
+    def checkReturnStatement(node: ReturnStatement) = {
       // Grammar checking
       if (!checkGrammarStatementInAmbientContext(node)) {
         val functionBlock = getContainingFunction(node)
@@ -13655,7 +13655,7 @@ object Checker {
       }
     }
 
-    def checkWithStatement(node: WithStatement) {
+    def checkWithStatement(node: WithStatement) = {
       // Grammar checking for withStatement
       if (!checkGrammarStatementInAmbientContext(node)) {
         if (node.flags & NodeFlags.AwaitContext) {
@@ -13667,7 +13667,7 @@ object Checker {
       error(node.expression, Diagnostics.All_symbols_within_a_with_block_will_be_resolved_to_any)
     }
 
-    def checkSwitchStatement(node: SwitchStatement) {
+    def checkSwitchStatement(node: SwitchStatement) = {
       // Grammar checking
       checkGrammarStatementInAmbientContext(node)
 
@@ -13711,7 +13711,7 @@ object Checker {
       })
     }
 
-    def checkLabeledStatement(node: LabeledStatement) {
+    def checkLabeledStatement(node: LabeledStatement) = {
       // Grammar checking
       if (!checkGrammarStatementInAmbientContext(node)) {
         var current = node.parent
@@ -13732,7 +13732,7 @@ object Checker {
       checkSourceElement(node.statement)
     }
 
-    def checkThrowStatement(node: ThrowStatement) {
+    def checkThrowStatement(node: ThrowStatement) = {
       // Grammar checking
       if (!checkGrammarStatementInAmbientContext(node)) {
         if (node.expression == ()) {
@@ -13745,7 +13745,7 @@ object Checker {
       }
     }
 
-    def checkTryStatement(node: TryStatement) {
+    def checkTryStatement(node: TryStatement) = {
       // Grammar checking
       checkGrammarStatementInAmbientContext(node)
 
@@ -13783,7 +13783,7 @@ object Checker {
       }
     }
 
-    def checkIndexConstraints(type: Type) {
+    def checkIndexConstraints(type: Type) = {
       val declaredNumberIndexer = getIndexDeclarationOfSymbol(type.symbol, IndexKind.Number)
       val declaredStringIndexer = getIndexDeclarationOfSymbol(type.symbol, IndexKind.String)
 
@@ -13871,7 +13871,7 @@ object Checker {
       }
     }
 
-    def checkTypeNameIsReserved(name: DeclarationName, message: DiagnosticMessage): Unit {
+    def checkTypeNameIsReserved(name: DeclarationName, message: DiagnosticMessage): Unit = {
       // TS 1.0 spec (April 2014): 3.6.1
       // The predefined type keywords are reserved and cannot be used as names of user defined types.
       switch ((<Identifier>name).text) {
@@ -13886,7 +13886,7 @@ object Checker {
     }
 
     // Check each type parameter and check that list has no duplicate type parameter declarations
-    def checkTypeParameters(typeParameterDeclarations: TypeParameterDeclaration[]) {
+    def checkTypeParameters(typeParameterDeclarations: TypeParameterDeclaration[]) = {
       if (typeParameterDeclarations) {
         for (var i = 0, n = typeParameterDeclarations.length; i < n; i++) {
           val node = typeParameterDeclarations[i]
@@ -13903,17 +13903,17 @@ object Checker {
       }
     }
 
-    def checkClassExpression(node: ClassExpression): Type {
+    def checkClassExpression(node: ClassExpression): Type = {
       checkClassLikeDeclaration(node)
       checkNodeDeferred(node)
       return getTypeOfSymbol(getSymbolOfNode(node))
     }
 
-    def checkClassExpressionDeferred(node: ClassExpression) {
+    def checkClassExpressionDeferred(node: ClassExpression) = {
       forEach(node.members, checkSourceElement)
     }
 
-    def checkClassDeclaration(node: ClassDeclaration) {
+    def checkClassDeclaration(node: ClassDeclaration) = {
       if (!node.name && !(node.flags & NodeFlags.Default)) {
         grammarErrorOnFirstToken(node, Diagnostics.A_class_declaration_without_the_default_modifier_must_have_a_name)
       }
@@ -13921,7 +13921,7 @@ object Checker {
       forEach(node.members, checkSourceElement)
     }
 
-    def checkClassLikeDeclaration(node: ClassLikeDeclaration) {
+    def checkClassLikeDeclaration(node: ClassLikeDeclaration) = {
       checkGrammarClassDeclarationHeritageClauses(node)
       checkDecorators(node)
       if (node.name) {
@@ -13998,17 +13998,17 @@ object Checker {
       }
     }
 
-    def getTargetSymbol(s: Symbol) {
+    def getTargetSymbol(s: Symbol) = {
       // if symbol is instantiated its flags are not copied from the 'target'
       // so we'll need to get back original 'target' symbol to work with correct set of flags
       return s.flags & SymbolFlags.Instantiated ? getSymbolLinks(s).target : s
     }
 
-    def getClassLikeDeclarationOfSymbol(symbol: Symbol): Declaration {
+    def getClassLikeDeclarationOfSymbol(symbol: Symbol): Declaration = {
       return forEach(symbol.declarations, d => isClassLike(d) ? d : ())
     }
 
-    def checkKindsOfPropertyMemberOverrides(type: InterfaceType, baseType: ObjectType): Unit {
+    def checkKindsOfPropertyMemberOverrides(type: InterfaceType, baseType: ObjectType): Unit = {
 
       // TypeScript 1.0 spec (April 2014): 8.2.3
       // A derived class inherits all members from its base class it doesn't override.
@@ -14105,11 +14105,11 @@ object Checker {
       }
     }
 
-    def isAccessor(kind: SyntaxKind): Boolean {
+    def isAccessor(kind: SyntaxKind): Boolean = {
       return kind == SyntaxKind.GetAccessor || kind == SyntaxKind.SetAccessor
     }
 
-    def areTypeParametersIdentical(list1: TypeParameterDeclaration[], list2: TypeParameterDeclaration[]) {
+    def areTypeParametersIdentical(list1: TypeParameterDeclaration[], list2: TypeParameterDeclaration[]) = {
       if (!list1 && !list2) {
         return true
       }
@@ -14138,7 +14138,7 @@ object Checker {
       return true
     }
 
-    def checkInheritedPropertiesAreIdentical(type: InterfaceType, typeNode: Node): Boolean {
+    def checkInheritedPropertiesAreIdentical(type: InterfaceType, typeNode: Node): Boolean = {
       val baseTypes = getBaseTypes(type)
       if (baseTypes.length < 2) {
         return true
@@ -14174,7 +14174,7 @@ object Checker {
       return ok
     }
 
-    def checkInterfaceDeclaration(node: InterfaceDeclaration) {
+    def checkInterfaceDeclaration(node: InterfaceDeclaration) = {
       // Grammar checking
       checkGrammarDecorators(node) || checkGrammarModifiers(node) || checkGrammarInterfaceDeclaration(node)
 
@@ -14218,7 +14218,7 @@ object Checker {
       }
     }
 
-    def checkTypeAliasDeclaration(node: TypeAliasDeclaration) {
+    def checkTypeAliasDeclaration(node: TypeAliasDeclaration) = {
       // Grammar checking
       checkGrammarDecorators(node) || checkGrammarModifiers(node)
 
@@ -14226,7 +14226,7 @@ object Checker {
       checkSourceElement(node.type)
     }
 
-    def computeEnumMemberValues(node: EnumDeclaration) {
+    def computeEnumMemberValues(node: EnumDeclaration) = {
       val nodeLinks = getNodeLinks(node)
 
       if (!(nodeLinks.flags & NodeCheckFlags.EnumValuesComputed)) {
@@ -14275,7 +14275,7 @@ object Checker {
         nodeLinks.flags |= NodeCheckFlags.EnumValuesComputed
       }
 
-      def computeConstantValueForEnumMemberInitializer(initializer: Expression, enumType: Type, enumIsConst: Boolean, ambient: Boolean): Int {
+      def computeConstantValueForEnumMemberInitializer(initializer: Expression, enumType: Type, enumIsConst: Boolean, ambient: Boolean): Int = {
         // Controls if error should be reported after evaluation of constant value is completed
         // Can be false if another more precise error was already reported during evaluation.
         var reportError = true
@@ -14306,7 +14306,7 @@ object Checker {
 
         return value
 
-        def evalConstant(e: Node): Int {
+        def evalConstant(e: Node): Int = {
           switch (e.kind) {
             case SyntaxKind.PrefixUnaryExpression:
               val value = evalConstant((<PrefixUnaryExpression>e).operand)
@@ -14424,7 +14424,7 @@ object Checker {
       }
     }
 
-    def checkEnumDeclaration(node: EnumDeclaration) {
+    def checkEnumDeclaration(node: EnumDeclaration) = {
       if (!produceDiagnostics) {
         return
       }
@@ -14488,7 +14488,7 @@ object Checker {
       }
     }
 
-    def getFirstNonAmbientClassOrFunctionDeclaration(symbol: Symbol): Declaration {
+    def getFirstNonAmbientClassOrFunctionDeclaration(symbol: Symbol): Declaration = {
       val declarations = symbol.declarations
       for (val declaration of declarations) {
         if ((declaration.kind == SyntaxKind.ClassDeclaration ||
@@ -14500,7 +14500,7 @@ object Checker {
       return ()
     }
 
-    def inSameLexicalScope(node1: Node, node2: Node) {
+    def inSameLexicalScope(node1: Node, node2: Node) = {
       val container1 = getEnclosingBlockScopeContainer(node1)
       val container2 = getEnclosingBlockScopeContainer(node2)
       if (isGlobalSourceFile(container1)) {
@@ -14514,7 +14514,7 @@ object Checker {
       }
     }
 
-    def checkModuleDeclaration(node: ModuleDeclaration) {
+    def checkModuleDeclaration(node: ModuleDeclaration) = {
       if (produceDiagnostics) {
         // Grammar checking
         val isGlobalAugmentation = isGlobalScopeAugmentation(node)
@@ -14606,7 +14606,7 @@ object Checker {
       checkSourceElement(node.body)
     }
 
-    def checkModuleAugmentationElement(node: Node, isGlobalAugmentation: Boolean): Unit {
+    def checkModuleAugmentationElement(node: Node, isGlobalAugmentation: Boolean): Unit = {
       switch (node.kind) {
         case SyntaxKind.VariableStatement:
           // error each individual name in variable statement instead of marking the entire variable statement
@@ -14669,7 +14669,7 @@ object Checker {
       }
     }
 
-    def getFirstIdentifier(node: EntityName | Expression): Identifier {
+    def getFirstIdentifier(node: EntityName | Expression): Identifier = {
       while (true) {
         if (node.kind == SyntaxKind.QualifiedName) {
           node = (<QualifiedName>node).left
@@ -14685,7 +14685,7 @@ object Checker {
       return <Identifier>node
     }
 
-    def checkExternalImportOrExportDeclaration(node: ImportDeclaration | ImportEqualsDeclaration | ExportDeclaration): Boolean {
+    def checkExternalImportOrExportDeclaration(node: ImportDeclaration | ImportEqualsDeclaration | ExportDeclaration): Boolean = {
       val moduleName = getExternalModuleName(node)
       if (!nodeIsMissing(moduleName) && moduleName.kind != SyntaxKind.StringLiteral) {
         error(moduleName, Diagnostics.String_literal_expected)
@@ -14713,7 +14713,7 @@ object Checker {
       return true
     }
 
-    def checkAliasSymbol(node: ImportEqualsDeclaration | ImportClause | NamespaceImport | ImportSpecifier | ExportSpecifier) {
+    def checkAliasSymbol(node: ImportEqualsDeclaration | ImportClause | NamespaceImport | ImportSpecifier | ExportSpecifier) = {
       val symbol = getSymbolOfNode(node)
       val target = resolveAlias(symbol)
       if (target != unknownSymbol) {
@@ -14730,14 +14730,14 @@ object Checker {
       }
     }
 
-    def checkImportBinding(node: ImportEqualsDeclaration | ImportClause | NamespaceImport | ImportSpecifier) {
+    def checkImportBinding(node: ImportEqualsDeclaration | ImportClause | NamespaceImport | ImportSpecifier) = {
       checkCollisionWithCapturedThisVariable(node, node.name)
       checkCollisionWithRequireExportsInGeneratedCode(node, node.name)
       checkCollisionWithGlobalPromiseInGeneratedCode(node, node.name)
       checkAliasSymbol(node)
     }
 
-    def checkImportDeclaration(node: ImportDeclaration) {
+    def checkImportDeclaration(node: ImportDeclaration) = {
       if (checkGrammarModuleElementContext(node, Diagnostics.An_import_declaration_can_only_be_used_in_a_namespace_or_module)) {
         // If we hit an import declaration in an illegal context, just bail out to avoid cascading errors.
         return
@@ -14763,7 +14763,7 @@ object Checker {
       }
     }
 
-    def checkImportEqualsDeclaration(node: ImportEqualsDeclaration) {
+    def checkImportEqualsDeclaration(node: ImportEqualsDeclaration) = {
       if (checkGrammarModuleElementContext(node, Diagnostics.An_import_declaration_can_only_be_used_in_a_namespace_or_module)) {
         // If we hit an import declaration in an illegal context, just bail out to avoid cascading errors.
         return
@@ -14799,7 +14799,7 @@ object Checker {
       }
     }
 
-    def checkExportDeclaration(node: ExportDeclaration) {
+    def checkExportDeclaration(node: ExportDeclaration) = {
       if (checkGrammarModuleElementContext(node, Diagnostics.An_export_declaration_can_only_be_used_in_a_module)) {
         // If we hit an in an illegal context, just bail out to avoid cascading errors.
         return
@@ -14830,13 +14830,13 @@ object Checker {
       }
     }
 
-    def checkGrammarModuleElementContext(node: Statement, errorMessage: DiagnosticMessage): Boolean {
+    def checkGrammarModuleElementContext(node: Statement, errorMessage: DiagnosticMessage): Boolean = {
       if (node.parent.kind != SyntaxKind.SourceFile && node.parent.kind != SyntaxKind.ModuleBlock && node.parent.kind != SyntaxKind.ModuleDeclaration) {
         return grammarErrorOnFirstToken(node, errorMessage)
       }
     }
 
-    def checkExportSpecifier(node: ExportSpecifier) {
+    def checkExportSpecifier(node: ExportSpecifier) = {
       checkAliasSymbol(node)
       if (!(<ExportDeclaration>node.parent.parent).moduleSpecifier) {
         val exportedName = node.propertyName || node.name
@@ -14852,7 +14852,7 @@ object Checker {
       }
     }
 
-    def checkExportAssignment(node: ExportAssignment) {
+    def checkExportAssignment(node: ExportAssignment) = {
       if (checkGrammarModuleElementContext(node, Diagnostics.An_export_assignment_can_only_be_used_in_a_module)) {
         // If we hit an assignment in an illegal context, just bail out to avoid cascading errors.
         return
@@ -14888,7 +14888,7 @@ object Checker {
       }
     }
 
-    def hasExportedMembers(moduleSymbol: Symbol) {
+    def hasExportedMembers(moduleSymbol: Symbol) = {
       for (val id in moduleSymbol.exports) {
         if (id != "export=") {
           return true
@@ -14897,7 +14897,7 @@ object Checker {
       return false
     }
 
-    def checkExternalModuleExports(node: SourceFile | ModuleDeclaration) {
+    def checkExternalModuleExports(node: SourceFile | ModuleDeclaration) = {
       val moduleSymbol = getSymbolOfNode(node)
       val links = getSymbolLinks(moduleSymbol)
       if (!links.exportsChecked) {
@@ -14928,13 +14928,13 @@ object Checker {
         links.exportsChecked = true
       }
 
-      def isNotOverload(declaration: Declaration): Boolean {
+      def isNotOverload(declaration: Declaration): Boolean = {
         return declaration.kind != SyntaxKind.FunctionDeclaration || !!(declaration as FunctionDeclaration).body
       }
     }
 
 
-    def checkSourceElement(node: Node): Unit {
+    def checkSourceElement(node: Node): Unit = {
       if (!node) {
         return
       }
@@ -15070,13 +15070,13 @@ object Checker {
     // Here, performing a full type check of the body of the def expression whilst in the process of
     // determining the type of foo would cause foo to be given type any because of the recursive reference.
     // Delaying the type check of the body ensures foo has been assigned a type.
-    def checkNodeDeferred(node: Node) {
+    def checkNodeDeferred(node: Node) = {
       if (deferredNodes) {
         deferredNodes.push(node)
       }
     }
 
-    def checkDeferredNodes() {
+    def checkDeferredNodes() = {
       for (val node of deferredNodes) {
         switch (node.kind) {
           case SyntaxKind.FunctionExpression:
@@ -15096,7 +15096,7 @@ object Checker {
       }
     }
 
-    def checkSourceFile(node: SourceFile) {
+    def checkSourceFile(node: SourceFile) = {
       val start = new Date().getTime()
 
       checkSourceFileWorker(node)
@@ -15105,7 +15105,7 @@ object Checker {
     }
 
     // Fully type check a source file and collect the relevant diagnostics.
-    def checkSourceFileWorker(node: SourceFile) {
+    def checkSourceFileWorker(node: SourceFile) = {
       val links = getNodeLinks(node)
       if (!(links.flags & NodeCheckFlags.TypeChecked)) {
         // Check whether the file has declared it is the default lib,
@@ -15169,7 +15169,7 @@ object Checker {
       return diagnostics.getGlobalDiagnostics()
     }
 
-    def throwIfNonDiagnosticsProducing() {
+    def throwIfNonDiagnosticsProducing() = {
       if (!produceDiagnostics) {
         throw new Error("Trying to get diagnostics from a type checker that does not produce them.")
       }
@@ -15177,7 +15177,7 @@ object Checker {
 
     // Language service support
 
-    def isInsideWithStatementBody(node: Node): Boolean {
+    def isInsideWithStatementBody(node: Node): Boolean = {
       if (node) {
         while (node.parent) {
           if (node.parent.kind == SyntaxKind.WithStatement && (<WithStatement>node.parent).statement == node) {
@@ -15203,7 +15203,7 @@ object Checker {
 
       return symbolsToArray(symbols)
 
-      def populateSymbols() {
+      def populateSymbols() = {
         while (location) {
           if (location.locals && !isGlobalSourceFile(location)) {
             copySymbols(location.locals, meaning)
@@ -15263,7 +15263,7 @@ object Checker {
        * @param symbol the symbol to be added into symbol table
        * @param meaning meaning of symbol to filter by before adding to symbol table
        */
-      def copySymbol(symbol: Symbol, meaning: SymbolFlags): Unit {
+      def copySymbol(symbol: Symbol, meaning: SymbolFlags): Unit = {
         if (symbol.flags & meaning) {
           val id = symbol.name
           // We will copy all symbol regardless of its reserved name because
@@ -15275,7 +15275,7 @@ object Checker {
         }
       }
 
-      def copySymbols(source: SymbolTable, meaning: SymbolFlags): Unit {
+      def copySymbols(source: SymbolTable, meaning: SymbolFlags): Unit = {
         if (meaning) {
           for (val id in source) {
             val symbol = source[id]
@@ -15285,13 +15285,13 @@ object Checker {
       }
     }
 
-    def isTypeDeclarationName(name: Node): Boolean {
+    def isTypeDeclarationName(name: Node): Boolean = {
       return name.kind == SyntaxKind.Identifier &&
         isTypeDeclaration(name.parent) &&
         (<Declaration>name.parent).name == name
     }
 
-    def isTypeDeclaration(node: Node): Boolean {
+    def isTypeDeclaration(node: Node): Boolean = {
       switch (node.kind) {
         case SyntaxKind.TypeParameter:
         case SyntaxKind.ClassDeclaration:
@@ -15303,7 +15303,7 @@ object Checker {
     }
 
     // True if the given identifier is part of a type reference
-    def isTypeReferenceIdentifier(entityName: EntityName): Boolean {
+    def isTypeReferenceIdentifier(entityName: EntityName): Boolean = {
       var node: Node = entityName
       while (node.parent && node.parent.kind == SyntaxKind.QualifiedName) {
         node = node.parent
@@ -15312,7 +15312,7 @@ object Checker {
       return node.parent && node.parent.kind == SyntaxKind.TypeReference
     }
 
-    def isHeritageClauseElementIdentifier(entityName: Node): Boolean {
+    def isHeritageClauseElementIdentifier(entityName: Node): Boolean = {
       var node = entityName
       while (node.parent && node.parent.kind == SyntaxKind.PropertyAccessExpression) {
         node = node.parent
@@ -15337,11 +15337,11 @@ object Checker {
       return ()
     }
 
-    def isInRightSideOfImportOrExportAssignment(node: EntityName) {
+    def isInRightSideOfImportOrExportAssignment(node: EntityName) = {
       return getLeftSideOfImportEqualsOrExportAssignment(node) != ()
     }
 
-    def getSymbolOfEntityNameOrPropertyAccessExpression(entityName: EntityName | PropertyAccessExpression): Symbol {
+    def getSymbolOfEntityNameOrPropertyAccessExpression(entityName: EntityName | PropertyAccessExpression): Symbol = {
       if (isDeclarationName(entityName)) {
         return getSymbolOfNode(entityName.parent)
       }
@@ -15447,7 +15447,7 @@ object Checker {
       return ()
     }
 
-    def getSymbolAtLocation(node: Node) {
+    def getSymbolAtLocation(node: Node) = {
       if (isInsideWithStatementBody(node)) {
         // We cannot answer semantic questions within a with block, do not proceed any further
         return ()
@@ -15522,7 +15522,7 @@ object Checker {
       return ()
     }
 
-    def getShorthandAssignmentValueSymbol(location: Node): Symbol {
+    def getShorthandAssignmentValueSymbol(location: Node): Symbol = {
       // The def returns a value symbol of an identifier in the short-hand property assignment.
       // This is necessary as an identifier in short-hand property assignment can contains two meaning:
       // property name and property value.
@@ -15533,13 +15533,13 @@ object Checker {
     }
 
     /** Returns the target of an specifier without following aliases */
-    def getExportSpecifierLocalTargetSymbol(node: ExportSpecifier): Symbol {
+    def getExportSpecifierLocalTargetSymbol(node: ExportSpecifier): Symbol = {
       return (<ExportDeclaration>node.parent.parent).moduleSpecifier ?
         getExternalModuleMember(<ExportDeclaration>node.parent.parent, node) :
         resolveEntityName(node.propertyName || node.name, SymbolFlags.Value | SymbolFlags.Type | SymbolFlags.Namespace | SymbolFlags.Alias)
     }
 
-    def getTypeOfNode(node: Node): Type {
+    def getTypeOfNode(node: Node): Type = {
       if (isInsideWithStatementBody(node)) {
         // We cannot answer semantic questions within a with block, do not proceed any further
         return unknownType
@@ -15595,7 +15595,7 @@ object Checker {
     }
 
 
-    def getTypeOfExpression(expr: Expression): Type {
+    def getTypeOfExpression(expr: Expression): Type = {
       if (isRightSideOfQualifiedNameOrPropertyAccess(expr)) {
         expr = <Expression>expr.parent
       }
@@ -15606,7 +15606,7 @@ object Checker {
       * Gets either the static or instance type of a class element, based on
       * whether the element is declared as "static".
       */
-    def getParentTypeOfClassElement(node: ClassElement) {
+    def getParentTypeOfClassElement(node: ClassElement) = {
       val classSymbol = getSymbolOfNode(node.parent)
       return node.flags & NodeFlags.Static
         ? getTypeOfSymbol(classSymbol)
@@ -15651,11 +15651,11 @@ object Checker {
 
     // Emitter support
 
-    def isArgumentsLocalBinding(node: Identifier): Boolean {
+    def isArgumentsLocalBinding(node: Identifier): Boolean = {
       return getReferencedValueSymbol(node) == argumentsSymbol
     }
 
-    def moduleExportsSomeValue(moduleReferenceExpression: Expression): Boolean {
+    def moduleExportsSomeValue(moduleReferenceExpression: Expression): Boolean = {
       var moduleSymbol = resolveExternalModuleName(moduleReferenceExpression.parent, moduleReferenceExpression)
       if (!moduleSymbol) {
         // module not found - be conservative
@@ -15678,7 +15678,7 @@ object Checker {
 
       return symbolLinks.exportsSomeValue
 
-      def isValue(s: Symbol): Boolean {
+      def isValue(s: Symbol): Boolean = {
         s = resolveSymbol(s)
         return s && !!(s.flags & SymbolFlags.Value)
       }
@@ -15715,12 +15715,12 @@ object Checker {
 
     // When resolved as an expression identifier, if the given node references an import, return the declaration of
     // that import. Otherwise, return ().
-    def getReferencedImportDeclaration(node: Identifier): Declaration {
+    def getReferencedImportDeclaration(node: Identifier): Declaration = {
       val symbol = getReferencedValueSymbol(node)
       return symbol && symbol.flags & SymbolFlags.Alias ? getDeclarationOfAliasSymbol(symbol) : ()
     }
 
-    def isSymbolOfDeclarationWithCollidingName(symbol: Symbol): Boolean {
+    def isSymbolOfDeclarationWithCollidingName(symbol: Symbol): Boolean = {
       if (symbol.flags & SymbolFlags.BlockScoped) {
         val links = getSymbolLinks(symbol)
         if (links.isDeclarationWithCollidingName == ()) {
@@ -15766,18 +15766,18 @@ object Checker {
     // When resolved as an expression identifier, if the given node references a nested block scoped entity with
     // a name that either hides an existing name or might hide it when compiled downlevel,
     // return the declaration of that entity. Otherwise, return ().
-    def getReferencedDeclarationWithCollidingName(node: Identifier): Declaration {
+    def getReferencedDeclarationWithCollidingName(node: Identifier): Declaration = {
       val symbol = getReferencedValueSymbol(node)
       return symbol && isSymbolOfDeclarationWithCollidingName(symbol) ? symbol.valueDeclaration : ()
     }
 
     // Return true if the given node is a declaration of a nested block scoped entity with a name that either hides an
     // existing name or might hide a name when compiled downlevel
-    def isDeclarationWithCollidingName(node: Declaration): Boolean {
+    def isDeclarationWithCollidingName(node: Declaration): Boolean = {
       return isSymbolOfDeclarationWithCollidingName(getSymbolOfNode(node))
     }
 
-    def isValueAliasDeclaration(node: Node): Boolean {
+    def isValueAliasDeclaration(node: Node): Boolean = {
       switch (node.kind) {
         case SyntaxKind.ImportEqualsDeclaration:
         case SyntaxKind.ImportClause:
@@ -15794,7 +15794,7 @@ object Checker {
       return false
     }
 
-    def isTopLevelValueImportEqualsWithEntityName(node: ImportEqualsDeclaration): Boolean {
+    def isTopLevelValueImportEqualsWithEntityName(node: ImportEqualsDeclaration): Boolean = {
       if (node.parent.kind != SyntaxKind.SourceFile || !isInternalModuleImportEqualsDeclaration(node)) {
         // parent is not source file or it is not reference to internal module
         return false
@@ -15804,7 +15804,7 @@ object Checker {
       return isValue && node.moduleReference && !nodeIsMissing(node.moduleReference)
     }
 
-    def isAliasResolvedToValue(symbol: Symbol): Boolean {
+    def isAliasResolvedToValue(symbol: Symbol): Boolean = {
       val target = resolveAlias(symbol)
       if (target == unknownSymbol && compilerOptions.isolatedModules) {
         return true
@@ -15817,11 +15817,11 @@ object Checker {
         (compilerOptions.preserveConstEnums || !isConstEnumOrConstEnumOnlyModule(target))
     }
 
-    def isConstEnumOrConstEnumOnlyModule(s: Symbol): Boolean {
+    def isConstEnumOrConstEnumOnlyModule(s: Symbol): Boolean = {
       return isConstEnumSymbol(s) || s.constEnumOnlyModule
     }
 
-    def isReferencedAliasDeclaration(node: Node, checkChildren?: Boolean): Boolean {
+    def isReferencedAliasDeclaration(node: Node, checkChildren?: Boolean): Boolean = {
       if (isAliasSymbolDeclaration(node)) {
         val symbol = getSymbolOfNode(node)
         if (getSymbolLinks(symbol).referenced) {
@@ -15835,7 +15835,7 @@ object Checker {
       return false
     }
 
-    def isImplementationOfOverload(node: FunctionLikeDeclaration) {
+    def isImplementationOfOverload(node: FunctionLikeDeclaration) = {
       if (nodeIsPresent(node.body)) {
         val symbol = getSymbolOfNode(node)
         val signaturesOfSymbol = getSignaturesOfSymbol(symbol)
@@ -15856,16 +15856,16 @@ object Checker {
       return false
     }
 
-    def getNodeCheckFlags(node: Node): NodeCheckFlags {
+    def getNodeCheckFlags(node: Node): NodeCheckFlags = {
       return getNodeLinks(node).flags
     }
 
-    def getEnumMemberValue(node: EnumMember): Int {
+    def getEnumMemberValue(node: EnumMember): Int = {
       computeEnumMemberValues(<EnumDeclaration>node.parent)
       return getNodeLinks(node).enumMemberValue
     }
 
-    def getConstantValue(node: EnumMember | PropertyAccessExpression | ElementAccessExpression): Int {
+    def getConstantValue(node: EnumMember | PropertyAccessExpression | ElementAccessExpression): Int = {
       if (node.kind == SyntaxKind.EnumMember) {
         return getEnumMemberValue(<EnumMember>node)
       }
@@ -15881,11 +15881,11 @@ object Checker {
       return ()
     }
 
-    def isFunctionType(type: Type): Boolean {
+    def isFunctionType(type: Type): Boolean = {
       return type.flags & TypeFlags.ObjectType && getSignaturesOfType(type, SignatureKind.Call).length > 0
     }
 
-    def getTypeReferenceSerializationKind(typeName: EntityName): TypeReferenceSerializationKind {
+    def getTypeReferenceSerializationKind(typeName: EntityName): TypeReferenceSerializationKind = {
       // Resolve the symbol as a value to ensure the type can be reached at runtime during emit.
       val valueSymbol = resolveEntityName(typeName, SymbolFlags.Value, /*ignoreErrors*/ true)
       val constructorType = valueSymbol ? getTypeOfSymbol(valueSymbol) : ()
@@ -15935,7 +15935,7 @@ object Checker {
       }
     }
 
-    def writeTypeOfDeclaration(declaration: AccessorDeclaration | VariableLikeDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter) {
+    def writeTypeOfDeclaration(declaration: AccessorDeclaration | VariableLikeDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter) = {
       // Get type of the symbol if this is the valid symbol otherwise get type at location
       val symbol = getSymbolOfNode(declaration)
       val type = symbol && !(symbol.flags & (SymbolFlags.TypeLiteral | SymbolFlags.Signature))
@@ -15945,33 +15945,33 @@ object Checker {
       getSymbolDisplayBuilder().buildTypeDisplay(type, writer, enclosingDeclaration, flags)
     }
 
-    def writeReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter) {
+    def writeReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter) = {
       val signature = getSignatureFromDeclaration(signatureDeclaration)
       getSymbolDisplayBuilder().buildTypeDisplay(getReturnTypeOfSignature(signature), writer, enclosingDeclaration, flags)
     }
 
-    def writeTypeOfExpression(expr: Expression, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter) {
+    def writeTypeOfExpression(expr: Expression, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter) = {
       val type = getTypeOfExpression(expr)
       getSymbolDisplayBuilder().buildTypeDisplay(type, writer, enclosingDeclaration, flags)
     }
 
-    def hasGlobalName(name: String): Boolean {
+    def hasGlobalName(name: String): Boolean = {
       return hasProperty(globals, name)
     }
 
-    def getReferencedValueSymbol(reference: Identifier): Symbol {
+    def getReferencedValueSymbol(reference: Identifier): Symbol = {
       return getNodeLinks(reference).resolvedSymbol ||
         resolveName(reference, reference.text, SymbolFlags.Value | SymbolFlags.ExportValue | SymbolFlags.Alias,
           /*nodeNotFoundMessage*/ (), /*nameArg*/ ())
     }
 
-    def getReferencedValueDeclaration(reference: Identifier): Declaration {
+    def getReferencedValueDeclaration(reference: Identifier): Declaration = {
       Debug.assert(!nodeIsSynthesized(reference))
       val symbol = getReferencedValueSymbol(reference)
       return symbol && getExportSymbolOfValueSymbolIfExported(symbol).valueDeclaration
     }
 
-    def createResolver(): EmitResolver {
+    def createResolver(): EmitResolver = {
       return {
         getReferencedExportContainer,
         getReferencedImportDeclaration,
@@ -16000,7 +16000,7 @@ object Checker {
       }
     }
 
-    def getExternalModuleFileFromDeclaration(declaration: ImportEqualsDeclaration | ImportDeclaration | ExportDeclaration | ModuleDeclaration): SourceFile {
+    def getExternalModuleFileFromDeclaration(declaration: ImportEqualsDeclaration | ImportDeclaration | ExportDeclaration | ModuleDeclaration): SourceFile = {
       val specifier = getExternalModuleName(declaration)
       val moduleSymbol = resolveExternalModuleNameWorker(specifier, specifier, /*moduleNotFoundError*/ ())
       if (!moduleSymbol) {
@@ -16009,7 +16009,7 @@ object Checker {
       return getDeclarationOfKind(moduleSymbol, SyntaxKind.SourceFile) as SourceFile
     }
 
-    def initializeTypeChecker() {
+    def initializeTypeChecker() = {
       // Bind all source files and propagate errors
       forEach(host.getSourceFiles(), file => {
         bindSourceFile(file, compilerOptions)
@@ -16095,7 +16095,7 @@ object Checker {
       anyReadonlyArrayType = globalReadonlyArrayType ? createTypeFromGenericGlobalType(globalReadonlyArrayType, [anyType]) : anyArrayType
     }
 
-    def createInstantiatedPromiseLikeType(): ObjectType {
+    def createInstantiatedPromiseLikeType(): ObjectType = {
       val promiseLikeType = getGlobalPromiseLikeType()
       if (promiseLikeType != emptyGenericType) {
         return createTypeReference(<GenericType>promiseLikeType, [anyType])
@@ -16104,7 +16104,7 @@ object Checker {
       return emptyObjectType
     }
 
-    def createThenableType() {
+    def createThenableType() = {
       // build the thenable type that is used to verify against a non-promise "thenable" operand to `await`.
       val thenPropertySymbol = createSymbol(SymbolFlags.Transient | SymbolFlags.Property, "then")
       getSymbolLinks(thenPropertySymbol).type = globalFunctionType
@@ -16118,7 +16118,7 @@ object Checker {
     }
 
     // GRAMMAR CHECKING
-    def checkGrammarDecorators(node: Node): Boolean {
+    def checkGrammarDecorators(node: Node): Boolean = {
       if (!node.decorators) {
         return false
       }
@@ -16139,7 +16139,7 @@ object Checker {
       return false
     }
 
-    def checkGrammarModifiers(node: Node): Boolean {
+    def checkGrammarModifiers(node: Node): Boolean = {
       switch (node.kind) {
         case SyntaxKind.GetAccessor:
         case SyntaxKind.SetAccessor:
@@ -16389,7 +16389,7 @@ object Checker {
       }
     }
 
-    def checkGrammarAsyncModifier(node: Node, asyncModifier: Node): Boolean {
+    def checkGrammarAsyncModifier(node: Node, asyncModifier: Node): Boolean = {
       if (languageVersion < ScriptTarget.ES6) {
         return grammarErrorOnNode(asyncModifier, Diagnostics.Async_functions_are_only_available_when_targeting_ECMAScript_6_and_higher)
       }
@@ -16408,7 +16408,7 @@ object Checker {
       return grammarErrorOnNode(asyncModifier, Diagnostics._0_modifier_cannot_be_used_here, "async")
     }
 
-    def checkGrammarForDisallowedTrailingComma(list: NodeArray<Node>): Boolean {
+    def checkGrammarForDisallowedTrailingComma(list: NodeArray<Node>): Boolean = {
       if (list && list.hasTrailingComma) {
         val start = list.end - ",".length
         val end = list.end
@@ -16417,7 +16417,7 @@ object Checker {
       }
     }
 
-    def checkGrammarTypeParameterList(node: FunctionLikeDeclaration, typeParameters: NodeArray<TypeParameterDeclaration>, file: SourceFile): Boolean {
+    def checkGrammarTypeParameterList(node: FunctionLikeDeclaration, typeParameters: NodeArray<TypeParameterDeclaration>, file: SourceFile): Boolean = {
       if (checkGrammarForDisallowedTrailingComma(typeParameters)) {
         return true
       }
@@ -16429,7 +16429,7 @@ object Checker {
       }
     }
 
-    def checkGrammarParameterList(parameters: NodeArray<ParameterDeclaration>) {
+    def checkGrammarParameterList(parameters: NodeArray<ParameterDeclaration>) = {
       if (checkGrammarForDisallowedTrailingComma(parameters)) {
         return true
       }
@@ -16469,14 +16469,14 @@ object Checker {
       }
     }
 
-    def checkGrammarFunctionLikeDeclaration(node: FunctionLikeDeclaration): Boolean {
+    def checkGrammarFunctionLikeDeclaration(node: FunctionLikeDeclaration): Boolean = {
       // Prevent cascading error by short-circuit
       val file = getSourceFileOfNode(node)
       return checkGrammarDecorators(node) || checkGrammarModifiers(node) || checkGrammarTypeParameterList(node, node.typeParameters, file) ||
         checkGrammarParameterList(node.parameters) || checkGrammarArrowFunction(node, file)
     }
 
-    def checkGrammarArrowFunction(node: FunctionLikeDeclaration, file: SourceFile): Boolean {
+    def checkGrammarArrowFunction(node: FunctionLikeDeclaration, file: SourceFile): Boolean = {
       if (node.kind == SyntaxKind.ArrowFunction) {
         val arrowFunction = <ArrowFunction>node
         val startLine = getLineAndCharacterOfPosition(file, arrowFunction.equalsGreaterThanToken.pos).line
@@ -16488,7 +16488,7 @@ object Checker {
       return false
     }
 
-    def checkGrammarIndexSignatureParameters(node: SignatureDeclaration): Boolean {
+    def checkGrammarIndexSignatureParameters(node: SignatureDeclaration): Boolean = {
       val parameter = node.parameters[0]
       if (node.parameters.length != 1) {
         if (parameter) {
@@ -16521,12 +16521,12 @@ object Checker {
       }
     }
 
-    def checkGrammarIndexSignature(node: SignatureDeclaration) {
+    def checkGrammarIndexSignature(node: SignatureDeclaration) = {
       // Prevent cascading error by short-circuit
       return checkGrammarDecorators(node) || checkGrammarModifiers(node) || checkGrammarIndexSignatureParameters(node)
     }
 
-    def checkGrammarForAtLeastOneTypeArgument(node: Node, typeArguments: NodeArray<TypeNode>): Boolean {
+    def checkGrammarForAtLeastOneTypeArgument(node: Node, typeArguments: NodeArray<TypeNode>): Boolean = {
       if (typeArguments && typeArguments.length == 0) {
         val sourceFile = getSourceFileOfNode(node)
         val start = typeArguments.pos - "<".length
@@ -16535,12 +16535,12 @@ object Checker {
       }
     }
 
-    def checkGrammarTypeArguments(node: Node, typeArguments: NodeArray<TypeNode>): Boolean {
+    def checkGrammarTypeArguments(node: Node, typeArguments: NodeArray<TypeNode>): Boolean = {
       return checkGrammarForDisallowedTrailingComma(typeArguments) ||
         checkGrammarForAtLeastOneTypeArgument(node, typeArguments)
     }
 
-    def checkGrammarForOmittedArgument(node: CallExpression, args: NodeArray<Expression>): Boolean {
+    def checkGrammarForOmittedArgument(node: CallExpression, args: NodeArray<Expression>): Boolean = {
       if (args) {
         val sourceFile = getSourceFileOfNode(node)
         for (val arg of args) {
@@ -16551,12 +16551,12 @@ object Checker {
       }
     }
 
-    def checkGrammarArguments(node: CallExpression, args: NodeArray<Expression>): Boolean {
+    def checkGrammarArguments(node: CallExpression, args: NodeArray<Expression>): Boolean = {
       return checkGrammarForDisallowedTrailingComma(args) ||
         checkGrammarForOmittedArgument(node, args)
     }
 
-    def checkGrammarHeritageClause(node: HeritageClause): Boolean {
+    def checkGrammarHeritageClause(node: HeritageClause): Boolean = {
       val types = node.types
       if (checkGrammarForDisallowedTrailingComma(types)) {
         return true
@@ -16568,7 +16568,7 @@ object Checker {
       }
     }
 
-    def checkGrammarClassDeclarationHeritageClauses(node: ClassLikeDeclaration) {
+    def checkGrammarClassDeclarationHeritageClauses(node: ClassLikeDeclaration) = {
       var seenExtendsClause = false
       var seenImplementsClause = false
 
@@ -16604,7 +16604,7 @@ object Checker {
       }
     }
 
-    def checkGrammarInterfaceDeclaration(node: InterfaceDeclaration) {
+    def checkGrammarInterfaceDeclaration(node: InterfaceDeclaration) = {
       var seenExtendsClause = false
 
       if (node.heritageClauses) {
@@ -16629,7 +16629,7 @@ object Checker {
       return false
     }
 
-    def checkGrammarComputedPropertyName(node: Node): Boolean {
+    def checkGrammarComputedPropertyName(node: Node): Boolean = {
       // If node is not a computedPropertyName, just skip the grammar checking
       if (node.kind != SyntaxKind.ComputedPropertyName) {
         return false
@@ -16641,7 +16641,7 @@ object Checker {
       }
     }
 
-    def checkGrammarForGenerator(node: FunctionLikeDeclaration) {
+    def checkGrammarForGenerator(node: FunctionLikeDeclaration) = {
       if (node.asteriskToken) {
         Debug.assert(
           node.kind == SyntaxKind.FunctionDeclaration ||
@@ -16659,13 +16659,13 @@ object Checker {
       }
     }
 
-    def checkGrammarForInvalidQuestionMark(node: Declaration, questionToken: Node, message: DiagnosticMessage): Boolean {
+    def checkGrammarForInvalidQuestionMark(node: Declaration, questionToken: Node, message: DiagnosticMessage): Boolean = {
       if (questionToken) {
         return grammarErrorOnNode(questionToken, message)
       }
     }
 
-    def checkGrammarObjectLiteralExpression(node: ObjectLiteralExpression, inDestructuring: Boolean) {
+    def checkGrammarObjectLiteralExpression(node: ObjectLiteralExpression, inDestructuring: Boolean) = {
       val seen: Map<SymbolFlags> = {}
       val Property = 1
       val GetAccessor = 2
@@ -16747,7 +16747,7 @@ object Checker {
       }
     }
 
-    def checkGrammarJsxElement(node: JsxOpeningLikeElement) {
+    def checkGrammarJsxElement(node: JsxOpeningLikeElement) = {
       val seen: Map<Boolean> = {}
       for (val attr of node.attributes) {
         if (attr.kind == SyntaxKind.JsxSpreadAttribute) {
@@ -16770,7 +16770,7 @@ object Checker {
       }
     }
 
-    def checkGrammarForInOrForOfStatement(forInOrOfStatement: ForInStatement | ForOfStatement): Boolean {
+    def checkGrammarForInOrForOfStatement(forInOrOfStatement: ForInStatement | ForOfStatement): Boolean = {
       if (checkGrammarStatementInAmbientContext(forInOrOfStatement)) {
         return true
       }
@@ -16817,7 +16817,7 @@ object Checker {
       return false
     }
 
-    def checkGrammarAccessor(accessor: MethodDeclaration): Boolean {
+    def checkGrammarAccessor(accessor: MethodDeclaration): Boolean = {
       val kind = accessor.kind
       if (languageVersion < ScriptTarget.ES5) {
         return grammarErrorOnNode(accessor.name, Diagnostics.Accessors_are_only_available_when_targeting_ECMAScript_5_and_higher)
@@ -16859,13 +16859,13 @@ object Checker {
       }
     }
 
-    def checkGrammarForNonSymbolComputedProperty(node: DeclarationName, message: DiagnosticMessage) {
+    def checkGrammarForNonSymbolComputedProperty(node: DeclarationName, message: DiagnosticMessage) = {
       if (isDynamicName(node)) {
         return grammarErrorOnNode(node, message)
       }
     }
 
-    def checkGrammarMethod(node: MethodDeclaration) {
+    def checkGrammarMethod(node: MethodDeclaration) = {
       if (checkGrammarDisallowedModifiersOnObjectLiteralExpressionMethod(node) ||
         checkGrammarFunctionLikeDeclaration(node) ||
         checkGrammarForGenerator(node)) {
@@ -16905,7 +16905,7 @@ object Checker {
       }
     }
 
-    def checkGrammarBreakOrContinueStatement(node: BreakOrContinueStatement): Boolean {
+    def checkGrammarBreakOrContinueStatement(node: BreakOrContinueStatement): Boolean = {
       var current: Node = node
       while (current) {
         if (isFunctionLike(current)) {
@@ -16959,7 +16959,7 @@ object Checker {
       }
     }
 
-    def checkGrammarBindingElement(node: BindingElement) {
+    def checkGrammarBindingElement(node: BindingElement) = {
       if (node.dotDotDotToken) {
         val elements = (<BindingPattern>node.parent).elements
         if (node != lastOrUndefined(elements)) {
@@ -16977,7 +16977,7 @@ object Checker {
       }
     }
 
-    def checkGrammarVariableDeclaration(node: VariableDeclaration) {
+    def checkGrammarVariableDeclaration(node: VariableDeclaration) = {
       if (node.parent.parent.kind != SyntaxKind.ForInStatement && node.parent.parent.kind != SyntaxKind.ForOfStatement) {
         if (isInAmbientContext(node)) {
           if (node.initializer) {
@@ -17009,7 +17009,7 @@ object Checker {
       return checkLetConstNames && checkGrammarNameInLetOrConstDeclarations(node.name)
     }
 
-    def checkGrammarNameInLetOrConstDeclarations(name: Identifier | BindingPattern): Boolean {
+    def checkGrammarNameInLetOrConstDeclarations(name: Identifier | BindingPattern): Boolean = {
       if (name.kind == SyntaxKind.Identifier) {
         if ((<Identifier>name).originalKeywordKind == SyntaxKind.LetKeyword) {
           return grammarErrorOnNode(name, Diagnostics.let_is_not_allowed_to_be_used_as_a_name_in_let_or_const_declarations)
@@ -17025,7 +17025,7 @@ object Checker {
       }
     }
 
-    def checkGrammarVariableDeclarationList(declarationList: VariableDeclarationList): Boolean {
+    def checkGrammarVariableDeclarationList(declarationList: VariableDeclarationList): Boolean = {
       val declarations = declarationList.declarations
       if (checkGrammarForDisallowedTrailingComma(declarationList.declarations)) {
         return true
@@ -17036,7 +17036,7 @@ object Checker {
       }
     }
 
-    def allowLetAndConstDeclarations(parent: Node): Boolean {
+    def allowLetAndConstDeclarations(parent: Node): Boolean = {
       switch (parent.kind) {
         case SyntaxKind.IfStatement:
         case SyntaxKind.DoStatement:
@@ -17053,7 +17053,7 @@ object Checker {
       return true
     }
 
-    def checkGrammarForDisallowedLetOrConstStatement(node: VariableStatement) {
+    def checkGrammarForDisallowedLetOrConstStatement(node: VariableStatement) = {
       if (!allowLetAndConstDeclarations(node.parent)) {
         if (isLet(node.declarationList)) {
           return grammarErrorOnNode(node, Diagnostics.let_declarations_can_only_be_declared_inside_a_block)
@@ -17064,11 +17064,11 @@ object Checker {
       }
     }
 
-    def hasParseDiagnostics(sourceFile: SourceFile): Boolean {
+    def hasParseDiagnostics(sourceFile: SourceFile): Boolean = {
       return sourceFile.parseDiagnostics.length > 0
     }
 
-    def grammarErrorOnFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean {
+    def grammarErrorOnFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean = {
       val sourceFile = getSourceFileOfNode(node)
       if (!hasParseDiagnostics(sourceFile)) {
         val span = getSpanOfTokenAtPosition(sourceFile, node.pos)
@@ -17077,14 +17077,14 @@ object Checker {
       }
     }
 
-    def grammarErrorAtPos(sourceFile: SourceFile, start: Int, length: Int, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean {
+    def grammarErrorAtPos(sourceFile: SourceFile, start: Int, length: Int, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean = {
       if (!hasParseDiagnostics(sourceFile)) {
         diagnostics.add(createFileDiagnostic(sourceFile, start, length, message, arg0, arg1, arg2))
         return true
       }
     }
 
-    def grammarErrorOnNode(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean {
+    def grammarErrorOnNode(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean = {
       val sourceFile = getSourceFileOfNode(node)
       if (!hasParseDiagnostics(sourceFile)) {
         diagnostics.add(createDiagnosticForNode(node, message, arg0, arg1, arg2))
@@ -17092,19 +17092,19 @@ object Checker {
       }
     }
 
-    def checkGrammarConstructorTypeParameters(node: ConstructorDeclaration) {
+    def checkGrammarConstructorTypeParameters(node: ConstructorDeclaration) = {
       if (node.typeParameters) {
         return grammarErrorAtPos(getSourceFileOfNode(node), node.typeParameters.pos, node.typeParameters.end - node.typeParameters.pos, Diagnostics.Type_parameters_cannot_appear_on_a_constructor_declaration)
       }
     }
 
-    def checkGrammarConstructorTypeAnnotation(node: ConstructorDeclaration) {
+    def checkGrammarConstructorTypeAnnotation(node: ConstructorDeclaration) = {
       if (node.type) {
         return grammarErrorOnNode(node.type, Diagnostics.Type_annotation_cannot_appear_on_a_constructor_declaration)
       }
     }
 
-    def checkGrammarProperty(node: PropertyDeclaration) {
+    def checkGrammarProperty(node: PropertyDeclaration) = {
       if (isClassLike(node.parent)) {
         if (checkGrammarForInvalidQuestionMark(node, node.questionToken, Diagnostics.A_class_member_cannot_be_declared_optional) ||
           checkGrammarForNonSymbolComputedProperty(node.name, Diagnostics.A_computed_property_name_in_a_class_property_declaration_must_directly_refer_to_a_built_in_symbol)) {
@@ -17133,7 +17133,7 @@ object Checker {
       }
     }
 
-    def checkGrammarTopLevelElementForRequiredDeclareModifier(node: Node): Boolean {
+    def checkGrammarTopLevelElementForRequiredDeclareModifier(node: Node): Boolean = {
       // A declare modifier is required for any top level .d.ts declaration except export=, default,
       // interfaces and imports categories:
       //
@@ -17161,7 +17161,7 @@ object Checker {
       return grammarErrorOnFirstToken(node, Diagnostics.A_declare_modifier_is_required_for_a_top_level_declaration_in_a_d_ts_file)
     }
 
-    def checkGrammarTopLevelElementsForRequiredDeclareModifier(file: SourceFile): Boolean {
+    def checkGrammarTopLevelElementsForRequiredDeclareModifier(file: SourceFile): Boolean = {
       for (val decl of file.statements) {
         if (isDeclaration(decl) || decl.kind == SyntaxKind.VariableStatement) {
           if (checkGrammarTopLevelElementForRequiredDeclareModifier(decl)) {
@@ -17171,11 +17171,11 @@ object Checker {
       }
     }
 
-    def checkGrammarSourceFile(node: SourceFile): Boolean {
+    def checkGrammarSourceFile(node: SourceFile): Boolean = {
       return isInAmbientContext(node) && checkGrammarTopLevelElementsForRequiredDeclareModifier(node)
     }
 
-    def checkGrammarStatementInAmbientContext(node: Node): Boolean {
+    def checkGrammarStatementInAmbientContext(node: Node): Boolean = {
       if (isInAmbientContext(node)) {
         // An accessors is already reported about the ambient context
         if (isAccessor(node.parent.kind)) {
@@ -17208,14 +17208,14 @@ object Checker {
       }
     }
 
-    def checkGrammarNumericLiteral(node: LiteralExpression): Boolean {
+    def checkGrammarNumericLiteral(node: LiteralExpression): Boolean = {
       // Grammar checking
       if (node.isOctalLiteral && languageVersion >= ScriptTarget.ES5) {
         return grammarErrorOnNode(node, Diagnostics.Octal_literals_are_not_available_when_targeting_ECMAScript_5_and_higher)
       }
     }
 
-    def grammarErrorAfterFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean {
+    def grammarErrorAfterFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any): Boolean = {
       val sourceFile = getSourceFileOfNode(node)
       if (!hasParseDiagnostics(sourceFile)) {
         val span = getSpanOfTokenAtPosition(sourceFile, node.pos)

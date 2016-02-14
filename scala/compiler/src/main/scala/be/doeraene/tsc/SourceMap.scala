@@ -27,7 +27,7 @@ object SourceMap {
     sourceIndex: 0
   }
 
-  def getNullSourceMapWriter(): SourceMapWriter {
+  def getNullSourceMapWriter(): SourceMapWriter = {
     if (nullSourceMapWriter == ()) {
       nullSourceMapWriter = {
         getSourceMapData(): SourceMapData { return (); },
@@ -46,7 +46,7 @@ object SourceMap {
     return nullSourceMapWriter
   }
 
-  def createSourceMapWriter(host: EmitHost, writer: EmitTextWriter): SourceMapWriter {
+  def createSourceMapWriter(host: EmitHost, writer: EmitTextWriter): SourceMapWriter = {
     val compilerOptions = host.getCompilerOptions()
     var currentSourceFile: SourceFile
     var sourceMapDir: String; // The directory in which sourcemap will be
@@ -77,7 +77,7 @@ object SourceMap {
       reset,
     }
 
-    def initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean) {
+    def initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean) = {
       if (sourceMapData) {
         reset()
       }
@@ -141,7 +141,7 @@ object SourceMap {
       }
     }
 
-    def reset() {
+    def reset() = {
       currentSourceFile = ()
       sourceMapDir = ()
       sourceMapSourceIndex = ()
@@ -151,7 +151,7 @@ object SourceMap {
       sourceMapData = ()
     }
 
-    def updateLastEncodedAndRecordedSpans() {
+    def updateLastEncodedAndRecordedSpans() = {
       if (modifyLastSourcePos) {
         // Reset the source pos
         modifyLastSourcePos = false
@@ -193,7 +193,7 @@ object SourceMap {
     }
 
     // Encoding for sourcemap span
-    def encodeLastRecordedSourceMapSpan() {
+    def encodeLastRecordedSourceMapSpan() = {
       if (!lastRecordedSourceMapSpan || lastRecordedSourceMapSpan == lastEncodedSourceMapSpan) {
         return
       }
@@ -237,7 +237,7 @@ object SourceMap {
       sourceMapData.sourceMapDecodedMappings.push(lastEncodedSourceMapSpan)
     }
 
-    def emitPos(pos: Int) {
+    def emitPos(pos: Int) = {
       if (pos == -1) {
         return
       }
@@ -283,26 +283,26 @@ object SourceMap {
       updateLastEncodedAndRecordedSpans()
     }
 
-    def getStartPos(range: TextRange) {
+    def getStartPos(range: TextRange) = {
       val rangeHasDecorators = !!(range as Node).decorators
       return range.pos != -1 ? skipTrivia(currentSourceFile.text, rangeHasDecorators ? (range as Node).decorators.end : range.pos) : -1
     }
 
-    def emitStart(range: TextRange) {
+    def emitStart(range: TextRange) = {
       emitPos(getStartPos(range))
     }
 
-    def emitEnd(range: TextRange, stopOverridingEnd?: Boolean) {
+    def emitEnd(range: TextRange, stopOverridingEnd?: Boolean) = {
       emitPos(range.end)
       stopOverridingSpan = stopOverridingEnd
     }
 
-    def changeEmitSourcePos() {
+    def changeEmitSourcePos() = {
       Debug.assert(!modifyLastSourcePos)
       modifyLastSourcePos = true
     }
 
-    def setSourceFile(sourceFile: SourceFile) {
+    def setSourceFile(sourceFile: SourceFile) = {
       currentSourceFile = sourceFile
 
       // Add the file to tsFilePaths
@@ -330,7 +330,7 @@ object SourceMap {
       }
     }
 
-    def getText() {
+    def getText() = {
       encodeLastRecordedSourceMapSpan()
 
       return stringify({
@@ -344,7 +344,7 @@ object SourceMap {
       })
     }
 
-    def getSourceMappingURL() {
+    def getSourceMappingURL() = {
       if (compilerOptions.inlineSourceMap) {
         // Encode the sourceMap into the sourceMap url
         val base64SourceMapText = convertToBase64(getText())
@@ -358,7 +358,7 @@ object SourceMap {
 
   val base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-  def base64FormatEncode(inValue: Int) {
+  def base64FormatEncode(inValue: Int) = {
     if (inValue < 64) {
       return base64Chars.charAt(inValue)
     }
@@ -366,7 +366,7 @@ object SourceMap {
     throw TypeError(inValue + ": not a 64 based value")
   }
 
-  def base64VLQFormatEncode(inValue: Int) {
+  def base64VLQFormatEncode(inValue: Int) = {
     // Add a new least significant bit that has the sign of the value.
     // if negative Int the least significant bit that gets added to the Int has value 1
     // else least significant bit value that gets added is 0

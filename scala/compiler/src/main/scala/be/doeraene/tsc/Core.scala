@@ -30,40 +30,40 @@ object Core {
       clear
     }
 
-    def forEachValueInMap(f: (key: Path, value: T) => Unit) {
+    def forEachValueInMap(f: (key: Path, value: T) => Unit) = {
       for (val key in files) {
         f(<Path>key, files[key])
       }
     }
 
     // path should already be well-formed so it does not need to be normalized
-    def get(path: Path): T {
+    def get(path: Path): T = {
       return files[toKey(path)]
     }
 
-    def set(path: Path, value: T) {
+    def set(path: Path, value: T) = {
       files[toKey(path)] = value
     }
 
-    def contains(path: Path) {
+    def contains(path: Path) = {
       return hasProperty(files, toKey(path))
     }
 
-    def remove(path: Path) {
+    def remove(path: Path) = {
       val key = toKey(path)
       delete files[key]
     }
 
-    def clear() {
+    def clear() = {
       files = {}
     }
 
-    def toKey(path: Path): String {
+    def toKey(path: Path): String = {
       return keyMapper ? keyMapper(path) : path
     }
   }
 
-  def toPath(fileName: String, basePath: String, getCanonicalFileName: (path: String) => String): Path {
+  def toPath(fileName: String, basePath: String, getCanonicalFileName: (path: String) => String): Path = {
     val nonCanonicalizedPath = isRootedDiskPath(fileName)
       ? normalizePath(fileName)
       : getNormalizedAbsolutePath(fileName, basePath)
@@ -81,7 +81,7 @@ object Core {
    * returns a truthy value, then returns that value.
    * If no such value is found, the callback is applied to each element of array and () is returned.
    */
-  def forEach<T, U>(array: T[], callback: (element: T, index: Int) => U): U {
+  def forEach<T, U>(array: T[], callback: (element: T, index: Int) => U): U = {
     if (array) {
       for (var i = 0, len = array.length; i < len; i++) {
         val result = callback(array[i], i)
@@ -93,7 +93,7 @@ object Core {
     return ()
   }
 
-  def contains<T>(array: T[], value: T): Boolean {
+  def contains<T>(array: T[], value: T): Boolean = {
     if (array) {
       for (val v of array) {
         if (v == value) {
@@ -104,7 +104,7 @@ object Core {
     return false
   }
 
-  def indexOf<T>(array: T[], value: T): Int {
+  def indexOf<T>(array: T[], value: T): Int = {
     if (array) {
       for (var i = 0, len = array.length; i < len; i++) {
         if (array[i] == value) {
@@ -115,7 +115,7 @@ object Core {
     return -1
   }
 
-  def countWhere<T>(array: T[], predicate: (x: T) => Boolean): Int {
+  def countWhere<T>(array: T[], predicate: (x: T) => Boolean): Int = {
     var count = 0
     if (array) {
       for (val v of array) {
@@ -171,7 +171,7 @@ object Core {
     return result
   }
 
-  def sum(array: any[], prop: String): Int {
+  def sum(array: any[], prop: String): Int = {
     var result = 0
     for (val v of array) {
       result += v[prop]
@@ -179,7 +179,7 @@ object Core {
     return result
   }
 
-  def addRange<T>(to: T[], from: T[]): Unit {
+  def addRange<T>(to: T[], from: T[]): Unit = {
     if (to && from) {
       for (val v of from) {
         to.push(v)
@@ -187,7 +187,7 @@ object Core {
     }
   }
 
-  def rangeEquals<T>(array1: T[], array2: T[], pos: Int, end: Int) {
+  def rangeEquals<T>(array1: T[], array2: T[], pos: Int, end: Int) = {
     while (pos < end) {
       if (array1[pos] != array2[pos]) {
         return false
@@ -200,7 +200,7 @@ object Core {
   /**
    * Returns the last element of an array if non-empty, () otherwise.
    */
-  def lastOrUndefined<T>(array: T[]): T {
+  def lastOrUndefined<T>(array: T[]): T = {
     if (array.length == 0) {
       return ()
     }
@@ -215,7 +215,7 @@ object Core {
    * @param array A sorted array whose first element must be no larger than Int
    * @param Int The value to be searched for in the array.
    */
-  def binarySearch(array: Int[], value: Int): Int {
+  def binarySearch(array: Int[], value: Int): Int = {
     var low = 0
     var high = array.length - 1
 
@@ -239,7 +239,7 @@ object Core {
 
   def reduceLeft<T>(array: T[], f: (a: T, x: T) => T): T
   def reduceLeft<T, U>(array: T[], f: (a: U, x: T) => U, initial: U): U
-  def reduceLeft<T, U>(array: T[], f: (a: U, x: T) => U, initial?: U): U {
+  def reduceLeft<T, U>(array: T[], f: (a: U, x: T) => U, initial?: U): U = {
     if (array) {
       val count = array.length
       if (count > 0) {
@@ -258,7 +258,7 @@ object Core {
 
   def reduceRight<T>(array: T[], f: (a: T, x: T) => T): T
   def reduceRight<T, U>(array: T[], f: (a: U, x: T) => U, initial: U): U
-  def reduceRight<T, U>(array: T[], f: (a: U, x: T) => U, initial?: U): U {
+  def reduceRight<T, U>(array: T[], f: (a: U, x: T) => U, initial?: U): U = {
     if (array) {
       var pos = array.length - 1
       if (pos >= 0) {
@@ -276,15 +276,15 @@ object Core {
 
   val hasOwnProperty = Object.prototype.hasOwnProperty
 
-  def hasProperty<T>(map: Map<T>, key: String): Boolean {
+  def hasProperty<T>(map: Map<T>, key: String): Boolean = {
     return hasOwnProperty.call(map, key)
   }
 
-  def getProperty<T>(map: Map<T>, key: String): T {
+  def getProperty<T>(map: Map<T>, key: String): T = {
     return hasOwnProperty.call(map, key) ? map[key] : ()
   }
 
-  def isEmpty<T>(map: Map<T>) {
+  def isEmpty<T>(map: Map<T>) = {
     for (val id in map) {
       if (hasProperty(map, id)) {
         return false
@@ -293,7 +293,7 @@ object Core {
     return true
   }
 
-  def clone<T>(object: T): T {
+  def clone<T>(object: T): T = {
     val result: any = {}
     for (val id in object) {
       result[id] = (<any>object)[id]
@@ -314,7 +314,7 @@ object Core {
     return result
   }
 
-  def forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U {
+  def forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U = {
     var result: U
     for (val id in map) {
       if (result = callback(map[id])) break
@@ -322,7 +322,7 @@ object Core {
     return result
   }
 
-  def forEachKey<T, U>(map: Map<T>, callback: (key: String) => U): U {
+  def forEachKey<T, U>(map: Map<T>, callback: (key: String) => U): U = {
     var result: U
     for (val id in map) {
       if (result = callback(id)) break
@@ -330,11 +330,11 @@ object Core {
     return result
   }
 
-  def lookUp<T>(map: Map<T>, key: String): T {
+  def lookUp<T>(map: Map<T>, key: String): T = {
     return hasProperty(map, key) ? map[key] : ()
   }
 
-  def copyMap<T>(source: Map<T>, target: Map<T>): Unit {
+  def copyMap<T>(source: Map<T>, target: Map<T>): Unit = {
     for (val p in source) {
       target[p] = source[p]
     }
@@ -367,7 +367,7 @@ object Core {
    * @param callback An aggregation def that is called for each entry in the map
    * @param initial The initial value for the reduction.
    */
-  def reduceProperties<T, U>(map: Map<T>, callback: (aggregate: U, value: T, key: String) => U, initial: U): U {
+  def reduceProperties<T, U>(map: Map<T>, callback: (aggregate: U, value: T, key: String) => U, initial: U): U = {
     var result = initial
     if (map) {
       for (val key in map) {
@@ -398,7 +398,7 @@ object Core {
     }
   }
 
-  def formatStringFromArgs(text: String, args: { [index: Int]: any; }, baseIndex?: Int): String {
+  def formatStringFromArgs(text: String, args: { [index: Int]: any; }, baseIndex?: Int): String = {
     baseIndex = baseIndex || 0
 
     return text.replace(/{(\d+)}/g, (match, index?) => args[+index + baseIndex])
@@ -406,14 +406,14 @@ object Core {
 
   var localizedDiagnosticMessages: Map<String> = ()
 
-  def getLocaleSpecificMessage(message: DiagnosticMessage) {
+  def getLocaleSpecificMessage(message: DiagnosticMessage) = {
     return localizedDiagnosticMessages && localizedDiagnosticMessages[message.key]
       ? localizedDiagnosticMessages[message.key]
       : message.message
   }
 
   def createFileDiagnostic(file: SourceFile, start: Int, length: Int, message: DiagnosticMessage, ...args: any[]): Diagnostic
-  def createFileDiagnostic(file: SourceFile, start: Int, length: Int, message: DiagnosticMessage): Diagnostic {
+  def createFileDiagnostic(file: SourceFile, start: Int, length: Int, message: DiagnosticMessage): Diagnostic = {
     val end = start + length
 
     Debug.assert(start >= 0, "start must be non-negative, is " + start)
@@ -442,7 +442,7 @@ object Core {
   }
 
   /* internal */
-  def formatMessage(dummy: any, message: DiagnosticMessage): String {
+  def formatMessage(dummy: any, message: DiagnosticMessage): String = {
     var text = getLocaleSpecificMessage(message)
 
     if (arguments.length > 2) {
@@ -453,7 +453,7 @@ object Core {
   }
 
   def createCompilerDiagnostic(message: DiagnosticMessage, ...args: any[]): Diagnostic
-  def createCompilerDiagnostic(message: DiagnosticMessage): Diagnostic {
+  def createCompilerDiagnostic(message: DiagnosticMessage): Diagnostic = {
     var text = getLocaleSpecificMessage(message)
 
     if (arguments.length > 1) {
@@ -472,7 +472,7 @@ object Core {
   }
 
   def chainDiagnosticMessages(details: DiagnosticMessageChain, message: DiagnosticMessage, ...args: any[]): DiagnosticMessageChain
-  def chainDiagnosticMessages(details: DiagnosticMessageChain, message: DiagnosticMessage): DiagnosticMessageChain {
+  def chainDiagnosticMessages(details: DiagnosticMessageChain, message: DiagnosticMessage): DiagnosticMessageChain = {
     var text = getLocaleSpecificMessage(message)
 
     if (arguments.length > 2) {
@@ -488,7 +488,7 @@ object Core {
     }
   }
 
-  def concatenateDiagnosticMessageChains(headChain: DiagnosticMessageChain, tailChain: DiagnosticMessageChain): DiagnosticMessageChain {
+  def concatenateDiagnosticMessageChains(headChain: DiagnosticMessageChain, tailChain: DiagnosticMessageChain): DiagnosticMessageChain = {
     var lastChain = headChain
     while (lastChain.next) {
       lastChain = lastChain.next
@@ -498,18 +498,18 @@ object Core {
     return headChain
   }
 
-  def compareValues<T>(a: T, b: T): Comparison {
+  def compareValues<T>(a: T, b: T): Comparison = {
     if (a == b) return Comparison.EqualTo
     if (a == ()) return Comparison.LessThan
     if (b == ()) return Comparison.GreaterThan
     return a < b ? Comparison.LessThan : Comparison.GreaterThan
   }
 
-  def getDiagnosticFileName(diagnostic: Diagnostic): String {
+  def getDiagnosticFileName(diagnostic: Diagnostic): String = {
     return diagnostic.file ? diagnostic.file.fileName : ()
   }
 
-  def compareDiagnostics(d1: Diagnostic, d2: Diagnostic): Comparison {
+  def compareDiagnostics(d1: Diagnostic, d2: Diagnostic): Comparison = {
     return compareValues(getDiagnosticFileName(d1), getDiagnosticFileName(d2)) ||
       compareValues(d1.start, d2.start) ||
       compareValues(d1.length, d2.length) ||
@@ -518,7 +518,7 @@ object Core {
       Comparison.EqualTo
   }
 
-  def compareMessageText(text1: String | DiagnosticMessageChain, text2: String | DiagnosticMessageChain): Comparison {
+  def compareMessageText(text1: String | DiagnosticMessageChain, text2: String | DiagnosticMessageChain): Comparison = {
     while (text1 && text2) {
       // We still have both chains.
       val string1 = typeof text1 == "String" ? text1 : text1.messageText
@@ -565,12 +565,12 @@ object Core {
     return newDiagnostics
   }
 
-  def normalizeSlashes(path: String): String {
+  def normalizeSlashes(path: String): String = {
     return path.replace(/\\/g, "/")
   }
 
   // Returns length of path root (i.e. length of "/", "x:/", "//server/share/, file:///user/files")
-  def getRootLength(path: String): Int {
+  def getRootLength(path: String): Int = {
     if (path.charCodeAt(0) == CharacterCodes.slash) {
       if (path.charCodeAt(1) != CharacterCodes.slash) return 1
       val p1 = path.indexOf("/", 2)
@@ -599,7 +599,7 @@ object Core {
   }
 
   var directorySeparator = "/"
-  def getNormalizedParts(normalizedSlashedPath: String, rootLength: Int) {
+  def getNormalizedParts(normalizedSlashedPath: String, rootLength: Int) = {
     val parts = normalizedSlashedPath.substr(rootLength).split(directorySeparator)
     val normalized: String[] = []
     for (val part of parts) {
@@ -620,7 +620,7 @@ object Core {
     return normalized
   }
 
-  def normalizePath(path: String): String {
+  def normalizePath(path: String): String = {
     path = normalizeSlashes(path)
     val rootLength = getRootLength(path)
     val normalized = getNormalizedParts(path, rootLength)
@@ -629,24 +629,24 @@ object Core {
 
   def getDirectoryPath(path: Path): Path
   def getDirectoryPath(path: String): String
-  def getDirectoryPath(path: String): any {
+  def getDirectoryPath(path: String): any = {
     return path.substr(0, Math.max(getRootLength(path), path.lastIndexOf(directorySeparator)))
   }
 
-  def isUrl(path: String) {
+  def isUrl(path: String) = {
     return path && !isRootedDiskPath(path) && path.indexOf("://") != -1
   }
 
-  def isRootedDiskPath(path: String) {
+  def isRootedDiskPath(path: String) = {
     return getRootLength(path) != 0
   }
 
-  def normalizedPathComponents(path: String, rootLength: Int) {
+  def normalizedPathComponents(path: String, rootLength: Int) = {
     val normalizedParts = getNormalizedParts(path, rootLength)
     return [path.substr(0, rootLength)].concat(normalizedParts)
   }
 
-  def getNormalizedPathComponents(path: String, currentDirectory: String) {
+  def getNormalizedPathComponents(path: String, currentDirectory: String) = {
     path = normalizeSlashes(path)
     var rootLength = getRootLength(path)
     if (rootLength == 0) {
@@ -658,17 +658,17 @@ object Core {
     return normalizedPathComponents(path, rootLength)
   }
 
-  def getNormalizedAbsolutePath(fileName: String, currentDirectory: String) {
+  def getNormalizedAbsolutePath(fileName: String, currentDirectory: String) = {
     return getNormalizedPathFromPathComponents(getNormalizedPathComponents(fileName, currentDirectory))
   }
 
-  def getNormalizedPathFromPathComponents(pathComponents: String[]) {
+  def getNormalizedPathFromPathComponents(pathComponents: String[]) = {
     if (pathComponents && pathComponents.length) {
       return pathComponents[0] + pathComponents.slice(1).join(directorySeparator)
     }
   }
 
-  def getNormalizedPathComponentsOfUrl(url: String) {
+  def getNormalizedPathComponentsOfUrl(url: String) = {
     // Get root length of http://www.website.com/folder1/folder2/
     // In this example the root is:  http://www.website.com/
     // normalized path components should be ["http://www.website.com/", "folder1", "folder2"]
@@ -710,7 +710,7 @@ object Core {
     }
   }
 
-  def getNormalizedPathOrUrlComponents(pathOrUrl: String, currentDirectory: String) {
+  def getNormalizedPathOrUrlComponents(pathOrUrl: String, currentDirectory: String) = {
     if (isUrl(pathOrUrl)) {
       return getNormalizedPathComponentsOfUrl(pathOrUrl)
     }
@@ -719,7 +719,7 @@ object Core {
     }
   }
 
-  def getRelativePathToDirectoryOrUrl(directoryPathOrUrl: String, relativeOrAbsolutePath: String, currentDirectory: String, getCanonicalFileName: (fileName: String) => String, isAbsolutePathAnUrl: Boolean) {
+  def getRelativePathToDirectoryOrUrl(directoryPathOrUrl: String, relativeOrAbsolutePath: String, currentDirectory: String, getCanonicalFileName: (fileName: String) => String, isAbsolutePathAnUrl: Boolean) = {
     val pathComponents = getNormalizedPathOrUrlComponents(relativeOrAbsolutePath, currentDirectory)
     val directoryComponents = getNormalizedPathOrUrlComponents(directoryPathOrUrl, currentDirectory)
     if (directoryComponents.length > 1 && lastOrUndefined(directoryComponents) == "") {
@@ -758,7 +758,7 @@ object Core {
     return absolutePath
   }
 
-  def getBaseFileName(path: String) {
+  def getBaseFileName(path: String) = {
     if (path == ()) {
       return ()
     }
@@ -766,7 +766,7 @@ object Core {
     return i < 0 ? path : path.substring(i + 1)
   }
 
-  def combinePaths(path1: String, path2: String) {
+  def combinePaths(path1: String, path2: String) = {
     if (!(path1 && path1.length)) return path2
     if (!(path2 && path2.length)) return path1
     if (getRootLength(path2) != 0) return path2
@@ -774,7 +774,7 @@ object Core {
     return path1 + directorySeparator + path2
   }
 
-  def fileExtensionIs(path: String, extension: String): Boolean {
+  def fileExtensionIs(path: String, extension: String): Boolean = {
     val pathLen = path.length
     val extLen = extension.length
     return pathLen > extLen && path.substr(pathLen - extLen, extLen) == extension
@@ -791,7 +791,7 @@ object Core {
     return options && options.allowJs ? allSupportedExtensions : supportedTypeScriptExtensions
   }
 
-  def isSupportedSourceFileName(fileName: String, compilerOptions?: CompilerOptions) {
+  def isSupportedSourceFileName(fileName: String, compilerOptions?: CompilerOptions) = {
     if (!fileName) { return false; }
 
     for (val extension of getSupportedExtensions(compilerOptions)) {
@@ -803,7 +803,7 @@ object Core {
   }
 
   val extensionsToRemove = [".d.ts", ".ts", ".js", ".tsx", ".jsx"]
-  def removeFileExtension(path: String): String {
+  def removeFileExtension(path: String): String = {
     for (val ext of extensionsToRemove) {
       if (fileExtensionIs(path, ext)) {
         return path.substr(0, path.length - ext.length)
@@ -820,20 +820,20 @@ object Core {
     getSignatureConstructor(): new (checker: TypeChecker) => Signature
   }
 
-  def Symbol(flags: SymbolFlags, name: String) {
+  def Symbol(flags: SymbolFlags, name: String) = {
     this.flags = flags
     this.name = name
     this.declarations = ()
   }
 
-  def Type(checker: TypeChecker, flags: TypeFlags) {
+  def Type(checker: TypeChecker, flags: TypeFlags) = {
     this.flags = flags
   }
 
-  def Signature(checker: TypeChecker) {
+  def Signature(checker: TypeChecker) = {
   }
 
-  def Node(kind: SyntaxKind, pos: Int, end: Int) {
+  def Node(kind: SyntaxKind, pos: Int, end: Int) = {
     this.kind = kind
     this.pos = pos
     this.end = end
@@ -859,11 +859,11 @@ object Core {
   package Debug {
     val currentAssertionLevel = AssertionLevel.None
 
-    def shouldAssert(level: AssertionLevel): Boolean {
+    def shouldAssert(level: AssertionLevel): Boolean = {
       return currentAssertionLevel >= level
     }
 
-    def assert(expression: Boolean, message?: String, verboseDebugInfo?: () => String): Unit {
+    def assert(expression: Boolean, message?: String, verboseDebugInfo?: () => String): Unit = {
       if (!expression) {
         var verboseDebugString = ""
         if (verboseDebugInfo) {
@@ -874,12 +874,12 @@ object Core {
       }
     }
 
-    def fail(message?: String): Unit {
+    def fail(message?: String): Unit = {
       Debug.assert(/*expression*/ false, message)
     }
   }
 
-  def copyListRemovingItem<T>(item: T, list: T[]) {
+  def copyListRemovingItem<T>(item: T, list: T[]) = {
     val copiedList: T[] = []
     for (val e of list) {
       if (e != item) {

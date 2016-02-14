@@ -20,7 +20,7 @@ object Binder {
     ReportedUnreachable = 1 << 3
   }
 
-  def or(state1: Reachability, state2: Reachability): Reachability {
+  def or(state1: Reachability, state2: Reachability): Reachability = {
     return (state1 | state2) & Reachability.Reachable
       ? Reachability.Reachable
       : (state1 & state2) & Reachability.ReportedUnreachable
@@ -28,7 +28,7 @@ object Binder {
         : Reachability.Unreachable
   }
 
-  def getModuleInstanceState(node: Node): ModuleInstanceState {
+  def getModuleInstanceState(node: Node): ModuleInstanceState = {
     // A module is uninstantiated if it contains only
     // 1. trait declarations, type alias declarations
     if (node.kind == SyntaxKind.InterfaceDeclaration || node.kind == SyntaxKind.TypeAliasDeclaration) {
@@ -97,7 +97,7 @@ object Binder {
 
   val binder = createBinder()
 
-  def bindSourceFile(file: SourceFile, options: CompilerOptions) {
+  def bindSourceFile(file: SourceFile, options: CompilerOptions) = {
     val start = new Date().getTime()
     binder(file, options)
     bindTime += new Date().getTime() - start
@@ -134,7 +134,7 @@ object Binder {
     var Symbol: { new (flags: SymbolFlags, name: String): Symbol }
     var classifiableNames: Map<String>
 
-    def bindSourceFile(f: SourceFile, opts: CompilerOptions) {
+    def bindSourceFile(f: SourceFile, opts: CompilerOptions) = {
       file = f
       options = opts
       inStrictMode = !!file.externalModuleIndicator
@@ -167,12 +167,12 @@ object Binder {
 
     return bindSourceFile
 
-    def createSymbol(flags: SymbolFlags, name: String): Symbol {
+    def createSymbol(flags: SymbolFlags, name: String): Symbol = {
       symbolCount++
       return new Symbol(flags, name)
     }
 
-    def addDeclarationToSymbol(symbol: Symbol, node: Declaration, symbolFlags: SymbolFlags) {
+    def addDeclarationToSymbol(symbol: Symbol, node: Declaration, symbolFlags: SymbolFlags) = {
       symbol.flags |= symbolFlags
 
       node.symbol = symbol
@@ -202,7 +202,7 @@ object Binder {
 
     // Should not be called on a declaration with a computed property name,
     // unless it is a well known Symbol.
-    def getDeclarationName(node: Declaration): String {
+    def getDeclarationName(node: Declaration): String = {
       if (node.name) {
         if (isAmbientModule(node)) {
           return isGlobalScopeAugmentation(<ModuleDeclaration>node) ? "__global" : `"${(<LiteralExpression>node.name).text}"`
@@ -265,7 +265,7 @@ object Binder {
       }
     }
 
-    def getDisplayName(node: Declaration): String {
+    def getDisplayName(node: Declaration): String = {
       return node.name ? declarationNameToString(node.name) : getDeclarationName(node)
     }
 
@@ -277,7 +277,7 @@ object Binder {
      * @param includes - The SymbolFlags that node has in addition to its declaration type (eg: export, ambient, etc.)
      * @param excludes - The flags which node cannot be declared alongside in a symbol table. Used to report forbidden declarations.
      */
-    def declareSymbol(symbolTable: SymbolTable, parent: Symbol, node: Declaration, includes: SymbolFlags, excludes: SymbolFlags): Symbol {
+    def declareSymbol(symbolTable: SymbolTable, parent: Symbol, node: Declaration, includes: SymbolFlags, excludes: SymbolFlags): Symbol = {
       Debug.assert(!hasDynamicName(node))
 
       val isDefaultExport = node.flags & NodeFlags.Default
@@ -348,7 +348,7 @@ object Binder {
       return symbol
     }
 
-    def declareModuleMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol {
+    def declareModuleMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol = {
       val hasExportModifier = getCombinedNodeFlags(node) & NodeFlags.Export
       if (symbolFlags & SymbolFlags.Alias) {
         if (node.kind == SyntaxKind.ExportSpecifier || (node.kind == SyntaxKind.ImportEqualsDeclaration && hasExportModifier)) {
@@ -394,7 +394,7 @@ object Binder {
     // All container nodes are kept on a linked list in declaration order. This list is used by
     // the getLocalNameOfContainer def in the type checker to validate that the local name
     // used for a container is unique.
-    def bindChildren(node: Node) {
+    def bindChildren(node: Node) = {
       // Before we recurse into a node's children, we first save the existing parent, container
       // and block-container.  Then after we pop out of processing the children, we restore
       // these saved values.
@@ -520,7 +520,7 @@ object Binder {
      * Returns true if node and its subnodes were successfully traversed.
      * Returning false means that node was not examined and caller needs to dive into the node himself.
      */
-    def bindReachableStatement(node: Node): Unit {
+    def bindReachableStatement(node: Node): Unit = {
       if (checkUnreachable(node)) {
         forEachChild(node, bind)
         return
@@ -569,7 +569,7 @@ object Binder {
       }
     }
 
-    def bindWhileStatement(n: WhileStatement): Unit {
+    def bindWhileStatement(n: WhileStatement): Unit = {
       val preWhileState =
         n.expression.kind == SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState
       val postWhileState =
@@ -584,7 +584,7 @@ object Binder {
       popImplicitLabel(postWhileLabel, postWhileState)
     }
 
-    def bindDoStatement(n: DoStatement): Unit {
+    def bindDoStatement(n: DoStatement): Unit = {
       val preDoState = currentReachabilityState
 
       val postDoLabel = pushImplicitLabel()
@@ -596,7 +596,7 @@ object Binder {
       bind(n.expression)
     }
 
-    def bindForStatement(n: ForStatement): Unit {
+    def bindForStatement(n: ForStatement): Unit = {
       val preForState = currentReachabilityState
       val postForLabel = pushImplicitLabel()
 
@@ -615,7 +615,7 @@ object Binder {
       popImplicitLabel(postForLabel, postForState)
     }
 
-    def bindForInOrForOfStatement(n: ForInStatement | ForOfStatement): Unit {
+    def bindForInOrForOfStatement(n: ForInStatement | ForOfStatement): Unit = {
       val preStatementState = currentReachabilityState
       val postStatementLabel = pushImplicitLabel()
 
@@ -627,7 +627,7 @@ object Binder {
       popImplicitLabel(postStatementLabel, preStatementState)
     }
 
-    def bindIfStatement(n: IfStatement): Unit {
+    def bindIfStatement(n: IfStatement): Unit = {
       // denotes reachability state when entering 'thenStatement' part of the if statement:
       // i.e. if condition is false then thenStatement is unreachable
       val ifTrueState = n.expression.kind == SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState
@@ -652,7 +652,7 @@ object Binder {
       }
     }
 
-    def bindReturnOrThrow(n: ReturnStatement | ThrowStatement): Unit {
+    def bindReturnOrThrow(n: ReturnStatement | ThrowStatement): Unit = {
       // bind expression (don't affect reachability)
       bind(n.expression)
       if (n.kind == SyntaxKind.ReturnStatement) {
@@ -661,7 +661,7 @@ object Binder {
       currentReachabilityState = Reachability.Unreachable
     }
 
-    def bindBreakOrContinueStatement(n: BreakOrContinueStatement): Unit {
+    def bindBreakOrContinueStatement(n: BreakOrContinueStatement): Unit = {
       // call bind on label (don't affect reachability)
       bind(n.label)
       // for continue case touch label so it will be marked a used
@@ -671,7 +671,7 @@ object Binder {
       }
     }
 
-    def bindTryStatement(n: TryStatement): Unit {
+    def bindTryStatement(n: TryStatement): Unit = {
       // catch\finally blocks has the same reachability as try block
       val preTryState = currentReachabilityState
       bind(n.tryBlock)
@@ -690,7 +690,7 @@ object Binder {
       currentReachabilityState = or(postTryState, postCatchState)
     }
 
-    def bindSwitchStatement(n: SwitchStatement): Unit {
+    def bindSwitchStatement(n: SwitchStatement): Unit = {
       val preSwitchState = currentReachabilityState
       val postSwitchLabel = pushImplicitLabel()
 
@@ -707,7 +707,7 @@ object Binder {
       popImplicitLabel(postSwitchLabel, postSwitchState)
     }
 
-    def bindCaseBlock(n: CaseBlock): Unit {
+    def bindCaseBlock(n: CaseBlock): Unit = {
       val startState = currentReachabilityState
 
       for (val clause of n.clauses) {
@@ -719,7 +719,7 @@ object Binder {
       }
     }
 
-    def bindLabeledStatement(n: LabeledStatement): Unit {
+    def bindLabeledStatement(n: LabeledStatement): Unit = {
       // call bind on label (don't affect reachability)
       bind(n.label)
 
@@ -730,7 +730,7 @@ object Binder {
       }
     }
 
-    def getContainerFlags(node: Node): ContainerFlags {
+    def getContainerFlags(node: Node): ContainerFlags = {
       switch (node.kind) {
         case SyntaxKind.ClassExpression:
         case SyntaxKind.ClassDeclaration:
@@ -789,7 +789,7 @@ object Binder {
       return ContainerFlags.None
     }
 
-    def addToContainerChain(next: Node) {
+    def addToContainerChain(next: Node) = {
       if (lastContainer) {
         lastContainer.nextContainer = next
       }
@@ -797,12 +797,12 @@ object Binder {
       lastContainer = next
     }
 
-    def declareSymbolAndAddToSymbolTable(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Unit {
+    def declareSymbolAndAddToSymbolTable(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Unit = {
       // Just call this directly so that the return type of this def stays "Unit".
       declareSymbolAndAddToSymbolTableWorker(node, symbolFlags, symbolExcludes)
     }
 
-    def declareSymbolAndAddToSymbolTableWorker(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol {
+    def declareSymbolAndAddToSymbolTableWorker(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Symbol = {
       switch (container.kind) {
         // Modules, source files, and classes need specialized handling for how their
         // members are declared (for example, a member of a class will go into a specific
@@ -857,19 +857,19 @@ object Binder {
       }
     }
 
-    def declareClassMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def declareClassMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) = {
       return node.flags & NodeFlags.Static
         ? declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
         : declareSymbol(container.symbol.members, container.symbol, node, symbolFlags, symbolExcludes)
     }
 
-    def declareSourceFileMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def declareSourceFileMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) = {
       return isExternalModule(file)
         ? declareModuleMember(node, symbolFlags, symbolExcludes)
         : declareSymbol(file.locals, (), node, symbolFlags, symbolExcludes)
     }
 
-    def hasExportDeclarations(node: ModuleDeclaration | SourceFile): Boolean {
+    def hasExportDeclarations(node: ModuleDeclaration | SourceFile): Boolean = {
       val body = node.kind == SyntaxKind.SourceFile ? node : (<ModuleDeclaration>node).body
       if (body.kind == SyntaxKind.SourceFile || body.kind == SyntaxKind.ModuleBlock) {
         for (val stat of (<Block>body).statements) {
@@ -881,7 +881,7 @@ object Binder {
       return false
     }
 
-    def setExportContextFlag(node: ModuleDeclaration | SourceFile) {
+    def setExportContextFlag(node: ModuleDeclaration | SourceFile) = {
       // A declaration source file or ambient module declaration that contains no declarations (but possibly regular
       // declarations with modifiers) is an context in which declarations are implicitly exported.
       if (isInAmbientContext(node) && !hasExportDeclarations(node)) {
@@ -892,7 +892,7 @@ object Binder {
       }
     }
 
-    def bindModuleDeclaration(node: ModuleDeclaration) {
+    def bindModuleDeclaration(node: ModuleDeclaration) = {
       setExportContextFlag(node)
       if (isAmbientModule(node)) {
         if (node.flags & NodeFlags.Export) {
@@ -927,7 +927,7 @@ object Binder {
       }
     }
 
-    def bindFunctionOrConstructorType(node: SignatureDeclaration): Unit {
+    def bindFunctionOrConstructorType(node: SignatureDeclaration): Unit = {
       // For a given def symbol "<...>(...) => T" we want to generate a symbol identical
       // to the one we would get for: { <...>(...): T }
       //
@@ -942,7 +942,7 @@ object Binder {
       typeLiteralSymbol.members = { [symbol.name]: symbol }
     }
 
-    def bindObjectLiteralExpression(node: ObjectLiteralExpression) {
+    def bindObjectLiteralExpression(node: ObjectLiteralExpression) = {
       val enum ElementKind {
         Property = 1,
         Accessor = 2
@@ -987,12 +987,12 @@ object Binder {
       return bindAnonymousDeclaration(node, SymbolFlags.ObjectLiteral, "__object")
     }
 
-    def bindAnonymousDeclaration(node: Declaration, symbolFlags: SymbolFlags, name: String) {
+    def bindAnonymousDeclaration(node: Declaration, symbolFlags: SymbolFlags, name: String) = {
       val symbol = createSymbol(symbolFlags, name)
       addDeclarationToSymbol(symbol, node, symbolFlags)
     }
 
-    def bindBlockScopedDeclaration(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def bindBlockScopedDeclaration(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) = {
       switch (blockScopeContainer.kind) {
         case SyntaxKind.ModuleDeclaration:
           declareModuleMember(node, symbolFlags, symbolExcludes)
@@ -1012,13 +1012,13 @@ object Binder {
       }
     }
 
-    def bindBlockScopedVariableDeclaration(node: Declaration) {
+    def bindBlockScopedVariableDeclaration(node: Declaration) = {
       bindBlockScopedDeclaration(node, SymbolFlags.BlockScopedVariable, SymbolFlags.BlockScopedVariableExcludes)
     }
 
     // The binder visits every node in the syntax tree so it is a convenient place to perform a single localized
     // check for reserved words used as identifiers in strict mode code.
-    def checkStrictModeIdentifier(node: Identifier) {
+    def checkStrictModeIdentifier(node: Identifier) = {
       if (inStrictMode &&
         node.originalKeywordKind >= SyntaxKind.FirstFutureReservedWord &&
         node.originalKeywordKind <= SyntaxKind.LastFutureReservedWord &&
@@ -1032,7 +1032,7 @@ object Binder {
       }
     }
 
-    def getStrictModeIdentifierMessage(node: Node) {
+    def getStrictModeIdentifierMessage(node: Node) = {
       // Provide specialized messages to help the user understand why we think they're in
       // strict mode.
       if (getContainingClass(node)) {
@@ -1046,7 +1046,7 @@ object Binder {
       return Diagnostics.Identifier_expected_0_is_a_reserved_word_in_strict_mode
     }
 
-    def checkStrictModeBinaryExpression(node: BinaryExpression) {
+    def checkStrictModeBinaryExpression(node: BinaryExpression) = {
       if (inStrictMode && isLeftHandSideExpression(node.left) && isAssignmentOperator(node.operatorToken.kind)) {
         // ECMA 262 (Annex C) The identifier eval or arguments may not appear as the LeftHandSideExpression of an
         // Assignment operator(11.13) or of a PostfixExpression(11.3)
@@ -1054,7 +1054,7 @@ object Binder {
       }
     }
 
-    def checkStrictModeCatchClause(node: CatchClause) {
+    def checkStrictModeCatchClause(node: CatchClause) = {
       // It is a SyntaxError if a TryStatement with a Catch occurs within strict code and the Identifier of the
       // Catch production is eval or arguments
       if (inStrictMode && node.variableDeclaration) {
@@ -1062,7 +1062,7 @@ object Binder {
       }
     }
 
-    def checkStrictModeDeleteExpression(node: DeleteExpression) {
+    def checkStrictModeDeleteExpression(node: DeleteExpression) = {
       // Grammar checking
       if (inStrictMode && node.expression.kind == SyntaxKind.Identifier) {
         // When a delete operator occurs within strict mode code, a SyntaxError is thrown if its
@@ -1072,12 +1072,12 @@ object Binder {
       }
     }
 
-    def isEvalOrArgumentsIdentifier(node: Node): Boolean {
+    def isEvalOrArgumentsIdentifier(node: Node): Boolean = {
       return node.kind == SyntaxKind.Identifier &&
         ((<Identifier>node).text == "eval" || (<Identifier>node).text == "arguments")
     }
 
-    def checkStrictModeEvalOrArguments(contextNode: Node, name: Node) {
+    def checkStrictModeEvalOrArguments(contextNode: Node, name: Node) = {
       if (name && name.kind == SyntaxKind.Identifier) {
         val identifier = <Identifier>name
         if (isEvalOrArgumentsIdentifier(identifier)) {
@@ -1090,7 +1090,7 @@ object Binder {
       }
     }
 
-    def getStrictModeEvalOrArgumentsMessage(node: Node) {
+    def getStrictModeEvalOrArgumentsMessage(node: Node) = {
       // Provide specialized messages to help the user understand why we think they're in
       // strict mode.
       if (getContainingClass(node)) {
@@ -1104,20 +1104,20 @@ object Binder {
       return Diagnostics.Invalid_use_of_0_in_strict_mode
     }
 
-    def checkStrictModeFunctionName(node: FunctionLikeDeclaration) {
+    def checkStrictModeFunctionName(node: FunctionLikeDeclaration) = {
       if (inStrictMode) {
         // It is a SyntaxError if the identifier eval or arguments appears within a FormalParameterList of a strict mode FunctionDeclaration or FunctionExpression (13.1))
         checkStrictModeEvalOrArguments(node, node.name)
       }
     }
 
-    def checkStrictModeNumericLiteral(node: LiteralExpression) {
+    def checkStrictModeNumericLiteral(node: LiteralExpression) = {
       if (inStrictMode && node.isOctalLiteral) {
         file.bindDiagnostics.push(createDiagnosticForNode(node, Diagnostics.Octal_literals_are_not_allowed_in_strict_mode))
       }
     }
 
-    def checkStrictModePostfixUnaryExpression(node: PostfixUnaryExpression) {
+    def checkStrictModePostfixUnaryExpression(node: PostfixUnaryExpression) = {
       // Grammar checking
       // The identifier eval or arguments may not appear as the LeftHandSideExpression of an
       // Assignment operator(11.13) or of a PostfixExpression(11.3) or as the UnaryExpression
@@ -1127,7 +1127,7 @@ object Binder {
       }
     }
 
-    def checkStrictModePrefixUnaryExpression(node: PrefixUnaryExpression) {
+    def checkStrictModePrefixUnaryExpression(node: PrefixUnaryExpression) = {
       // Grammar checking
       if (inStrictMode) {
         if (node.operator == SyntaxKind.PlusPlusToken || node.operator == SyntaxKind.MinusMinusToken) {
@@ -1136,23 +1136,23 @@ object Binder {
       }
     }
 
-    def checkStrictModeWithStatement(node: WithStatement) {
+    def checkStrictModeWithStatement(node: WithStatement) = {
       // Grammar checking for withStatement
       if (inStrictMode) {
         errorOnFirstToken(node, Diagnostics.with_statements_are_not_allowed_in_strict_mode)
       }
     }
 
-    def errorOnFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any) {
+    def errorOnFirstToken(node: Node, message: DiagnosticMessage, arg0?: any, arg1?: any, arg2?: any) = {
       val span = getSpanOfTokenAtPosition(file, node.pos)
       file.bindDiagnostics.push(createFileDiagnostic(file, span.start, span.length, message, arg0, arg1, arg2))
     }
 
-    def getDestructuringParameterName(node: Declaration) {
+    def getDestructuringParameterName(node: Declaration) = {
       return "__" + indexOf((<SignatureDeclaration>node.parent).parameters, node)
     }
 
-    def bind(node: Node): Unit {
+    def bind(node: Node): Unit = {
       if (!node) {
         return
       }
@@ -1185,7 +1185,7 @@ object Binder {
       inStrictMode = savedInStrictMode
     }
 
-    def updateStrictMode(node: Node) {
+    def updateStrictMode(node: Node) = {
       switch (node.kind) {
         case SyntaxKind.SourceFile:
         case SyntaxKind.ModuleBlock:
@@ -1204,7 +1204,7 @@ object Binder {
       }
     }
 
-    def updateStrictModeStatementList(statements: NodeArray<Statement>) {
+    def updateStrictModeStatementList(statements: NodeArray<Statement>) = {
       for (val statement of statements) {
         if (!isPrologueDirective(statement)) {
           return
@@ -1218,7 +1218,7 @@ object Binder {
     }
 
     /// Should be called only on prologue directives (isPrologueDirective(node) should be true)
-    def isUseStrictPrologueDirective(node: ExpressionStatement): Boolean {
+    def isUseStrictPrologueDirective(node: ExpressionStatement): Boolean = {
       val nodeText = getTextOfNodeFromSourceText(file.text, node.expression)
 
       // Note: the node text must be exactly "use strict" or 'use strict'.  It is not ok for the
@@ -1226,7 +1226,7 @@ object Binder {
       return nodeText == "\"use strict\"" || nodeText == "'use strict'"
     }
 
-    def bindWorker(node: Node) {
+    def bindWorker(node: Node) = {
       switch (node.kind) {
         /* Strict mode checks */
         case SyntaxKind.Identifier:
@@ -1358,7 +1358,7 @@ object Binder {
       }
     }
 
-    def checkTypePredicate(node: TypePredicateNode) {
+    def checkTypePredicate(node: TypePredicateNode) = {
       val { parameterName, type } = node
       if (parameterName && parameterName.kind == SyntaxKind.Identifier) {
         checkStrictModeIdentifier(parameterName as Identifier)
@@ -1369,18 +1369,18 @@ object Binder {
       bind(type)
     }
 
-    def bindSourceFileIfExternalModule() {
+    def bindSourceFileIfExternalModule() = {
       setExportContextFlag(file)
       if (isExternalModule(file)) {
         bindSourceFileAsExternalModule()
       }
     }
 
-    def bindSourceFileAsExternalModule() {
+    def bindSourceFileAsExternalModule() = {
       bindAnonymousDeclaration(file, SymbolFlags.ValueModule, `"${removeFileExtension(file.fileName) }"`)
     }
 
-    def bindExportAssignment(node: ExportAssignment | BinaryExpression) {
+    def bindExportAssignment(node: ExportAssignment | BinaryExpression) = {
       val boundExpression = node.kind == SyntaxKind.ExportAssignment ? (<ExportAssignment>node).expression : (<BinaryExpression>node).right
       if (!container.symbol || !container.symbol.exports) {
         // Export assignment in some sort of block construct
@@ -1396,7 +1396,7 @@ object Binder {
       }
     }
 
-    def bindExportDeclaration(node: ExportDeclaration) {
+    def bindExportDeclaration(node: ExportDeclaration) = {
       if (!container.symbol || !container.symbol.exports) {
         // Export * in some sort of block construct
         bindAnonymousDeclaration(node, SymbolFlags.ExportStar, getDeclarationName(node))
@@ -1407,33 +1407,33 @@ object Binder {
       }
     }
 
-    def bindImportClause(node: ImportClause) {
+    def bindImportClause(node: ImportClause) = {
       if (node.name) {
         declareSymbolAndAddToSymbolTable(node, SymbolFlags.Alias, SymbolFlags.AliasExcludes)
       }
     }
 
-    def setCommonJsModuleIndicator(node: Node) {
+    def setCommonJsModuleIndicator(node: Node) = {
       if (!file.commonJsModuleIndicator) {
         file.commonJsModuleIndicator = node
         bindSourceFileAsExternalModule()
       }
     }
 
-    def bindExportsPropertyAssignment(node: BinaryExpression) {
+    def bindExportsPropertyAssignment(node: BinaryExpression) = {
       // When we create a property via 'exports.foo = bar', the 'exports.foo' property access
       // expression is the declaration
       setCommonJsModuleIndicator(node)
       declareSymbol(file.symbol.exports, file.symbol, <PropertyAccessExpression>node.left, SymbolFlags.Property | SymbolFlags.Export, SymbolFlags.None)
     }
 
-    def bindModuleExportsAssignment(node: BinaryExpression) {
+    def bindModuleExportsAssignment(node: BinaryExpression) = {
       // 'module.exports = expr' assignment
       setCommonJsModuleIndicator(node)
       bindExportAssignment(node)
     }
 
-    def bindThisPropertyAssignment(node: BinaryExpression) {
+    def bindThisPropertyAssignment(node: BinaryExpression) = {
       // Declare a 'member' in case it turns out the container was an ES5 class
       if (container.kind == SyntaxKind.FunctionExpression || container.kind == SyntaxKind.FunctionDeclaration) {
         container.symbol.members = container.symbol.members || {}
@@ -1442,7 +1442,7 @@ object Binder {
       }
     }
 
-    def bindPrototypePropertyAssignment(node: BinaryExpression) {
+    def bindPrototypePropertyAssignment(node: BinaryExpression) = {
       // We saw a node of the form 'x.prototype.y = z'. Declare a 'member' y on x if x was a def.
 
       // Look up the def in the local scope, since prototype assignments should
@@ -1470,7 +1470,7 @@ object Binder {
       declareSymbol(funcSymbol.members, funcSymbol, leftSideOfAssignment, SymbolFlags.Property, SymbolFlags.PropertyExcludes)
     }
 
-    def bindCallExpression(node: CallExpression) {
+    def bindCallExpression(node: CallExpression) = {
       // We're only inspecting call expressions to detect CommonJS modules, so we can skip
       // this check if we've already seen the module indicator
       if (!file.commonJsModuleIndicator && isRequireCall(node, /*checkArgumentIsStringLiteral*/false)) {
@@ -1478,7 +1478,7 @@ object Binder {
       }
     }
 
-    def bindClassLikeDeclaration(node: ClassLikeDeclaration) {
+    def bindClassLikeDeclaration(node: ClassLikeDeclaration) = {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
         if (getClassExtendsHeritageClauseElement(node) != ()) {
           hasClassExtends = true
@@ -1523,13 +1523,13 @@ object Binder {
       prototypeSymbol.parent = symbol
     }
 
-    def bindEnumDeclaration(node: EnumDeclaration) {
+    def bindEnumDeclaration(node: EnumDeclaration) = {
       return isConst(node)
         ? bindBlockScopedDeclaration(node, SymbolFlags.ConstEnum, SymbolFlags.ConstEnumExcludes)
         : bindBlockScopedDeclaration(node, SymbolFlags.RegularEnum, SymbolFlags.RegularEnumExcludes)
     }
 
-    def bindVariableDeclarationOrBindingElement(node: VariableDeclaration | BindingElement) {
+    def bindVariableDeclarationOrBindingElement(node: VariableDeclaration | BindingElement) = {
       if (inStrictMode) {
         checkStrictModeEvalOrArguments(node, node.name)
       }
@@ -1556,7 +1556,7 @@ object Binder {
       }
     }
 
-    def bindParameter(node: ParameterDeclaration) {
+    def bindParameter(node: ParameterDeclaration) = {
       if (!isDeclarationFile(file) &&
         !isInAmbientContext(node) &&
         nodeIsDecorated(node)) {
@@ -1585,7 +1585,7 @@ object Binder {
       }
     }
 
-    def bindFunctionDeclaration(node: FunctionDeclaration) {
+    def bindFunctionDeclaration(node: FunctionDeclaration) = {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
         if (isAsyncFunctionLike(node)) {
           hasAsyncFunctions = true
@@ -1596,7 +1596,7 @@ object Binder {
       return declareSymbolAndAddToSymbolTable(<Declaration>node, SymbolFlags.Function, SymbolFlags.FunctionExcludes)
     }
 
-    def bindFunctionExpression(node: FunctionExpression) {
+    def bindFunctionExpression(node: FunctionExpression) = {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
         if (isAsyncFunctionLike(node)) {
           hasAsyncFunctions = true
@@ -1608,7 +1608,7 @@ object Binder {
       return bindAnonymousDeclaration(<FunctionExpression>node, SymbolFlags.Function, bindingName)
     }
 
-    def bindPropertyOrMethodOrAccessor(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
+    def bindPropertyOrMethodOrAccessor(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) = {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
         if (isAsyncFunctionLike(node)) {
           hasAsyncFunctions = true
@@ -1625,7 +1625,7 @@ object Binder {
 
     // reachability checks
 
-    def pushNamedLabel(name: Identifier): Boolean {
+    def pushNamedLabel(name: Identifier): Boolean = {
       initializeReachabilityStateIfNecessary()
 
       if (hasProperty(labelIndexMap, name.text)) {
@@ -1635,7 +1635,7 @@ object Binder {
       return true
     }
 
-    def pushImplicitLabel(): Int {
+    def pushImplicitLabel(): Int = {
       initializeReachabilityStateIfNecessary()
 
       val index = labelStack.push(Reachability.Uninitialized) - 1
@@ -1643,7 +1643,7 @@ object Binder {
       return index
     }
 
-    def popNamedLabel(label: Identifier, outerState: Reachability): Unit {
+    def popNamedLabel(label: Identifier, outerState: Reachability): Unit = {
       val index = labelIndexMap[label.text]
       Debug.assert(index != ())
       Debug.assert(labelStack.length == index + 1)
@@ -1653,7 +1653,7 @@ object Binder {
       setCurrentStateAtLabel(labelStack.pop(), outerState, label)
     }
 
-    def popImplicitLabel(implicitLabelIndex: Int, outerState: Reachability): Unit {
+    def popImplicitLabel(implicitLabelIndex: Int, outerState: Reachability): Unit = {
       if (labelStack.length != implicitLabelIndex + 1) {
         Debug.assert(false, `Label stack: ${labelStack.length}, index:${implicitLabelIndex}`)
       }
@@ -1667,7 +1667,7 @@ object Binder {
       setCurrentStateAtLabel(labelStack.pop(), outerState, /*name*/ ())
     }
 
-    def setCurrentStateAtLabel(innerMergedState: Reachability, outerState: Reachability, label: Identifier): Unit {
+    def setCurrentStateAtLabel(innerMergedState: Reachability, outerState: Reachability, label: Identifier): Unit = {
       if (innerMergedState == Reachability.Uninitialized) {
         if (label && !options.allowUnusedLabels) {
           file.bindDiagnostics.push(createDiagnosticForNode(label, Diagnostics.Unused_label))
@@ -1679,7 +1679,7 @@ object Binder {
       }
     }
 
-    def jumpToLabel(label: Identifier, outerState: Reachability): Boolean {
+    def jumpToLabel(label: Identifier, outerState: Reachability): Boolean = {
       initializeReachabilityStateIfNecessary()
 
       val index = label ? labelIndexMap[label.text] : lastOrUndefined(implicitLabels)
@@ -1693,7 +1693,7 @@ object Binder {
       return true
     }
 
-    def checkUnreachable(node: Node): Boolean {
+    def checkUnreachable(node: Node): Boolean = {
       switch (currentReachabilityState) {
         case Reachability.Unreachable:
           val reportError =
@@ -1737,13 +1737,13 @@ object Binder {
           return false
       }
 
-      def shouldReportErrorOnModuleDeclaration(node: ModuleDeclaration): Boolean {
+      def shouldReportErrorOnModuleDeclaration(node: ModuleDeclaration): Boolean = {
         val instanceState = getModuleInstanceState(node)
         return instanceState == ModuleInstanceState.Instantiated || (instanceState == ModuleInstanceState.ConstEnumOnly && options.preserveConstEnums)
       }
     }
 
-    def initializeReachabilityStateIfNecessary(): Unit {
+    def initializeReachabilityStateIfNecessary(): Unit = {
       if (labelIndexMap) {
         return
       }

@@ -9,7 +9,7 @@ object Parser {
   var NodeConstructor: new (kind: SyntaxKind, pos: Int, end: Int) => Node
   var SourceFileConstructor: new (kind: SyntaxKind, pos: Int, end: Int) => Node
 
-  def createNode(kind: SyntaxKind, pos?: Int, end?: Int): Node {
+  def createNode(kind: SyntaxKind, pos?: Int, end?: Int): Node = {
     if (kind == SyntaxKind.SourceFile) {
       return new (SourceFileConstructor || (SourceFileConstructor = objectAllocator.getSourceFileConstructor()))(kind, pos, end)
     }
@@ -18,19 +18,19 @@ object Parser {
     }
   }
 
-  def visitNode<T>(cbNode: (node: Node) => T, node: Node): T {
+  def visitNode<T>(cbNode: (node: Node) => T, node: Node): T = {
     if (node) {
       return cbNode(node)
     }
   }
 
-  def visitNodeArray<T>(cbNodes: (nodes: Node[]) => T, nodes: Node[]) {
+  def visitNodeArray<T>(cbNodes: (nodes: Node[]) => T, nodes: Node[]) = {
     if (nodes) {
       return cbNodes(nodes)
     }
   }
 
-  def visitEachNode<T>(cbNode: (node: Node) => T, nodes: Node[]) {
+  def visitEachNode<T>(cbNode: (node: Node) => T, nodes: Node[]) = {
     if (nodes) {
       for (val node of nodes) {
         val result = cbNode(node)
@@ -45,7 +45,7 @@ object Parser {
   // stored in properties. If a 'cbNodes' callback is specified, it is invoked for embedded arrays; otherwise,
   // embedded arrays are flattened and the 'cbNode' callback is invoked for each element. If a callback returns
   // a truthy value, iteration stops and that value is returned. Otherwise, () is returned.
-  def forEachChild<T>(node: Node, cbNode: (node: Node) => T, cbNodeArray?: (nodes: Node[]) => T): T {
+  def forEachChild<T>(node: Node, cbNode: (node: Node) => T, cbNodeArray?: (nodes: Node[]) => T): T = {
     if (!node) {
       return
     }
@@ -401,7 +401,7 @@ object Parser {
     }
   }
 
-  def createSourceFile(fileName: String, sourceText: String, languageVersion: ScriptTarget, setParentNodes = false): SourceFile {
+  def createSourceFile(fileName: String, sourceText: String, languageVersion: ScriptTarget, setParentNodes = false): SourceFile = {
     val start = new Date().getTime()
     val result = Parser.parseSourceFile(fileName, sourceText, languageVersion, /*syntaxCursor*/ (), setParentNodes)
 
@@ -418,18 +418,18 @@ object Parser {
   // from this SourceFile that are being held onto may change as a result (including
   // becoming detached from any SourceFile).  It is recommended that this SourceFile not
   // be used once 'update' is called on it.
-  def updateSourceFile(sourceFile: SourceFile, newText: String, textChangeRange: TextChangeRange, aggressiveChecks?: Boolean): SourceFile {
+  def updateSourceFile(sourceFile: SourceFile, newText: String, textChangeRange: TextChangeRange, aggressiveChecks?: Boolean): SourceFile = {
     return IncrementalParser.updateSourceFile(sourceFile, newText, textChangeRange, aggressiveChecks)
   }
 
   /* @internal */
-  def parseIsolatedJSDocComment(content: String, start?: Int, length?: Int) {
+  def parseIsolatedJSDocComment(content: String, start?: Int, length?: Int) = {
     return Parser.JSDocParser.parseIsolatedJSDocComment(content, start, length)
   }
 
   /* @internal */
   // Exposed only for testing.
-  def parseJSDocTypeExpressionForTests(content: String, start?: Int, length?: Int) {
+  def parseJSDocTypeExpressionForTests(content: String, start?: Int, length?: Int) = {
     return Parser.JSDocParser.parseJSDocTypeExpressionForTests(content, start, length)
   }
 
@@ -535,7 +535,7 @@ object Parser {
     // attached to the EOF token.
     var parseErrorBeforeNextFinishedNode = false
 
-    def parseSourceFile(fileName: String, _sourceText: String, languageVersion: ScriptTarget, _syntaxCursor: IncrementalParser.SyntaxCursor, setParentNodes?: Boolean): SourceFile {
+    def parseSourceFile(fileName: String, _sourceText: String, languageVersion: ScriptTarget, _syntaxCursor: IncrementalParser.SyntaxCursor, setParentNodes?: Boolean): SourceFile = {
       val isJavaScriptFile = hasJavaScriptFileExtension(fileName) || _sourceText.lastIndexOf("// @language=javascript", 0) == 0
       initializeState(fileName, _sourceText, languageVersion, isJavaScriptFile, _syntaxCursor)
 
@@ -546,12 +546,12 @@ object Parser {
       return result
     }
 
-    def getLanguageVariant(fileName: String) {
+    def getLanguageVariant(fileName: String) = {
       // .tsx and .jsx files are treated as jsx language variant.
       return fileExtensionIs(fileName, ".tsx") || fileExtensionIs(fileName, ".jsx") || fileExtensionIs(fileName, ".js") ?  LanguageVariant.JSX  : LanguageVariant.Standard
     }
 
-    def initializeState(fileName: String, _sourceText: String, languageVersion: ScriptTarget, isJavaScriptFile: Boolean, _syntaxCursor: IncrementalParser.SyntaxCursor) {
+    def initializeState(fileName: String, _sourceText: String, languageVersion: ScriptTarget, isJavaScriptFile: Boolean, _syntaxCursor: IncrementalParser.SyntaxCursor) = {
       NodeConstructor = objectAllocator.getNodeConstructor()
       SourceFileConstructor = objectAllocator.getSourceFileConstructor()
 
@@ -574,7 +574,7 @@ object Parser {
       scanner.setLanguageVariant(getLanguageVariant(fileName))
     }
 
-    def clearState() {
+    def clearState() = {
       // Clear out the text the scanner is pointing at, so it doesn't keep anything alive unnecessarily.
       scanner.setText("")
       scanner.setOnError(())
@@ -587,7 +587,7 @@ object Parser {
       sourceText = ()
     }
 
-    def parseSourceFileWorker(fileName: String, languageVersion: ScriptTarget, setParentNodes: Boolean): SourceFile {
+    def parseSourceFileWorker(fileName: String, languageVersion: ScriptTarget, setParentNodes: Boolean): SourceFile = {
       sourceFile = createSourceFile(fileName, languageVersion)
       sourceFile.flags = contextFlags
 
@@ -614,7 +614,7 @@ object Parser {
     }
 
 
-    def addJSDocComment<T extends Node>(node: T): T {
+    def addJSDocComment<T extends Node>(node: T): T = {
       if (contextFlags & NodeFlags.JavaScriptFile) {
         val comments = getLeadingCommentRangesOfNode(node, sourceFile)
         if (comments) {
@@ -630,7 +630,7 @@ object Parser {
       return node
     }
 
-    def fixupParentReferences(sourceFile: Node) {
+    def fixupParentReferences(sourceFile: Node) = {
       // normally parent references are set during binding. However, for clients that only need
       // a syntax tree, and no semantic features, then the binding process is an unnecessary
       // overhead.  This functions allows us to set all the parents, without all the expense of
@@ -640,7 +640,7 @@ object Parser {
       forEachChild(sourceFile, visitNode)
       return
 
-      def visitNode(n: Node): Unit {
+      def visitNode(n: Node): Unit = {
         // walk down setting parents that differ from the parent we think it should be.  This
         // allows us to quickly bail out of setting parents for subtrees during incremental
         // parsing
@@ -655,7 +655,7 @@ object Parser {
       }
     }
 
-    def createSourceFile(fileName: String, languageVersion: ScriptTarget): SourceFile {
+    def createSourceFile(fileName: String, languageVersion: ScriptTarget): SourceFile = {
       // code from createNode is inlined here so createNode won't have to deal with special case of creating source files
       // this is quite rare comparing to other nodes and createNode should be as fast as possible
       val sourceFile = <SourceFile>new SourceFileConstructor(SyntaxKind.SourceFile, /*pos*/ 0, /* end */ sourceText.length)
@@ -671,7 +671,7 @@ object Parser {
       return sourceFile
     }
 
-    def setContextFlag(val: Boolean, flag: NodeFlags) {
+    def setContextFlag(val: Boolean, flag: NodeFlags) = {
       if (val) {
         contextFlags |= flag
       }
@@ -680,23 +680,23 @@ object Parser {
       }
     }
 
-    def setDisallowInContext(val: Boolean) {
+    def setDisallowInContext(val: Boolean) = {
       setContextFlag(val, NodeFlags.DisallowInContext)
     }
 
-    def setYieldContext(val: Boolean) {
+    def setYieldContext(val: Boolean) = {
       setContextFlag(val, NodeFlags.YieldContext)
     }
 
-    def setDecoratorContext(val: Boolean) {
+    def setDecoratorContext(val: Boolean) = {
       setContextFlag(val, NodeFlags.DecoratorContext)
     }
 
-    def setAwaitContext(val: Boolean) {
+    def setAwaitContext(val: Boolean) = {
       setContextFlag(val, NodeFlags.AwaitContext)
     }
 
-    def doOutsideOfContext<T>(context: NodeFlags, func: () => T): T {
+    def doOutsideOfContext<T>(context: NodeFlags, func: () => T): T = {
       // contextFlagsToClear will contain only the context flags that are
       // currently set that we need to temporarily clear
       // We don't just blindly reset to the previous flags to ensure
@@ -717,7 +717,7 @@ object Parser {
       return func()
     }
 
-    def doInsideOfContext<T>(context: NodeFlags, func: () => T): T {
+    def doInsideOfContext<T>(context: NodeFlags, func: () => T): T = {
       // contextFlagsToSet will contain only the context flags that
       // are not currently set that we need to temporarily enable.
       // We don't just blindly reset to the previous flags to ensure
@@ -738,62 +738,62 @@ object Parser {
       return func()
     }
 
-    def allowInAnd<T>(func: () => T): T {
+    def allowInAnd<T>(func: () => T): T = {
       return doOutsideOfContext(NodeFlags.DisallowInContext, func)
     }
 
-    def disallowInAnd<T>(func: () => T): T {
+    def disallowInAnd<T>(func: () => T): T = {
       return doInsideOfContext(NodeFlags.DisallowInContext, func)
     }
 
-    def doInYieldContext<T>(func: () => T): T {
+    def doInYieldContext<T>(func: () => T): T = {
       return doInsideOfContext(NodeFlags.YieldContext, func)
     }
 
-    def doInDecoratorContext<T>(func: () => T): T {
+    def doInDecoratorContext<T>(func: () => T): T = {
       return doInsideOfContext(NodeFlags.DecoratorContext, func)
     }
 
-    def doInAwaitContext<T>(func: () => T): T {
+    def doInAwaitContext<T>(func: () => T): T = {
       return doInsideOfContext(NodeFlags.AwaitContext, func)
     }
 
-    def doOutsideOfAwaitContext<T>(func: () => T): T {
+    def doOutsideOfAwaitContext<T>(func: () => T): T = {
       return doOutsideOfContext(NodeFlags.AwaitContext, func)
     }
 
-    def doInYieldAndAwaitContext<T>(func: () => T): T {
+    def doInYieldAndAwaitContext<T>(func: () => T): T = {
       return doInsideOfContext(NodeFlags.YieldContext | NodeFlags.AwaitContext, func)
     }
 
-    def inContext(flags: NodeFlags) {
+    def inContext(flags: NodeFlags) = {
       return (contextFlags & flags) != 0
     }
 
-    def inYieldContext() {
+    def inYieldContext() = {
       return inContext(NodeFlags.YieldContext)
     }
 
-    def inDisallowInContext() {
+    def inDisallowInContext() = {
       return inContext(NodeFlags.DisallowInContext)
     }
 
-    def inDecoratorContext() {
+    def inDecoratorContext() = {
       return inContext(NodeFlags.DecoratorContext)
     }
 
-    def inAwaitContext() {
+    def inAwaitContext() = {
       return inContext(NodeFlags.AwaitContext)
     }
 
-    def parseErrorAtCurrentToken(message: DiagnosticMessage, arg0?: any): Unit {
+    def parseErrorAtCurrentToken(message: DiagnosticMessage, arg0?: any): Unit = {
       val start = scanner.getTokenPos()
       val length = scanner.getTextPos() - start
 
       parseErrorAtPosition(start, length, message, arg0)
     }
 
-    def parseErrorAtPosition(start: Int, length: Int, message: DiagnosticMessage, arg0?: any): Unit {
+    def parseErrorAtPosition(start: Int, length: Int, message: DiagnosticMessage, arg0?: any): Unit = {
       // Don't report another error if it would just be at the same position as the last error.
       val lastError = lastOrUndefined(parseDiagnostics)
       if (!lastError || start != lastError.start) {
@@ -805,44 +805,44 @@ object Parser {
       parseErrorBeforeNextFinishedNode = true
     }
 
-    def scanError(message: DiagnosticMessage, length?: Int) {
+    def scanError(message: DiagnosticMessage, length?: Int) = {
       val pos = scanner.getTextPos()
       parseErrorAtPosition(pos, length || 0, message)
     }
 
-    def getNodePos(): Int {
+    def getNodePos(): Int = {
       return scanner.getStartPos()
     }
 
-    def getNodeEnd(): Int {
+    def getNodeEnd(): Int = {
       return scanner.getStartPos()
     }
 
-    def nextToken(): SyntaxKind {
+    def nextToken(): SyntaxKind = {
       return token = scanner.scan()
     }
 
-    def reScanGreaterToken(): SyntaxKind {
+    def reScanGreaterToken(): SyntaxKind = {
       return token = scanner.reScanGreaterToken()
     }
 
-    def reScanSlashToken(): SyntaxKind {
+    def reScanSlashToken(): SyntaxKind = {
       return token = scanner.reScanSlashToken()
     }
 
-    def reScanTemplateToken(): SyntaxKind {
+    def reScanTemplateToken(): SyntaxKind = {
       return token = scanner.reScanTemplateToken()
     }
 
-    def scanJsxIdentifier(): SyntaxKind {
+    def scanJsxIdentifier(): SyntaxKind = {
       return token = scanner.scanJsxIdentifier()
     }
 
-    def scanJsxText(): SyntaxKind {
+    def scanJsxText(): SyntaxKind = {
       return token = scanner.scanJsxToken()
     }
 
-    def speculationHelper<T>(callback: () => T, isLookAhead: Boolean): T {
+    def speculationHelper<T>(callback: () => T, isLookAhead: Boolean): T = {
       // Keep track of the state we'll need to rollback to if lookahead fails (or if the
       // caller asked us to always reset our state).
       val saveToken = token
@@ -879,7 +879,7 @@ object Parser {
      * was in immediately prior to invoking the callback.  The result of invoking the callback
      * is returned from this def.
      */
-    def lookAhead<T>(callback: () => T): T {
+    def lookAhead<T>(callback: () => T): T = {
       return speculationHelper(callback, /*isLookAhead*/ true)
     }
 
@@ -888,12 +888,12 @@ object Parser {
      * callback returns something truthy, then the parser state is not rolled back.  The result
      * of invoking the callback is returned from this def.
      */
-    def tryParse<T>(callback: () => T): T {
+    def tryParse<T>(callback: () => T): T = {
       return speculationHelper(callback, /*isLookAhead*/ false)
     }
 
     // Ignore strict mode flag because we will report an error in type checker instead.
-    def isIdentifier(): Boolean {
+    def isIdentifier(): Boolean = {
       if (token == SyntaxKind.Identifier) {
         return true
       }
@@ -913,7 +913,7 @@ object Parser {
       return token > SyntaxKind.LastReservedWord
     }
 
-    def parseExpected(kind: SyntaxKind, diagnosticMessage?: DiagnosticMessage, shouldAdvance = true): Boolean {
+    def parseExpected(kind: SyntaxKind, diagnosticMessage?: DiagnosticMessage, shouldAdvance = true): Boolean = {
       if (token == kind) {
         if (shouldAdvance) {
           nextToken()
@@ -931,7 +931,7 @@ object Parser {
       return false
     }
 
-    def parseOptional(t: SyntaxKind): Boolean {
+    def parseOptional(t: SyntaxKind): Boolean = {
       if (token == t) {
         nextToken()
         return true
@@ -939,25 +939,25 @@ object Parser {
       return false
     }
 
-    def parseOptionalToken(t: SyntaxKind): Node {
+    def parseOptionalToken(t: SyntaxKind): Node = {
       if (token == t) {
         return parseTokenNode()
       }
       return ()
     }
 
-    def parseExpectedToken(t: SyntaxKind, reportAtCurrentPosition: Boolean, diagnosticMessage: DiagnosticMessage, arg0?: any): Node {
+    def parseExpectedToken(t: SyntaxKind, reportAtCurrentPosition: Boolean, diagnosticMessage: DiagnosticMessage, arg0?: any): Node = {
       return parseOptionalToken(t) ||
         createMissingNode(t, reportAtCurrentPosition, diagnosticMessage, arg0)
     }
 
-    def parseTokenNode<T extends Node>(): T {
+    def parseTokenNode<T extends Node>(): T = {
       val node = <T>createNode(token)
       nextToken()
       return finishNode(node)
     }
 
-    def canParseSemicolon() {
+    def canParseSemicolon() = {
       // If there's a real semicolon, then we can always parse it out.
       if (token == SyntaxKind.SemicolonToken) {
         return true
@@ -967,7 +967,7 @@ object Parser {
       return token == SyntaxKind.CloseBraceToken || token == SyntaxKind.EndOfFileToken || scanner.hasPrecedingLineBreak()
     }
 
-    def parseSemicolon(): Boolean {
+    def parseSemicolon(): Boolean = {
       if (canParseSemicolon()) {
         if (token == SyntaxKind.SemicolonToken) {
           // consume the semicolon if it was explicitly provided.
@@ -982,7 +982,7 @@ object Parser {
     }
 
     // note: this def creates only node
-    def createNode(kind: SyntaxKind, pos?: Int): Node {
+    def createNode(kind: SyntaxKind, pos?: Int): Node = {
       nodeCount++
       if (!(pos >= 0)) {
         pos = scanner.getStartPos()
@@ -991,7 +991,7 @@ object Parser {
       return new NodeConstructor(kind, pos, pos)
     }
 
-    def finishNode<T extends Node>(node: T, end?: Int): T {
+    def finishNode<T extends Node>(node: T, end?: Int): T = {
       node.end = end == () ? scanner.getStartPos() : end
 
       if (contextFlags) {
@@ -1009,7 +1009,7 @@ object Parser {
       return node
     }
 
-    def createMissingNode(kind: SyntaxKind, reportAtCurrentPosition: Boolean, diagnosticMessage: DiagnosticMessage, arg0?: any): Node {
+    def createMissingNode(kind: SyntaxKind, reportAtCurrentPosition: Boolean, diagnosticMessage: DiagnosticMessage, arg0?: any): Node = {
       if (reportAtCurrentPosition) {
         parseErrorAtPosition(scanner.getStartPos(), 0, diagnosticMessage, arg0)
       }
@@ -1022,7 +1022,7 @@ object Parser {
       return finishNode(result)
     }
 
-    def internIdentifier(text: String): String {
+    def internIdentifier(text: String): String = {
       text = escapeIdentifier(text)
       return hasProperty(identifiers, text) ? identifiers[text] : (identifiers[text] = text)
     }
@@ -1030,7 +1030,7 @@ object Parser {
     // An identifier that starts with two underscores has an extra underscore character prepended to it to avoid issues
     // with magic property names like '__proto__'. The 'identifiers' object is used to share a single String instance for
     // each identifier in order to reduce memory consumption.
-    def createIdentifier(isIdentifier: Boolean, diagnosticMessage?: DiagnosticMessage): Identifier {
+    def createIdentifier(isIdentifier: Boolean, diagnosticMessage?: DiagnosticMessage): Identifier = {
       identifierCount++
       if (isIdentifier) {
         val node = <Identifier>createNode(SyntaxKind.Identifier)
@@ -1047,21 +1047,21 @@ object Parser {
       return <Identifier>createMissingNode(SyntaxKind.Identifier, /*reportAtCurrentPosition*/ false, diagnosticMessage || Diagnostics.Identifier_expected)
     }
 
-    def parseIdentifier(diagnosticMessage?: DiagnosticMessage): Identifier {
+    def parseIdentifier(diagnosticMessage?: DiagnosticMessage): Identifier = {
       return createIdentifier(isIdentifier(), diagnosticMessage)
     }
 
-    def parseIdentifierName(): Identifier {
+    def parseIdentifierName(): Identifier = {
       return createIdentifier(tokenIsIdentifierOrKeyword(token))
     }
 
-    def isLiteralPropertyName(): Boolean {
+    def isLiteralPropertyName(): Boolean = {
       return tokenIsIdentifierOrKeyword(token) ||
         token == SyntaxKind.StringLiteral ||
         token == SyntaxKind.NumericLiteral
     }
 
-    def parsePropertyNameWorker(allowComputedPropertyNames: Boolean): PropertyName {
+    def parsePropertyNameWorker(allowComputedPropertyNames: Boolean): PropertyName = {
       if (token == SyntaxKind.StringLiteral || token == SyntaxKind.NumericLiteral) {
         return parseLiteralNode(/*internName*/ true)
       }
@@ -1071,7 +1071,7 @@ object Parser {
       return parseIdentifierName()
     }
 
-    def parsePropertyName(): PropertyName {
+    def parsePropertyName(): PropertyName = {
       return parsePropertyNameWorker(/*allowComputedPropertyNames*/ true)
     }
 
@@ -1079,11 +1079,11 @@ object Parser {
       return <Identifier | LiteralExpression>parsePropertyNameWorker(/*allowComputedPropertyNames*/ false)
     }
 
-    def isSimplePropertyName() {
+    def isSimplePropertyName() = {
       return token == SyntaxKind.StringLiteral || token == SyntaxKind.NumericLiteral || tokenIsIdentifierOrKeyword(token)
     }
 
-    def parseComputedPropertyName(): ComputedPropertyName {
+    def parseComputedPropertyName(): ComputedPropertyName = {
       // PropertyName [Yield]:
       //    LiteralPropertyName
       //    ComputedPropertyName[?Yield]
@@ -1099,11 +1099,11 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseContextualModifier(t: SyntaxKind): Boolean {
+    def parseContextualModifier(t: SyntaxKind): Boolean = {
       return token == t && tryParse(nextTokenCanFollowModifier)
     }
 
-    def nextTokenIsOnSameLineAndCanFollowModifier() {
+    def nextTokenIsOnSameLineAndCanFollowModifier() = {
       nextToken()
       if (scanner.hasPrecedingLineBreak()) {
         return false
@@ -1111,7 +1111,7 @@ object Parser {
       return canFollowModifier()
     }
 
-    def nextTokenCanFollowModifier() {
+    def nextTokenCanFollowModifier() = {
       if (token == SyntaxKind.ConstKeyword) {
         // 'val' is only a modifier if followed by 'enum'.
         return nextToken() == SyntaxKind.EnumKeyword
@@ -1134,24 +1134,24 @@ object Parser {
       return nextTokenIsOnSameLineAndCanFollowModifier()
     }
 
-    def parseAnyContextualModifier(): Boolean {
+    def parseAnyContextualModifier(): Boolean = {
       return isModifierKind(token) && tryParse(nextTokenCanFollowModifier)
     }
 
-    def canFollowModifier(): Boolean {
+    def canFollowModifier(): Boolean = {
       return token == SyntaxKind.OpenBracketToken
         || token == SyntaxKind.OpenBraceToken
         || token == SyntaxKind.AsteriskToken
         || isLiteralPropertyName()
     }
 
-    def nextTokenIsClassOrFunction(): Boolean {
+    def nextTokenIsClassOrFunction(): Boolean = {
       nextToken()
       return token == SyntaxKind.ClassKeyword || token == SyntaxKind.FunctionKeyword
     }
 
     // True if positioned at the start of a list element
-    def isListElement(parsingContext: ParsingContext, inErrorRecovery: Boolean): Boolean {
+    def isListElement(parsingContext: ParsingContext, inErrorRecovery: Boolean): Boolean = {
       val node = currentNode(parsingContext)
       if (node) {
         return true
@@ -1235,7 +1235,7 @@ object Parser {
       Debug.fail("Non-exhaustive case in 'isListElement'.")
     }
 
-    def isValidHeritageClauseObjectLiteral() {
+    def isValidHeritageClauseObjectLiteral() = {
       Debug.assert(token == SyntaxKind.OpenBraceToken)
       if (nextToken() == SyntaxKind.CloseBraceToken) {
         // if we see  "extends {}" then only treat the {} as what we're extending (and not
@@ -1253,17 +1253,17 @@ object Parser {
       return true
     }
 
-    def nextTokenIsIdentifier() {
+    def nextTokenIsIdentifier() = {
       nextToken()
       return isIdentifier()
     }
 
-    def nextTokenIsIdentifierOrKeyword() {
+    def nextTokenIsIdentifierOrKeyword() = {
       nextToken()
       return tokenIsIdentifierOrKeyword(token)
     }
 
-    def isHeritageClauseExtendsOrImplementsKeyword(): Boolean {
+    def isHeritageClauseExtendsOrImplementsKeyword(): Boolean = {
       if (token == SyntaxKind.ImplementsKeyword ||
         token == SyntaxKind.ExtendsKeyword) {
 
@@ -1273,13 +1273,13 @@ object Parser {
       return false
     }
 
-    def nextTokenIsStartOfExpression() {
+    def nextTokenIsStartOfExpression() = {
       nextToken()
       return isStartOfExpression()
     }
 
     // True if positioned at a list terminator
-    def isListTerminator(kind: ParsingContext): Boolean {
+    def isListTerminator(kind: ParsingContext): Boolean = {
       if (token == SyntaxKind.EndOfFileToken) {
         // Being at the end of the file ends all lists.
         return true
@@ -1334,7 +1334,7 @@ object Parser {
       }
     }
 
-    def isVariableDeclaratorListTerminator(): Boolean {
+    def isVariableDeclaratorListTerminator(): Boolean = {
       // If we can consume a semicolon (either explicitly, or with ASI), then consider us done
       // with parsing the list of  variable declarators.
       if (canParseSemicolon()) {
@@ -1360,7 +1360,7 @@ object Parser {
     }
 
     // True if positioned at element or terminator of the current list or any enclosing list
-    def isInSomeParsingContext(): Boolean {
+    def isInSomeParsingContext(): Boolean = {
       for (var kind = 0; kind < ParsingContext.Count; kind++) {
         if (parsingContext & (1 << kind)) {
           if (isListElement(kind, /*inErrorRecovery*/ true) || isListTerminator(kind)) {
@@ -1397,7 +1397,7 @@ object Parser {
       return result
     }
 
-    def parseListElement<T extends Node>(parsingContext: ParsingContext, parseElement: () => T): T {
+    def parseListElement<T extends Node>(parsingContext: ParsingContext, parseElement: () => T): T = {
       val node = currentNode(parsingContext)
       if (node) {
         return <T>consumeNode(node)
@@ -1406,7 +1406,7 @@ object Parser {
       return parseElement()
     }
 
-    def currentNode(parsingContext: ParsingContext): Node {
+    def currentNode(parsingContext: ParsingContext): Node = {
       // If there is an outstanding parse error that we've encountered, but not attached to
       // some node, then we cannot get a node from the old source tree.  This is because we
       // want to mark the next node we encounter as being unusable.
@@ -1466,14 +1466,14 @@ object Parser {
       return node
     }
 
-    def consumeNode(node: Node) {
+    def consumeNode(node: Node) = {
       // Move the scanner so it is after the node we just consumed.
       scanner.setTextPos(node.end)
       nextToken()
       return node
     }
 
-    def canReuseNode(node: Node, parsingContext: ParsingContext): Boolean {
+    def canReuseNode(node: Node, parsingContext: ParsingContext): Boolean = {
       switch (parsingContext) {
         case ParsingContext.ClassMembers:
           return isReusableClassMember(node)
@@ -1550,7 +1550,7 @@ object Parser {
       return false
     }
 
-    def isReusableClassMember(node: Node) {
+    def isReusableClassMember(node: Node) = {
       if (node) {
         switch (node.kind) {
           case SyntaxKind.Constructor:
@@ -1575,7 +1575,7 @@ object Parser {
       return false
     }
 
-    def isReusableSwitchClause(node: Node) {
+    def isReusableSwitchClause(node: Node) = {
       if (node) {
         switch (node.kind) {
           case SyntaxKind.CaseClause:
@@ -1587,7 +1587,7 @@ object Parser {
       return false
     }
 
-    def isReusableStatement(node: Node) {
+    def isReusableStatement(node: Node) = {
       if (node) {
         switch (node.kind) {
           case SyntaxKind.FunctionDeclaration:
@@ -1626,11 +1626,11 @@ object Parser {
       return false
     }
 
-    def isReusableEnumMember(node: Node) {
+    def isReusableEnumMember(node: Node) = {
       return node.kind == SyntaxKind.EnumMember
     }
 
-    def isReusableTypeMember(node: Node) {
+    def isReusableTypeMember(node: Node) = {
       if (node) {
         switch (node.kind) {
           case SyntaxKind.ConstructSignature:
@@ -1645,7 +1645,7 @@ object Parser {
       return false
     }
 
-    def isReusableVariableDeclaration(node: Node) {
+    def isReusableVariableDeclaration(node: Node) = {
       if (node.kind != SyntaxKind.VariableDeclaration) {
         return false
       }
@@ -1668,7 +1668,7 @@ object Parser {
       return variableDeclarator.initializer == ()
     }
 
-    def isReusableParameter(node: Node) {
+    def isReusableParameter(node: Node) = {
       if (node.kind != SyntaxKind.Parameter) {
         return false
       }
@@ -1679,7 +1679,7 @@ object Parser {
     }
 
     // Returns true if we should abort parsing.
-    def abortParsingListOrMoveToNextToken(kind: ParsingContext) {
+    def abortParsingListOrMoveToNextToken(kind: ParsingContext) = {
       parseErrorAtCurrentToken(parsingContextErrors(kind))
       if (isInSomeParsingContext()) {
         return true
@@ -1689,7 +1689,7 @@ object Parser {
       return false
     }
 
-    def parsingContextErrors(context: ParsingContext): DiagnosticMessage {
+    def parsingContextErrors(context: ParsingContext): DiagnosticMessage = {
       switch (context) {
         case ParsingContext.SourceElements: return Diagnostics.Declaration_or_statement_expected
         case ParsingContext.BlockStatements: return Diagnostics.Declaration_or_statement_expected
@@ -1799,7 +1799,7 @@ object Parser {
     }
 
     // The allowReservedWords parameter controls whether reserved words are permitted after the first dot
-    def parseEntityName(allowReservedWords: Boolean, diagnosticMessage?: DiagnosticMessage): EntityName {
+    def parseEntityName(allowReservedWords: Boolean, diagnosticMessage?: DiagnosticMessage): EntityName = {
       var entity: EntityName = parseIdentifier(diagnosticMessage)
       while (parseOptional(SyntaxKind.DotToken)) {
         val node = <QualifiedName>createNode(SyntaxKind.QualifiedName, entity.pos)
@@ -1810,7 +1810,7 @@ object Parser {
       return entity
     }
 
-    def parseRightSideOfDot(allowIdentifierNames: Boolean): Identifier {
+    def parseRightSideOfDot(allowIdentifierNames: Boolean): Identifier = {
       // Technically a keyword is valid here as all identifiers and keywords are identifier names.
       // However, often we'll encounter this in error situations when the identifier or keyword
       // is actually starting another valid construct.
@@ -1844,7 +1844,7 @@ object Parser {
       return allowIdentifierNames ? parseIdentifierName() : parseIdentifier()
     }
 
-    def parseTemplateExpression(): TemplateExpression {
+    def parseTemplateExpression(): TemplateExpression = {
       val template = <TemplateExpression>createNode(SyntaxKind.TemplateExpression)
 
       template.head = parseTemplateLiteralFragment()
@@ -1864,7 +1864,7 @@ object Parser {
       return finishNode(template)
     }
 
-    def parseTemplateSpan(): TemplateSpan {
+    def parseTemplateSpan(): TemplateSpan = {
       val span = <TemplateSpan>createNode(SyntaxKind.TemplateSpan)
       span.expression = allowInAnd(parseExpression)
 
@@ -1882,19 +1882,19 @@ object Parser {
       return finishNode(span)
     }
 
-    def parseStringLiteralTypeNode(): StringLiteralTypeNode {
+    def parseStringLiteralTypeNode(): StringLiteralTypeNode = {
       return <StringLiteralTypeNode>parseLiteralLikeNode(SyntaxKind.StringLiteralType, /*internName*/ true)
     }
 
-    def parseLiteralNode(internName?: Boolean): LiteralExpression {
+    def parseLiteralNode(internName?: Boolean): LiteralExpression = {
       return <LiteralExpression>parseLiteralLikeNode(token, internName)
     }
 
-    def parseTemplateLiteralFragment(): TemplateLiteralFragment {
+    def parseTemplateLiteralFragment(): TemplateLiteralFragment = {
       return <TemplateLiteralFragment>parseLiteralLikeNode(token, /*internName*/ false)
     }
 
-    def parseLiteralLikeNode(kind: SyntaxKind, internName: Boolean): LiteralLikeNode {
+    def parseLiteralLikeNode(kind: SyntaxKind, internName: Boolean): LiteralLikeNode = {
       val node = <LiteralExpression>createNode(kind)
       val text = scanner.getTokenValue()
       node.text = internName ? internIdentifier(text) : text
@@ -1929,7 +1929,7 @@ object Parser {
 
     // TYPES
 
-    def parseTypeReference(): TypeReferenceNode {
+    def parseTypeReference(): TypeReferenceNode = {
       val typeName = parseEntityName(/*allowReservedWords*/ false, Diagnostics.Type_expected)
       val node = <TypeReferenceNode>createNode(SyntaxKind.TypeReference, typeName.pos)
       node.typeName = typeName
@@ -1939,7 +1939,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseTypePredicate(lhs: Identifier | ThisTypeNode): TypePredicateNode {
+    def parseTypePredicate(lhs: Identifier | ThisTypeNode): TypePredicateNode = {
       nextToken()
       val node = createNode(SyntaxKind.TypePredicate, lhs.pos) as TypePredicateNode
       node.parameterName = lhs
@@ -1947,20 +1947,20 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseThisTypeNode(): ThisTypeNode {
+    def parseThisTypeNode(): ThisTypeNode = {
       val node = createNode(SyntaxKind.ThisType) as ThisTypeNode
       nextToken()
       return finishNode(node)
     }
 
-    def parseTypeQuery(): TypeQueryNode {
+    def parseTypeQuery(): TypeQueryNode = {
       val node = <TypeQueryNode>createNode(SyntaxKind.TypeQuery)
       parseExpected(SyntaxKind.TypeOfKeyword)
       node.exprName = parseEntityName(/*allowReservedWords*/ true)
       return finishNode(node)
     }
 
-    def parseTypeParameter(): TypeParameterDeclaration {
+    def parseTypeParameter(): TypeParameterDeclaration = {
       val node = <TypeParameterDeclaration>createNode(SyntaxKind.TypeParameter)
       node.name = parseIdentifier()
       if (parseOptional(SyntaxKind.ExtendsKeyword)) {
@@ -1992,7 +1992,7 @@ object Parser {
       }
     }
 
-    def parseParameterType(): TypeNode {
+    def parseParameterType(): TypeNode = {
       if (parseOptional(SyntaxKind.ColonToken)) {
         return parseType()
       }
@@ -2000,18 +2000,18 @@ object Parser {
       return ()
     }
 
-    def isStartOfParameter(): Boolean {
+    def isStartOfParameter(): Boolean = {
       return token == SyntaxKind.DotDotDotToken || isIdentifierOrPattern() || isModifierKind(token) || token == SyntaxKind.AtToken
     }
 
-    def setModifiers(node: Node, modifiers: ModifiersArray) {
+    def setModifiers(node: Node, modifiers: ModifiersArray) = {
       if (modifiers) {
         node.flags |= modifiers.flags
         node.modifiers = modifiers
       }
     }
 
-    def parseParameter(): ParameterDeclaration {
+    def parseParameter(): ParameterDeclaration = {
       val node = <ParameterDeclaration>createNode(SyntaxKind.Parameter)
       node.decorators = parseDecorators()
       setModifiers(node, parseModifiers())
@@ -2050,11 +2050,11 @@ object Parser {
       return addJSDocComment(finishNode(node))
     }
 
-    def parseBindingElementInitializer(inParameter: Boolean) {
+    def parseBindingElementInitializer(inParameter: Boolean) = {
       return inParameter ? parseParameterInitializer() : parseNonParameterInitializer()
     }
 
-    def parseParameterInitializer() {
+    def parseParameterInitializer() = {
       return parseInitializer(/*inParameter*/ true)
     }
 
@@ -2078,7 +2078,7 @@ object Parser {
       }
     }
 
-    def parseParameterList(yieldContext: Boolean, awaitContext: Boolean, requireCompleteParameterList: Boolean) {
+    def parseParameterList(yieldContext: Boolean, awaitContext: Boolean, requireCompleteParameterList: Boolean) = {
       // FormalParameters [Yield,Await]: (modified)
       //    [empty]
       //    FormalParameterList[?Yield,Await]
@@ -2119,7 +2119,7 @@ object Parser {
       return requireCompleteParameterList ? () : createMissingList<ParameterDeclaration>()
     }
 
-    def parseTypeMemberSemicolon() {
+    def parseTypeMemberSemicolon() = {
       // We allow type members to be separated by commas or (possibly ASI) semicolons.
       // First check if it was a comma.  If so, we're done with the member.
       if (parseOptional(SyntaxKind.CommaToken)) {
@@ -2140,7 +2140,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def isIndexSignature(): Boolean {
+    def isIndexSignature(): Boolean = {
       if (token != SyntaxKind.OpenBracketToken) {
         return false
       }
@@ -2148,7 +2148,7 @@ object Parser {
       return lookAhead(isUnambiguouslyIndexSignature)
     }
 
-    def isUnambiguouslyIndexSignature() {
+    def isUnambiguouslyIndexSignature() = {
       // The only allowed sequence is:
       //
       //   [id:
@@ -2203,7 +2203,7 @@ object Parser {
       return token == SyntaxKind.ColonToken || token == SyntaxKind.CommaToken || token == SyntaxKind.CloseBracketToken
     }
 
-    def parseIndexSignatureDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): IndexSignatureDeclaration {
+    def parseIndexSignatureDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): IndexSignatureDeclaration = {
       val node = <IndexSignatureDeclaration>createNode(SyntaxKind.IndexSignature, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -2248,7 +2248,7 @@ object Parser {
       }
     }
 
-    def isTypeMemberStart(): Boolean {
+    def isTypeMemberStart(): Boolean = {
       var idToken: SyntaxKind
       // Return true if we have the start of a signature member
       if (token == SyntaxKind.OpenParenToken || token == SyntaxKind.LessThanToken) {
@@ -2280,7 +2280,7 @@ object Parser {
       return false
     }
 
-    def parseTypeMember(): TypeElement {
+    def parseTypeMember(): TypeElement = {
       if (token == SyntaxKind.OpenParenToken || token == SyntaxKind.LessThanToken) {
         return parseSignatureMember(SyntaxKind.CallSignature)
       }
@@ -2295,12 +2295,12 @@ object Parser {
       return parsePropertyOrMethodSignature(fullStart, modifiers)
     }
 
-    def isStartOfConstructSignature() {
+    def isStartOfConstructSignature() = {
       nextToken()
       return token == SyntaxKind.OpenParenToken || token == SyntaxKind.LessThanToken
     }
 
-    def parseTypeLiteral(): TypeLiteralNode {
+    def parseTypeLiteral(): TypeLiteralNode = {
       val node = <TypeLiteralNode>createNode(SyntaxKind.TypeLiteral)
       node.members = parseObjectTypeMembers()
       return finishNode(node)
@@ -2319,13 +2319,13 @@ object Parser {
       return members
     }
 
-    def parseTupleType(): TupleTypeNode {
+    def parseTupleType(): TupleTypeNode = {
       val node = <TupleTypeNode>createNode(SyntaxKind.TupleType)
       node.elementTypes = parseBracketedList(ParsingContext.TupleElementTypes, parseType, SyntaxKind.OpenBracketToken, SyntaxKind.CloseBracketToken)
       return finishNode(node)
     }
 
-    def parseParenthesizedType(): ParenthesizedTypeNode {
+    def parseParenthesizedType(): ParenthesizedTypeNode = {
       val node = <ParenthesizedTypeNode>createNode(SyntaxKind.ParenthesizedType)
       parseExpected(SyntaxKind.OpenParenToken)
       node.type = parseType()
@@ -2333,7 +2333,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseFunctionOrConstructorType(kind: SyntaxKind): FunctionOrConstructorTypeNode {
+    def parseFunctionOrConstructorType(kind: SyntaxKind): FunctionOrConstructorTypeNode = {
       val node = <FunctionOrConstructorTypeNode>createNode(kind)
       if (kind == SyntaxKind.ConstructorType) {
         parseExpected(SyntaxKind.NewKeyword)
@@ -2342,12 +2342,12 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseKeywordAndNoDot(): TypeNode {
+    def parseKeywordAndNoDot(): TypeNode = {
       val node = parseTokenNode<TypeNode>()
       return token == SyntaxKind.DotToken ? () : node
     }
 
-    def parseNonArrayType(): TypeNode {
+    def parseNonArrayType(): TypeNode = {
       switch (token) {
         case SyntaxKind.AnyKeyword:
         case SyntaxKind.StringKeyword:
@@ -2383,7 +2383,7 @@ object Parser {
       }
     }
 
-    def isStartOfType(): Boolean {
+    def isStartOfType(): Boolean = {
       switch (token) {
         case SyntaxKind.AnyKeyword:
         case SyntaxKind.StringKeyword:
@@ -2408,12 +2408,12 @@ object Parser {
       }
     }
 
-    def isStartOfParenthesizedOrFunctionType() {
+    def isStartOfParenthesizedOrFunctionType() = {
       nextToken()
       return token == SyntaxKind.CloseParenToken || isStartOfParameter() || isStartOfType()
     }
 
-    def parseArrayTypeOrHigher(): TypeNode {
+    def parseArrayTypeOrHigher(): TypeNode = {
       var type = parseNonArrayType()
       while (!scanner.hasPrecedingLineBreak() && parseOptional(SyntaxKind.OpenBracketToken)) {
         parseExpected(SyntaxKind.CloseBracketToken)
@@ -2424,7 +2424,7 @@ object Parser {
       return type
     }
 
-    def parseUnionOrIntersectionType(kind: SyntaxKind, parseConstituentType: () => TypeNode, operator: SyntaxKind): TypeNode {
+    def parseUnionOrIntersectionType(kind: SyntaxKind, parseConstituentType: () => TypeNode, operator: SyntaxKind): TypeNode = {
       var type = parseConstituentType()
       if (token == operator) {
         val types = <NodeArray<TypeNode>>[type]
@@ -2440,22 +2440,22 @@ object Parser {
       return type
     }
 
-    def parseIntersectionTypeOrHigher(): TypeNode {
+    def parseIntersectionTypeOrHigher(): TypeNode = {
       return parseUnionOrIntersectionType(SyntaxKind.IntersectionType, parseArrayTypeOrHigher, SyntaxKind.AmpersandToken)
     }
 
-    def parseUnionTypeOrHigher(): TypeNode {
+    def parseUnionTypeOrHigher(): TypeNode = {
       return parseUnionOrIntersectionType(SyntaxKind.UnionType, parseIntersectionTypeOrHigher, SyntaxKind.BarToken)
     }
 
-    def isStartOfFunctionType(): Boolean {
+    def isStartOfFunctionType(): Boolean = {
       if (token == SyntaxKind.LessThanToken) {
         return true
       }
       return token == SyntaxKind.OpenParenToken && lookAhead(isUnambiguouslyStartOfFunctionType)
     }
 
-    def skipParameterStart(): Boolean {
+    def skipParameterStart(): Boolean = {
       if (isModifierKind(token)) {
         // Skip modifiers
         parseModifiers()
@@ -2473,7 +2473,7 @@ object Parser {
       return false
     }
 
-    def isUnambiguouslyStartOfFunctionType() {
+    def isUnambiguouslyStartOfFunctionType() = {
       nextToken()
       if (token == SyntaxKind.CloseParenToken || token == SyntaxKind.DotDotDotToken) {
         // ( )
@@ -2502,7 +2502,7 @@ object Parser {
       return false
     }
 
-    def parseTypeOrTypePredicate(): TypeNode {
+    def parseTypeOrTypePredicate(): TypeNode = {
       val typePredicateVariable = isIdentifier() && tryParse(parseTypePredicatePrefix)
       val type = parseType()
       if (typePredicateVariable) {
@@ -2516,7 +2516,7 @@ object Parser {
       }
     }
 
-    def parseTypePredicatePrefix() {
+    def parseTypePredicatePrefix() = {
       val id = parseIdentifier()
       if (token == SyntaxKind.IsKeyword && !scanner.hasPrecedingLineBreak()) {
         nextToken()
@@ -2524,13 +2524,13 @@ object Parser {
       }
     }
 
-    def parseType(): TypeNode {
+    def parseType(): TypeNode = {
       // The rules about 'yield' only apply to actual code/expression contexts.  They don't
       // apply to 'type' contexts.  So we disable these parameters here before moving on.
       return doOutsideOfContext(NodeFlags.TypeExcludesFlags, parseTypeWorker)
     }
 
-    def parseTypeWorker(): TypeNode {
+    def parseTypeWorker(): TypeNode = {
       if (isStartOfFunctionType()) {
         return parseFunctionOrConstructorType(SyntaxKind.FunctionType)
       }
@@ -2540,12 +2540,12 @@ object Parser {
       return parseUnionTypeOrHigher()
     }
 
-    def parseTypeAnnotation(): TypeNode {
+    def parseTypeAnnotation(): TypeNode = {
       return parseOptional(SyntaxKind.ColonToken) ? parseType() : ()
     }
 
     // EXPRESSIONS
-    def isStartOfLeftHandSideExpression(): Boolean {
+    def isStartOfLeftHandSideExpression(): Boolean = {
       switch (token) {
         case SyntaxKind.ThisKeyword:
         case SyntaxKind.SuperKeyword:
@@ -2571,7 +2571,7 @@ object Parser {
       }
     }
 
-    def isStartOfExpression(): Boolean {
+    def isStartOfExpression(): Boolean = {
       if (isStartOfLeftHandSideExpression()) {
         return true
       }
@@ -2606,7 +2606,7 @@ object Parser {
       }
     }
 
-    def isStartOfExpressionStatement(): Boolean {
+    def isStartOfExpressionStatement(): Boolean = {
       // As per the grammar, none of '{' or 'def' or 'class' can start an expression statement.
       return token != SyntaxKind.OpenBraceToken &&
         token != SyntaxKind.FunctionKeyword &&
@@ -2615,7 +2615,7 @@ object Parser {
         isStartOfExpression()
     }
 
-    def parseExpression(): Expression {
+    def parseExpression(): Expression = {
       // Expression[in]:
       //    AssignmentExpression[in]
       //    Expression[in] , AssignmentExpression[in]
@@ -2638,7 +2638,7 @@ object Parser {
       return expr
     }
 
-    def parseInitializer(inParameter: Boolean): Expression {
+    def parseInitializer(inParameter: Boolean): Expression = {
       if (token != SyntaxKind.EqualsToken) {
         // It's not uncommon during typing for the user to miss writing the '=' token.  Check if
         // there is no newline after the last token and if we're on an expression.  If so, parse
@@ -2662,7 +2662,7 @@ object Parser {
       return parseAssignmentExpressionOrHigher()
     }
 
-    def parseAssignmentExpressionOrHigher(): Expression {
+    def parseAssignmentExpressionOrHigher(): Expression = {
       //  AssignmentExpression[in,yield]:
       //    1) ConditionalExpression[?in,?yield]
       //    2) LeftHandSideExpression = AssignmentExpression[?in,?yield]
@@ -2719,7 +2719,7 @@ object Parser {
       return parseConditionalExpressionRest(expr)
     }
 
-    def isYieldExpression(): Boolean {
+    def isYieldExpression(): Boolean = {
       if (token == SyntaxKind.YieldKeyword) {
         // If we have a 'yield' keyword, and this is a context where yield expressions are
         // allowed, then definitely parse out a yield expression.
@@ -2747,12 +2747,12 @@ object Parser {
       return false
     }
 
-    def nextTokenIsIdentifierOnSameLine() {
+    def nextTokenIsIdentifierOnSameLine() = {
       nextToken()
       return !scanner.hasPrecedingLineBreak() && isIdentifier()
     }
 
-    def parseYieldExpression(): YieldExpression {
+    def parseYieldExpression(): YieldExpression = {
       val node = <YieldExpression>createNode(SyntaxKind.YieldExpression)
 
       // YieldExpression[In] :
@@ -2774,7 +2774,7 @@ object Parser {
       }
     }
 
-    def parseSimpleArrowFunctionExpression(identifier: Identifier): Expression {
+    def parseSimpleArrowFunctionExpression(identifier: Identifier): Expression = {
       Debug.assert(token == SyntaxKind.EqualsGreaterThanToken, "parseSimpleArrowFunctionExpression should only have been called if we had a =>")
 
       val node = <ArrowFunction>createNode(SyntaxKind.ArrowFunction, identifier.pos)
@@ -2793,7 +2793,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def tryParseParenthesizedArrowFunctionExpression(): Expression {
+    def tryParseParenthesizedArrowFunctionExpression(): Expression = {
       val triState = isParenthesizedArrowFunctionExpression()
       if (triState == Tristate.False) {
         // It's definitely not a parenthesized arrow def expression.
@@ -2830,7 +2830,7 @@ object Parser {
     //  False     -> There *cannot* be a parenthesized arrow def here.
     //  Unknown   -> There *might* be a parenthesized arrow def here.
     //         Speculatively look ahead to be sure, and rollback if not.
-    def isParenthesizedArrowFunctionExpression(): Tristate {
+    def isParenthesizedArrowFunctionExpression(): Tristate = {
       if (token == SyntaxKind.OpenParenToken || token == SyntaxKind.LessThanToken || token == SyntaxKind.AsyncKeyword) {
         return lookAhead(isParenthesizedArrowFunctionExpressionWorker)
       }
@@ -2845,7 +2845,7 @@ object Parser {
       return Tristate.False
     }
 
-    def isParenthesizedArrowFunctionExpressionWorker() {
+    def isParenthesizedArrowFunctionExpressionWorker() = {
       if (token == SyntaxKind.AsyncKeyword) {
         nextToken()
         if (scanner.hasPrecedingLineBreak()) {
@@ -2952,11 +2952,11 @@ object Parser {
       }
     }
 
-    def parsePossibleParenthesizedArrowFunctionExpressionHead(): ArrowFunction {
+    def parsePossibleParenthesizedArrowFunctionExpressionHead(): ArrowFunction = {
       return parseParenthesizedArrowFunctionExpressionHead(/*allowAmbiguity*/ false)
     }
 
-    def parseParenthesizedArrowFunctionExpressionHead(allowAmbiguity: Boolean): ArrowFunction {
+    def parseParenthesizedArrowFunctionExpressionHead(allowAmbiguity: Boolean): ArrowFunction = {
       val node = <ArrowFunction>createNode(SyntaxKind.ArrowFunction)
       setModifiers(node, parseModifiersForArrowFunction())
       val isAsync = !!(node.flags & NodeFlags.Async)
@@ -3023,7 +3023,7 @@ object Parser {
         : doOutsideOfAwaitContext(parseAssignmentExpressionOrHigher)
     }
 
-    def parseConditionalExpressionRest(leftOperand: Expression): Expression {
+    def parseConditionalExpressionRest(leftOperand: Expression): Expression = {
       // Note: we are passed in an expression which was produced from parseBinaryExpressionOrHigher.
       val questionToken = parseOptionalToken(SyntaxKind.QuestionToken)
       if (!questionToken) {
@@ -3042,16 +3042,16 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseBinaryExpressionOrHigher(precedence: Int): Expression {
+    def parseBinaryExpressionOrHigher(precedence: Int): Expression = {
       val leftOperand = parseUnaryExpressionOrHigher()
       return parseBinaryExpressionRest(precedence, leftOperand)
     }
 
-    def isInOrOfKeyword(t: SyntaxKind) {
+    def isInOrOfKeyword(t: SyntaxKind) = {
       return t == SyntaxKind.InKeyword || t == SyntaxKind.OfKeyword
     }
 
-    def parseBinaryExpressionRest(precedence: Int, leftOperand: Expression): Expression {
+    def parseBinaryExpressionRest(precedence: Int, leftOperand: Expression): Expression = {
       while (true) {
         // We either have a binary operator here, or we're finished.  We call
         // reScanGreaterToken so that we merge token sequences like > and = into >=
@@ -3114,7 +3114,7 @@ object Parser {
       return leftOperand
     }
 
-    def isBinaryOperator() {
+    def isBinaryOperator() = {
       if (inDisallowInContext() && token == SyntaxKind.InKeyword) {
         return false
       }
@@ -3122,7 +3122,7 @@ object Parser {
       return getBinaryOperatorPrecedence() > 0
     }
 
-    def getBinaryOperatorPrecedence(): Int {
+    def getBinaryOperatorPrecedence(): Int = {
       switch (token) {
         case SyntaxKind.BarBarToken:
           return 1
@@ -3167,7 +3167,7 @@ object Parser {
       return -1
     }
 
-    def makeBinaryExpression(left: Expression, operatorToken: Node, right: Expression): BinaryExpression {
+    def makeBinaryExpression(left: Expression, operatorToken: Node, right: Expression): BinaryExpression = {
       val node = <BinaryExpression>createNode(SyntaxKind.BinaryExpression, left.pos)
       node.left = left
       node.operatorToken = operatorToken
@@ -3175,14 +3175,14 @@ object Parser {
       return finishNode(node)
     }
 
-    def makeAsExpression(left: Expression, right: TypeNode): AsExpression {
+    def makeAsExpression(left: Expression, right: TypeNode): AsExpression = {
       val node = <AsExpression>createNode(SyntaxKind.AsExpression, left.pos)
       node.expression = left
       node.type = right
       return finishNode(node)
     }
 
-    def parsePrefixUnaryExpression() {
+    def parsePrefixUnaryExpression() = {
       val node = <PrefixUnaryExpression>createNode(SyntaxKind.PrefixUnaryExpression)
       node.operator = token
       nextToken()
@@ -3191,28 +3191,28 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseDeleteExpression() {
+    def parseDeleteExpression() = {
       val node = <DeleteExpression>createNode(SyntaxKind.DeleteExpression)
       nextToken()
       node.expression = parseSimpleUnaryExpression()
       return finishNode(node)
     }
 
-    def parseTypeOfExpression() {
+    def parseTypeOfExpression() = {
       val node = <TypeOfExpression>createNode(SyntaxKind.TypeOfExpression)
       nextToken()
       node.expression = parseSimpleUnaryExpression()
       return finishNode(node)
     }
 
-    def parseVoidExpression() {
+    def parseVoidExpression() = {
       val node = <VoidExpression>createNode(SyntaxKind.VoidExpression)
       nextToken()
       node.expression = parseSimpleUnaryExpression()
       return finishNode(node)
     }
 
-    def isAwaitExpression(): Boolean {
+    def isAwaitExpression(): Boolean = {
       if (token == SyntaxKind.AwaitKeyword) {
         if (inAwaitContext()) {
           return true
@@ -3225,7 +3225,7 @@ object Parser {
       return false
     }
 
-    def parseAwaitExpression() {
+    def parseAwaitExpression() = {
       val node = <AwaitExpression>createNode(SyntaxKind.AwaitExpression)
       nextToken()
       node.expression = parseSimpleUnaryExpression()
@@ -3278,7 +3278,7 @@ object Parser {
      *    7) ~ UnaryExpression[?yield]
      *    8) ! UnaryExpression[?yield]
      */
-    def parseSimpleUnaryExpression(): UnaryExpression {
+    def parseSimpleUnaryExpression(): UnaryExpression = {
       switch (token) {
         case SyntaxKind.PlusToken:
         case SyntaxKind.MinusToken:
@@ -3311,7 +3311,7 @@ object Parser {
      *    ++LeftHandSideExpression[?Yield]
      *    --LeftHandSideExpression[?Yield]
      */
-    def isIncrementExpression(): Boolean {
+    def isIncrementExpression(): Boolean = {
       // This def is called inside parseUnaryExpression to decide
       // whether to call parseSimpleUnaryExpression or call parseIncrementExpression directly
       switch (token) {
@@ -3346,7 +3346,7 @@ object Parser {
      *    5) --LeftHandSideExpression[?yield]
      * In TypeScript (2), (3) are parsed as PostfixUnaryExpression. (4), (5) are parsed as PrefixUnaryExpression
      */
-    def parseIncrementExpression(): IncrementExpression {
+    def parseIncrementExpression(): IncrementExpression = {
       if (token == SyntaxKind.PlusPlusToken || token == SyntaxKind.MinusMinusToken) {
         val node = <PrefixUnaryExpression>createNode(SyntaxKind.PrefixUnaryExpression)
         node.operator = token
@@ -3373,7 +3373,7 @@ object Parser {
       return expression
     }
 
-    def parseLeftHandSideExpressionOrHigher(): LeftHandSideExpression {
+    def parseLeftHandSideExpressionOrHigher(): LeftHandSideExpression = {
       // Original Ecma:
       // LeftHandSideExpression: See 11.2
       //    NewExpression
@@ -3413,7 +3413,7 @@ object Parser {
       return parseCallExpressionRest(expression)
     }
 
-    def parseMemberExpressionOrHigher(): MemberExpression {
+    def parseMemberExpressionOrHigher(): MemberExpression = {
       // Note: to make our lives simpler, we decompose the the NewExpression productions and
       // place ObjectCreationExpression and FunctionExpression into PrimaryExpression.
       // like so:
@@ -3465,7 +3465,7 @@ object Parser {
       return parseMemberExpressionRest(expression)
     }
 
-    def parseSuperExpression(): MemberExpression {
+    def parseSuperExpression(): MemberExpression = {
       val expression = parseTokenNode<PrimaryExpression>()
       if (token == SyntaxKind.OpenParenToken || token == SyntaxKind.DotToken || token == SyntaxKind.OpenBracketToken) {
         return expression
@@ -3480,7 +3480,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def tagNamesAreEquivalent(lhs: EntityName, rhs: EntityName): Boolean {
+    def tagNamesAreEquivalent(lhs: EntityName, rhs: EntityName): Boolean = {
       if (lhs.kind != rhs.kind) {
         return false
       }
@@ -3540,13 +3540,13 @@ object Parser {
       return result
     }
 
-    def parseJsxText(): JsxText {
+    def parseJsxText(): JsxText = {
       val node = <JsxText>createNode(SyntaxKind.JsxText, scanner.getStartPos())
       token = scanner.scanJsxToken()
       return finishNode(node)
     }
 
-    def parseJsxChild(): JsxChild {
+    def parseJsxChild(): JsxChild = {
       switch (token) {
         case SyntaxKind.JsxText:
           return parseJsxText()
@@ -3621,7 +3621,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseJsxElementName(): EntityName {
+    def parseJsxElementName(): EntityName = {
       scanJsxIdentifier()
       var elementName: EntityName = parseIdentifierName()
       while (parseOptional(SyntaxKind.DotToken)) {
@@ -3634,7 +3634,7 @@ object Parser {
       return elementName
     }
 
-    def parseJsxExpression(inExpressionContext: Boolean): JsxExpression {
+    def parseJsxExpression(inExpressionContext: Boolean): JsxExpression = {
       val node = <JsxExpression>createNode(SyntaxKind.JsxExpression)
 
       parseExpected(SyntaxKind.OpenBraceToken)
@@ -3673,7 +3673,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseJsxSpreadAttribute(): JsxSpreadAttribute {
+    def parseJsxSpreadAttribute(): JsxSpreadAttribute = {
       val node = <JsxSpreadAttribute>createNode(SyntaxKind.JsxSpreadAttribute)
       parseExpected(SyntaxKind.OpenBraceToken)
       parseExpected(SyntaxKind.DotDotDotToken)
@@ -3682,7 +3682,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseJsxClosingElement(inExpressionContext: Boolean): JsxClosingElement {
+    def parseJsxClosingElement(inExpressionContext: Boolean): JsxClosingElement = {
       val node = <JsxClosingElement>createNode(SyntaxKind.JsxClosingElement)
       parseExpected(SyntaxKind.LessThanSlashToken)
       node.tagName = parseJsxElementName()
@@ -3696,7 +3696,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseTypeAssertion(): TypeAssertion {
+    def parseTypeAssertion(): TypeAssertion = {
       val node = <TypeAssertion>createNode(SyntaxKind.TypeAssertionExpression)
       parseExpected(SyntaxKind.LessThanToken)
       node.type = parseType()
@@ -3705,7 +3705,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseMemberExpressionRest(expression: LeftHandSideExpression): MemberExpression {
+    def parseMemberExpressionRest(expression: LeftHandSideExpression): MemberExpression = {
       while (true) {
         val dotToken = parseOptionalToken(SyntaxKind.DotToken)
         if (dotToken) {
@@ -3751,7 +3751,7 @@ object Parser {
       }
     }
 
-    def parseCallExpressionRest(expression: LeftHandSideExpression): LeftHandSideExpression {
+    def parseCallExpressionRest(expression: LeftHandSideExpression): LeftHandSideExpression = {
       while (true) {
         expression = parseMemberExpressionRest(expression)
         if (token == SyntaxKind.LessThanToken) {
@@ -3783,14 +3783,14 @@ object Parser {
       }
     }
 
-    def parseArgumentList() {
+    def parseArgumentList() = {
       parseExpected(SyntaxKind.OpenParenToken)
       val result = parseDelimitedList(ParsingContext.ArgumentExpressions, parseArgumentExpression)
       parseExpected(SyntaxKind.CloseParenToken)
       return result
     }
 
-    def parseTypeArgumentsInExpression() {
+    def parseTypeArgumentsInExpression() = {
       if (!parseOptional(SyntaxKind.LessThanToken)) {
         return ()
       }
@@ -3808,7 +3808,7 @@ object Parser {
         : ()
     }
 
-    def canFollowTypeArgumentsInExpression(): Boolean {
+    def canFollowTypeArgumentsInExpression(): Boolean = {
       switch (token) {
         case SyntaxKind.OpenParenToken:         // foo<x>(
         // this case are the only case where this token can legally follow a type argument
@@ -3848,7 +3848,7 @@ object Parser {
       }
     }
 
-    def parsePrimaryExpression(): PrimaryExpression {
+    def parsePrimaryExpression(): PrimaryExpression = {
       switch (token) {
         case SyntaxKind.NumericLiteral:
         case SyntaxKind.StringLiteral:
@@ -3894,7 +3894,7 @@ object Parser {
       return parseIdentifier(Diagnostics.Expression_expected)
     }
 
-    def parseParenthesizedExpression(): ParenthesizedExpression {
+    def parseParenthesizedExpression(): ParenthesizedExpression = {
       val node = <ParenthesizedExpression>createNode(SyntaxKind.ParenthesizedExpression)
       parseExpected(SyntaxKind.OpenParenToken)
       node.expression = allowInAnd(parseExpression)
@@ -3902,24 +3902,24 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseSpreadElement(): Expression {
+    def parseSpreadElement(): Expression = {
       val node = <SpreadElementExpression>createNode(SyntaxKind.SpreadElementExpression)
       parseExpected(SyntaxKind.DotDotDotToken)
       node.expression = parseAssignmentExpressionOrHigher()
       return finishNode(node)
     }
 
-    def parseArgumentOrArrayLiteralElement(): Expression {
+    def parseArgumentOrArrayLiteralElement(): Expression = {
       return token == SyntaxKind.DotDotDotToken ? parseSpreadElement() :
         token == SyntaxKind.CommaToken ? <Expression>createNode(SyntaxKind.OmittedExpression) :
           parseAssignmentExpressionOrHigher()
     }
 
-    def parseArgumentExpression(): Expression {
+    def parseArgumentExpression(): Expression = {
       return doOutsideOfContext(disallowInAndDecoratorContext, parseArgumentOrArrayLiteralElement)
     }
 
-    def parseArrayLiteralExpression(): ArrayLiteralExpression {
+    def parseArrayLiteralExpression(): ArrayLiteralExpression = {
       val node = <ArrayLiteralExpression>createNode(SyntaxKind.ArrayLiteralExpression)
       parseExpected(SyntaxKind.OpenBracketToken)
       if (scanner.hasPrecedingLineBreak()) {
@@ -3930,7 +3930,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def tryParseAccessorDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): AccessorDeclaration {
+    def tryParseAccessorDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): AccessorDeclaration = {
       if (parseContextualModifier(SyntaxKind.GetKeyword)) {
         return parseAccessorDeclaration(SyntaxKind.GetAccessor, fullStart, decorators, modifiers)
       }
@@ -3941,7 +3941,7 @@ object Parser {
       return ()
     }
 
-    def parseObjectLiteralElement(): ObjectLiteralElement {
+    def parseObjectLiteralElement(): ObjectLiteralElement = {
       val fullStart = scanner.getStartPos()
       val decorators = parseDecorators()
       val modifiers = parseModifiers()
@@ -3991,7 +3991,7 @@ object Parser {
       }
     }
 
-    def parseObjectLiteralExpression(): ObjectLiteralExpression {
+    def parseObjectLiteralExpression(): ObjectLiteralExpression = {
       val node = <ObjectLiteralExpression>createNode(SyntaxKind.ObjectLiteralExpression)
       parseExpected(SyntaxKind.OpenBraceToken)
       if (scanner.hasPrecedingLineBreak()) {
@@ -4003,7 +4003,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseFunctionExpression(): FunctionExpression {
+    def parseFunctionExpression(): FunctionExpression = {
       // GeneratorExpression:
       //    def* BindingIdentifier [Yield][opt](FormalParameters[Yield]){ GeneratorBody }
       //
@@ -4037,11 +4037,11 @@ object Parser {
       return addJSDocComment(finishNode(node))
     }
 
-    def parseOptionalIdentifier() {
+    def parseOptionalIdentifier() = {
       return isIdentifier() ? parseIdentifier() : ()
     }
 
-    def parseNewExpression(): NewExpression {
+    def parseNewExpression(): NewExpression = {
       val node = <NewExpression>createNode(SyntaxKind.NewExpression)
       parseExpected(SyntaxKind.NewKeyword)
       node.expression = parseMemberExpressionOrHigher()
@@ -4054,7 +4054,7 @@ object Parser {
     }
 
     // STATEMENTS
-    def parseBlock(ignoreMissingOpenBrace: Boolean, diagnosticMessage?: DiagnosticMessage): Block {
+    def parseBlock(ignoreMissingOpenBrace: Boolean, diagnosticMessage?: DiagnosticMessage): Block = {
       val node = <Block>createNode(SyntaxKind.Block)
       if (parseExpected(SyntaxKind.OpenBraceToken, diagnosticMessage) || ignoreMissingOpenBrace) {
         node.statements = parseList(ParsingContext.BlockStatements, parseStatement)
@@ -4066,7 +4066,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseFunctionBlock(allowYield: Boolean, allowAwait: Boolean, ignoreMissingOpenBrace: Boolean, diagnosticMessage?: DiagnosticMessage): Block {
+    def parseFunctionBlock(allowYield: Boolean, allowAwait: Boolean, ignoreMissingOpenBrace: Boolean, diagnosticMessage?: DiagnosticMessage): Block = {
       val savedYieldContext = inYieldContext()
       setYieldContext(allowYield)
 
@@ -4092,13 +4092,13 @@ object Parser {
       return block
     }
 
-    def parseEmptyStatement(): Statement {
+    def parseEmptyStatement(): Statement = {
       val node = <Statement>createNode(SyntaxKind.EmptyStatement)
       parseExpected(SyntaxKind.SemicolonToken)
       return finishNode(node)
     }
 
-    def parseIfStatement(): IfStatement {
+    def parseIfStatement(): IfStatement = {
       val node = <IfStatement>createNode(SyntaxKind.IfStatement)
       parseExpected(SyntaxKind.IfKeyword)
       parseExpected(SyntaxKind.OpenParenToken)
@@ -4109,7 +4109,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseDoStatement(): DoStatement {
+    def parseDoStatement(): DoStatement = {
       val node = <DoStatement>createNode(SyntaxKind.DoStatement)
       parseExpected(SyntaxKind.DoKeyword)
       node.statement = parseStatement()
@@ -4126,7 +4126,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseWhileStatement(): WhileStatement {
+    def parseWhileStatement(): WhileStatement = {
       val node = <WhileStatement>createNode(SyntaxKind.WhileStatement)
       parseExpected(SyntaxKind.WhileKeyword)
       parseExpected(SyntaxKind.OpenParenToken)
@@ -4136,7 +4136,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseForOrForInOrForOfStatement(): Statement {
+    def parseForOrForInOrForOfStatement(): Statement = {
       val pos = getNodePos()
       parseExpected(SyntaxKind.ForKeyword)
       parseExpected(SyntaxKind.OpenParenToken)
@@ -4185,7 +4185,7 @@ object Parser {
       return finishNode(forOrForInOrForOfStatement)
     }
 
-    def parseBreakOrContinueStatement(kind: SyntaxKind): BreakOrContinueStatement {
+    def parseBreakOrContinueStatement(kind: SyntaxKind): BreakOrContinueStatement = {
       val node = <BreakOrContinueStatement>createNode(kind)
 
       parseExpected(kind == SyntaxKind.BreakStatement ? SyntaxKind.BreakKeyword : SyntaxKind.ContinueKeyword)
@@ -4197,7 +4197,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseReturnStatement(): ReturnStatement {
+    def parseReturnStatement(): ReturnStatement = {
       val node = <ReturnStatement>createNode(SyntaxKind.ReturnStatement)
 
       parseExpected(SyntaxKind.ReturnKeyword)
@@ -4209,7 +4209,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseWithStatement(): WithStatement {
+    def parseWithStatement(): WithStatement = {
       val node = <WithStatement>createNode(SyntaxKind.WithStatement)
       parseExpected(SyntaxKind.WithKeyword)
       parseExpected(SyntaxKind.OpenParenToken)
@@ -4219,7 +4219,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseCaseClause(): CaseClause {
+    def parseCaseClause(): CaseClause = {
       val node = <CaseClause>createNode(SyntaxKind.CaseClause)
       parseExpected(SyntaxKind.CaseKeyword)
       node.expression = allowInAnd(parseExpression)
@@ -4228,7 +4228,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseDefaultClause(): DefaultClause {
+    def parseDefaultClause(): DefaultClause = {
       val node = <DefaultClause>createNode(SyntaxKind.DefaultClause)
       parseExpected(SyntaxKind.DefaultKeyword)
       parseExpected(SyntaxKind.ColonToken)
@@ -4236,11 +4236,11 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseCaseOrDefaultClause(): CaseOrDefaultClause {
+    def parseCaseOrDefaultClause(): CaseOrDefaultClause = {
       return token == SyntaxKind.CaseKeyword ? parseCaseClause() : parseDefaultClause()
     }
 
-    def parseSwitchStatement(): SwitchStatement {
+    def parseSwitchStatement(): SwitchStatement = {
       val node = <SwitchStatement>createNode(SyntaxKind.SwitchStatement)
       parseExpected(SyntaxKind.SwitchKeyword)
       parseExpected(SyntaxKind.OpenParenToken)
@@ -4254,7 +4254,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseThrowStatement(): ThrowStatement {
+    def parseThrowStatement(): ThrowStatement = {
       // ThrowStatement[Yield] :
       //    throw [no LineTerminator here]Expression[In, ?Yield]
 
@@ -4271,7 +4271,7 @@ object Parser {
     }
 
     // TODO: Review for error recovery
-    def parseTryStatement(): TryStatement {
+    def parseTryStatement(): TryStatement = {
       val node = <TryStatement>createNode(SyntaxKind.TryStatement)
 
       parseExpected(SyntaxKind.TryKeyword)
@@ -4288,7 +4288,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseCatchClause(): CatchClause {
+    def parseCatchClause(): CatchClause = {
       val result = <CatchClause>createNode(SyntaxKind.CatchClause)
       parseExpected(SyntaxKind.CatchKeyword)
       if (parseExpected(SyntaxKind.OpenParenToken)) {
@@ -4300,7 +4300,7 @@ object Parser {
       return finishNode(result)
     }
 
-    def parseDebuggerStatement(): Statement {
+    def parseDebuggerStatement(): Statement = {
       val node = <Statement>createNode(SyntaxKind.DebuggerStatement)
       parseExpected(SyntaxKind.DebuggerKeyword)
       parseSemicolon()
@@ -4328,22 +4328,22 @@ object Parser {
       }
     }
 
-    def nextTokenIsIdentifierOrKeywordOnSameLine() {
+    def nextTokenIsIdentifierOrKeywordOnSameLine() = {
       nextToken()
       return tokenIsIdentifierOrKeyword(token) && !scanner.hasPrecedingLineBreak()
     }
 
-    def nextTokenIsFunctionKeywordOnSameLine() {
+    def nextTokenIsFunctionKeywordOnSameLine() = {
       nextToken()
       return token == SyntaxKind.FunctionKeyword && !scanner.hasPrecedingLineBreak()
     }
 
-    def nextTokenIsIdentifierOrKeywordOrNumberOnSameLine() {
+    def nextTokenIsIdentifierOrKeywordOrNumberOnSameLine() = {
       nextToken()
       return (tokenIsIdentifierOrKeyword(token) || token == SyntaxKind.NumericLiteral) && !scanner.hasPrecedingLineBreak()
     }
 
-    def isDeclaration(): Boolean {
+    def isDeclaration(): Boolean = {
       while (true) {
         switch (token) {
           case SyntaxKind.VarKeyword:
@@ -4419,11 +4419,11 @@ object Parser {
       }
     }
 
-    def isStartOfDeclaration(): Boolean {
+    def isStartOfDeclaration(): Boolean = {
       return lookAhead(isDeclaration)
     }
 
-    def isStartOfStatement(): Boolean {
+    def isStartOfStatement(): Boolean = {
       switch (token) {
         case SyntaxKind.AtToken:
         case SyntaxKind.SemicolonToken:
@@ -4480,18 +4480,18 @@ object Parser {
       }
     }
 
-    def nextTokenIsIdentifierOrStartOfDestructuring() {
+    def nextTokenIsIdentifierOrStartOfDestructuring() = {
       nextToken()
       return isIdentifier() || token == SyntaxKind.OpenBraceToken || token == SyntaxKind.OpenBracketToken
     }
 
-    def isLetDeclaration() {
+    def isLetDeclaration() = {
       // In ES6 'var' always starts a lexical declaration if followed by an identifier or {
       // or [.
       return lookAhead(nextTokenIsIdentifierOrStartOfDestructuring)
     }
 
-    def parseStatement(): Statement {
+    def parseStatement(): Statement = {
       switch (token) {
         case SyntaxKind.SemicolonToken:
           return parseEmptyStatement()
@@ -4562,7 +4562,7 @@ object Parser {
       return parseExpressionOrLabeledStatement()
     }
 
-    def parseDeclaration(): Statement {
+    def parseDeclaration(): Statement = {
       val fullStart = getNodePos()
       val decorators = parseDecorators()
       val modifiers = parseModifiers()
@@ -4605,12 +4605,12 @@ object Parser {
       }
     }
 
-    def nextTokenIsIdentifierOrStringLiteralOnSameLine() {
+    def nextTokenIsIdentifierOrStringLiteralOnSameLine() = {
       nextToken()
       return !scanner.hasPrecedingLineBreak() && (isIdentifier() || token == SyntaxKind.StringLiteral)
     }
 
-    def parseFunctionBlockOrSemicolon(isGenerator: Boolean, isAsync: Boolean, diagnosticMessage?: DiagnosticMessage): Block {
+    def parseFunctionBlockOrSemicolon(isGenerator: Boolean, isAsync: Boolean, diagnosticMessage?: DiagnosticMessage): Block = {
       if (token != SyntaxKind.OpenBraceToken && canParseSemicolon()) {
         parseSemicolon()
         return
@@ -4621,7 +4621,7 @@ object Parser {
 
     // DECLARATIONS
 
-    def parseArrayBindingElement(): BindingElement {
+    def parseArrayBindingElement(): BindingElement = {
       if (token == SyntaxKind.CommaToken) {
         return <BindingElement>createNode(SyntaxKind.OmittedExpression)
       }
@@ -4632,7 +4632,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseObjectBindingElement(): BindingElement {
+    def parseObjectBindingElement(): BindingElement = {
       val node = <BindingElement>createNode(SyntaxKind.BindingElement)
       val tokenIsIdentifier = isIdentifier()
       val propertyName = parsePropertyName()
@@ -4648,7 +4648,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseObjectBindingPattern(): BindingPattern {
+    def parseObjectBindingPattern(): BindingPattern = {
       val node = <BindingPattern>createNode(SyntaxKind.ObjectBindingPattern)
       parseExpected(SyntaxKind.OpenBraceToken)
       node.elements = parseDelimitedList(ParsingContext.ObjectBindingElements, parseObjectBindingElement)
@@ -4656,7 +4656,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseArrayBindingPattern(): BindingPattern {
+    def parseArrayBindingPattern(): BindingPattern = {
       val node = <BindingPattern>createNode(SyntaxKind.ArrayBindingPattern)
       parseExpected(SyntaxKind.OpenBracketToken)
       node.elements = parseDelimitedList(ParsingContext.ArrayBindingElements, parseArrayBindingElement)
@@ -4664,7 +4664,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def isIdentifierOrPattern() {
+    def isIdentifierOrPattern() = {
       return token == SyntaxKind.OpenBraceToken || token == SyntaxKind.OpenBracketToken || isIdentifier()
     }
 
@@ -4678,7 +4678,7 @@ object Parser {
       return parseIdentifier()
     }
 
-    def parseVariableDeclaration(): VariableDeclaration {
+    def parseVariableDeclaration(): VariableDeclaration = {
       val node = <VariableDeclaration>createNode(SyntaxKind.VariableDeclaration)
       node.name = parseIdentifierOrPattern()
       node.type = parseTypeAnnotation()
@@ -4688,7 +4688,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseVariableDeclarationList(inForStatementInitializer: Boolean): VariableDeclarationList {
+    def parseVariableDeclarationList(inForStatementInitializer: Boolean): VariableDeclarationList = {
       val node = <VariableDeclarationList>createNode(SyntaxKind.VariableDeclarationList)
 
       switch (token) {
@@ -4730,11 +4730,11 @@ object Parser {
       return finishNode(node)
     }
 
-    def canFollowContextualOfKeyword(): Boolean {
+    def canFollowContextualOfKeyword(): Boolean = {
       return nextTokenIsIdentifier() && nextToken() == SyntaxKind.CloseParenToken
     }
 
-    def parseVariableStatement(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): VariableStatement {
+    def parseVariableStatement(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): VariableStatement = {
       val node = <VariableStatement>createNode(SyntaxKind.VariableStatement, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -4743,7 +4743,7 @@ object Parser {
       return addJSDocComment(finishNode(node))
     }
 
-    def parseFunctionDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): FunctionDeclaration {
+    def parseFunctionDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): FunctionDeclaration = {
       val node = <FunctionDeclaration>createNode(SyntaxKind.FunctionDeclaration, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -4757,7 +4757,7 @@ object Parser {
       return addJSDocComment(finishNode(node))
     }
 
-    def parseConstructorDeclaration(pos: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ConstructorDeclaration {
+    def parseConstructorDeclaration(pos: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ConstructorDeclaration = {
       val node = <ConstructorDeclaration>createNode(SyntaxKind.Constructor, pos)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -4767,7 +4767,7 @@ object Parser {
       return addJSDocComment(finishNode(node))
     }
 
-    def parseMethodDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, asteriskToken: Node, name: PropertyName, questionToken: Node, diagnosticMessage?: DiagnosticMessage): MethodDeclaration {
+    def parseMethodDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, asteriskToken: Node, name: PropertyName, questionToken: Node, diagnosticMessage?: DiagnosticMessage): MethodDeclaration = {
       val method = <MethodDeclaration>createNode(SyntaxKind.MethodDeclaration, fullStart)
       method.decorators = decorators
       setModifiers(method, modifiers)
@@ -4781,7 +4781,7 @@ object Parser {
       return addJSDocComment(finishNode(method))
     }
 
-    def parsePropertyDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, name: PropertyName, questionToken: Node): ClassElement {
+    def parsePropertyDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, name: PropertyName, questionToken: Node): ClassElement = {
       val property = <PropertyDeclaration>createNode(SyntaxKind.PropertyDeclaration, fullStart)
       property.decorators = decorators
       setModifiers(property, modifiers)
@@ -4806,7 +4806,7 @@ object Parser {
       return finishNode(property)
     }
 
-    def parsePropertyOrMethodDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ClassElement {
+    def parsePropertyOrMethodDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ClassElement = {
       val asteriskToken = parseOptionalToken(SyntaxKind.AsteriskToken)
       val name = parsePropertyName()
 
@@ -4821,11 +4821,11 @@ object Parser {
       }
     }
 
-    def parseNonParameterInitializer() {
+    def parseNonParameterInitializer() = {
       return parseInitializer(/*inParameter*/ false)
     }
 
-    def parseAccessorDeclaration(kind: SyntaxKind, fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): AccessorDeclaration {
+    def parseAccessorDeclaration(kind: SyntaxKind, fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): AccessorDeclaration = {
       val node = <AccessorDeclaration>createNode(kind, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -4835,7 +4835,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def isClassMemberModifier(idToken: SyntaxKind) {
+    def isClassMemberModifier(idToken: SyntaxKind) = {
       switch (idToken) {
         case SyntaxKind.PublicKeyword:
         case SyntaxKind.PrivateKeyword:
@@ -4848,7 +4848,7 @@ object Parser {
       }
     }
 
-    def isClassMemberStart(): Boolean {
+    def isClassMemberStart(): Boolean = {
       var idToken: SyntaxKind
 
       if (token == SyntaxKind.AtToken) {
@@ -4946,7 +4946,7 @@ object Parser {
      *
      * In such situations, 'permitInvalidConstAsModifier' should be set to true.
      */
-    def parseModifiers(permitInvalidConstAsModifier?: Boolean): ModifiersArray {
+    def parseModifiers(permitInvalidConstAsModifier?: Boolean): ModifiersArray = {
       var flags = 0
       var modifiers: ModifiersArray
       while (true) {
@@ -4981,7 +4981,7 @@ object Parser {
       return modifiers
     }
 
-    def parseModifiersForArrowFunction(): ModifiersArray {
+    def parseModifiersForArrowFunction(): ModifiersArray = {
       var flags = 0
       var modifiers: ModifiersArray
       if (token == SyntaxKind.AsyncKeyword) {
@@ -4999,7 +4999,7 @@ object Parser {
       return modifiers
     }
 
-    def parseClassElement(): ClassElement {
+    def parseClassElement(): ClassElement = {
       if (token == SyntaxKind.SemicolonToken) {
         val result = <SemicolonClassElement>createNode(SyntaxKind.SemicolonClassElement)
         nextToken()
@@ -5044,7 +5044,7 @@ object Parser {
       Debug.fail("Should not have attempted to parse class member declaration.")
     }
 
-    def parseClassExpression(): ClassExpression {
+    def parseClassExpression(): ClassExpression = {
       return <ClassExpression>parseClassDeclarationOrExpression(
         /*fullStart*/ scanner.getStartPos(),
         /*decorators*/ (),
@@ -5052,11 +5052,11 @@ object Parser {
         SyntaxKind.ClassExpression)
     }
 
-    def parseClassDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ClassDeclaration {
+    def parseClassDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ClassDeclaration = {
       return <ClassDeclaration>parseClassDeclarationOrExpression(fullStart, decorators, modifiers, SyntaxKind.ClassDeclaration)
     }
 
-    def parseClassDeclarationOrExpression(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, kind: SyntaxKind): ClassLikeDeclaration {
+    def parseClassDeclarationOrExpression(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, kind: SyntaxKind): ClassLikeDeclaration = {
       val node = <ClassLikeDeclaration>createNode(kind, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -5078,7 +5078,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseNameOfClassDeclarationOrExpression(): Identifier {
+    def parseNameOfClassDeclarationOrExpression(): Identifier = {
       // implements is a future reserved word so
       // 'class implements' might mean either
       // - class expression with omitted name, 'implements' starts heritage clause
@@ -5089,7 +5089,7 @@ object Parser {
         : ()
     }
 
-    def isImplementsClause() {
+    def isImplementsClause() = {
       return token == SyntaxKind.ImplementsKeyword && lookAhead(nextTokenIsIdentifierOrKeyword)
     }
 
@@ -5104,7 +5104,7 @@ object Parser {
       return ()
     }
 
-    def parseHeritageClause() {
+    def parseHeritageClause() = {
       if (token == SyntaxKind.ExtendsKeyword || token == SyntaxKind.ImplementsKeyword) {
         val node = <HeritageClause>createNode(SyntaxKind.HeritageClause)
         node.token = token
@@ -5116,7 +5116,7 @@ object Parser {
       return ()
     }
 
-    def parseExpressionWithTypeArguments(): ExpressionWithTypeArguments {
+    def parseExpressionWithTypeArguments(): ExpressionWithTypeArguments = {
       val node = <ExpressionWithTypeArguments>createNode(SyntaxKind.ExpressionWithTypeArguments)
       node.expression = parseLeftHandSideExpressionOrHigher()
       if (token == SyntaxKind.LessThanToken) {
@@ -5126,15 +5126,15 @@ object Parser {
       return finishNode(node)
     }
 
-    def isHeritageClause(): Boolean {
+    def isHeritageClause(): Boolean = {
       return token == SyntaxKind.ExtendsKeyword || token == SyntaxKind.ImplementsKeyword
     }
 
-    def parseClassMembers() {
+    def parseClassMembers() = {
       return parseList(ParsingContext.ClassMembers, parseClassElement)
     }
 
-    def parseInterfaceDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): InterfaceDeclaration {
+    def parseInterfaceDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): InterfaceDeclaration = {
       val node = <InterfaceDeclaration>createNode(SyntaxKind.InterfaceDeclaration, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -5146,7 +5146,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseTypeAliasDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): TypeAliasDeclaration {
+    def parseTypeAliasDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): TypeAliasDeclaration = {
       val node = <TypeAliasDeclaration>createNode(SyntaxKind.TypeAliasDeclaration, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -5163,14 +5163,14 @@ object Parser {
     // In a non-ambient declaration, the grammar allows uninitialized members only in a
     // ConstantEnumMemberSection, which starts at the beginning of an enum declaration
     // or any time an integer literal initializer is encountered.
-    def parseEnumMember(): EnumMember {
+    def parseEnumMember(): EnumMember = {
       val node = <EnumMember>createNode(SyntaxKind.EnumMember, scanner.getStartPos())
       node.name = parsePropertyName()
       node.initializer = allowInAnd(parseNonParameterInitializer)
       return finishNode(node)
     }
 
-    def parseEnumDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): EnumDeclaration {
+    def parseEnumDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): EnumDeclaration = {
       val node = <EnumDeclaration>createNode(SyntaxKind.EnumDeclaration, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -5186,7 +5186,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseModuleBlock(): ModuleBlock {
+    def parseModuleBlock(): ModuleBlock = {
       val node = <ModuleBlock>createNode(SyntaxKind.ModuleBlock, scanner.getStartPos())
       if (parseExpected(SyntaxKind.OpenBraceToken)) {
         node.statements = parseList(ParsingContext.BlockStatements, parseStatement)
@@ -5198,7 +5198,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseModuleOrNamespaceDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, flags: NodeFlags): ModuleDeclaration {
+    def parseModuleOrNamespaceDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray, flags: NodeFlags): ModuleDeclaration = {
       val node = <ModuleDeclaration>createNode(SyntaxKind.ModuleDeclaration, fullStart)
       // If we are parsing a dotted package name, we want to
       // propagate the 'Namespace' flag across the names if set.
@@ -5213,7 +5213,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseAmbientExternalModuleDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ModuleDeclaration {
+    def parseAmbientExternalModuleDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ModuleDeclaration = {
       val node = <ModuleDeclaration>createNode(SyntaxKind.ModuleDeclaration, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -5229,7 +5229,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseModuleDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ModuleDeclaration {
+    def parseModuleDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ModuleDeclaration = {
       var flags = modifiers ? modifiers.flags : 0
       if (token == SyntaxKind.GlobalKeyword) {
         // global augmentation
@@ -5247,16 +5247,16 @@ object Parser {
       return parseModuleOrNamespaceDeclaration(fullStart, decorators, modifiers, flags)
     }
 
-    def isExternalModuleReference() {
+    def isExternalModuleReference() = {
       return token == SyntaxKind.RequireKeyword &&
         lookAhead(nextTokenIsOpenParen)
     }
 
-    def nextTokenIsOpenParen() {
+    def nextTokenIsOpenParen() = {
       return nextToken() == SyntaxKind.OpenParenToken
     }
 
-    def nextTokenIsSlash() {
+    def nextTokenIsSlash() = {
       return nextToken() == SyntaxKind.SlashToken
     }
 
@@ -5302,7 +5302,7 @@ object Parser {
       return finishNode(importDeclaration)
     }
 
-    def parseImportClause(identifier: Identifier, fullStart: Int) {
+    def parseImportClause(identifier: Identifier, fullStart: Int) = {
       // ImportClause:
       //  ImportedDefaultBinding
       //  NameSpaceImport
@@ -5327,13 +5327,13 @@ object Parser {
       return finishNode(importClause)
     }
 
-    def parseModuleReference() {
+    def parseModuleReference() = {
       return isExternalModuleReference()
         ? parseExternalModuleReference()
         : parseEntityName(/*allowReservedWords*/ false)
     }
 
-    def parseExternalModuleReference() {
+    def parseExternalModuleReference() = {
       val node = <ExternalModuleReference>createNode(SyntaxKind.ExternalModuleReference)
       parseExpected(SyntaxKind.RequireKeyword)
       parseExpected(SyntaxKind.OpenParenToken)
@@ -5342,7 +5342,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseModuleSpecifier(): Expression {
+    def parseModuleSpecifier(): Expression = {
       if (token == SyntaxKind.StringLiteral) {
         val result = parseLiteralNode()
         internIdentifier((<LiteralExpression>result).text)
@@ -5356,7 +5356,7 @@ object Parser {
       }
     }
 
-    def parseNamespaceImport(): NamespaceImport {
+    def parseNamespaceImport(): NamespaceImport = {
       // NameSpaceImport:
       //  * as ImportedBinding
       val namespaceImport = <NamespaceImport>createNode(SyntaxKind.NamespaceImport)
@@ -5366,7 +5366,7 @@ object Parser {
       return finishNode(namespaceImport)
     }
 
-    def parseNamedImportsOrExports(kind: SyntaxKind): NamedImportsOrExports {
+    def parseNamedImportsOrExports(kind: SyntaxKind): NamedImportsOrExports = {
       val node = <NamedImports>createNode(kind)
 
       // NamedImports:
@@ -5383,15 +5383,15 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseExportSpecifier() {
+    def parseExportSpecifier() = {
       return parseImportOrExportSpecifier(SyntaxKind.ExportSpecifier)
     }
 
-    def parseImportSpecifier() {
+    def parseImportSpecifier() = {
       return parseImportOrExportSpecifier(SyntaxKind.ImportSpecifier)
     }
 
-    def parseImportOrExportSpecifier(kind: SyntaxKind): ImportOrExportSpecifier {
+    def parseImportOrExportSpecifier(kind: SyntaxKind): ImportOrExportSpecifier = {
       val node = <ImportSpecifier>createNode(kind)
       // ImportSpecifier:
       //   BindingIdentifier
@@ -5421,7 +5421,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseExportDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ExportDeclaration {
+    def parseExportDeclaration(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ExportDeclaration = {
       val node = <ExportDeclaration>createNode(SyntaxKind.ExportDeclaration, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -5444,7 +5444,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def parseExportAssignment(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ExportAssignment {
+    def parseExportAssignment(fullStart: Int, decorators: NodeArray<Decorator>, modifiers: ModifiersArray): ExportAssignment = {
       val node = <ExportAssignment>createNode(SyntaxKind.ExportAssignment, fullStart)
       node.decorators = decorators
       setModifiers(node, modifiers)
@@ -5459,7 +5459,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def processReferenceComments(sourceFile: SourceFile): Unit {
+    def processReferenceComments(sourceFile: SourceFile): Unit = {
       val triviaScanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/false, LanguageVariant.Standard, sourceText)
       val referencedFiles: FileReference[] = []
       val amdDependencies: { path: String; name: String }[] = []
@@ -5524,7 +5524,7 @@ object Parser {
       sourceFile.moduleName = amdModuleName
     }
 
-    def setExternalModuleIndicator(sourceFile: SourceFile) {
+    def setExternalModuleIndicator(sourceFile: SourceFile) = {
       sourceFile.externalModuleIndicator = forEach(sourceFile.statements, node =>
         node.flags & NodeFlags.Export
           || node.kind == SyntaxKind.ImportEqualsDeclaration && (<ImportEqualsDeclaration>node).moduleReference.kind == SyntaxKind.ExternalModuleReference
@@ -5572,7 +5572,7 @@ object Parser {
     }
 
     package JSDocParser {
-      def isJSDocType() {
+      def isJSDocType() = {
         switch (token) {
           case SyntaxKind.AsteriskToken:
           case SyntaxKind.QuestionToken:
@@ -5590,7 +5590,7 @@ object Parser {
         return tokenIsIdentifierOrKeyword(token)
       }
 
-      def parseJSDocTypeExpressionForTests(content: String, start: Int, length: Int) {
+      def parseJSDocTypeExpressionForTests(content: String, start: Int, length: Int) = {
         initializeState("file.js", content, ScriptTarget.Latest, /*isJavaScriptFile*/ true, /*_syntaxCursor:*/ ())
         scanner.setText(content, start, length)
         token = scanner.scan()
@@ -5603,7 +5603,7 @@ object Parser {
 
       // Parses out a JSDoc type expression.
       /* @internal */
-      def parseJSDocTypeExpression(): JSDocTypeExpression {
+      def parseJSDocTypeExpression(): JSDocTypeExpression = {
         val result = <JSDocTypeExpression>createNode(SyntaxKind.JSDocTypeExpression, scanner.getTokenPos())
 
         parseExpected(SyntaxKind.OpenBraceToken)
@@ -5614,7 +5614,7 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocTopLevelType(): JSDocType {
+      def parseJSDocTopLevelType(): JSDocType = {
         var type = parseJSDocType()
         if (token == SyntaxKind.BarToken) {
           val unionType = <JSDocUnionType>createNode(SyntaxKind.JSDocUnionType, type.pos)
@@ -5632,7 +5632,7 @@ object Parser {
         return type
       }
 
-      def parseJSDocType(): JSDocType {
+      def parseJSDocType(): JSDocType = {
         var type = parseBasicTypeExpression()
 
         while (true) {
@@ -5667,7 +5667,7 @@ object Parser {
         return type
       }
 
-      def parseBasicTypeExpression(): JSDocType {
+      def parseBasicTypeExpression(): JSDocType = {
         switch (token) {
           case SyntaxKind.AsteriskToken:
             return parseJSDocAllType()
@@ -5702,7 +5702,7 @@ object Parser {
         return parseJSDocTypeReference()
       }
 
-      def parseJSDocThisType(): JSDocThisType {
+      def parseJSDocThisType(): JSDocThisType = {
         val result = <JSDocThisType>createNode(SyntaxKind.JSDocThisType)
         nextToken()
         parseExpected(SyntaxKind.ColonToken)
@@ -5710,7 +5710,7 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocConstructorType(): JSDocConstructorType {
+      def parseJSDocConstructorType(): JSDocConstructorType = {
         val result = <JSDocConstructorType>createNode(SyntaxKind.JSDocConstructorType)
         nextToken()
         parseExpected(SyntaxKind.ColonToken)
@@ -5718,14 +5718,14 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocVariadicType(): JSDocVariadicType {
+      def parseJSDocVariadicType(): JSDocVariadicType = {
         val result = <JSDocVariadicType>createNode(SyntaxKind.JSDocVariadicType)
         nextToken()
         result.type = parseJSDocType()
         return finishNode(result)
       }
 
-      def parseJSDocFunctionType(): JSDocFunctionType {
+      def parseJSDocFunctionType(): JSDocFunctionType = {
         val result = <JSDocFunctionType>createNode(SyntaxKind.JSDocFunctionType)
         nextToken()
 
@@ -5742,7 +5742,7 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocParameter(): ParameterDeclaration {
+      def parseJSDocParameter(): ParameterDeclaration = {
         val parameter = <ParameterDeclaration>createNode(SyntaxKind.Parameter)
         parameter.type = parseJSDocType()
         if (parseOptional(SyntaxKind.EqualsToken)) {
@@ -5751,7 +5751,7 @@ object Parser {
         return finishNode(parameter)
       }
 
-      def parseJSDocTypeReference(): JSDocTypeReference {
+      def parseJSDocTypeReference(): JSDocTypeReference = {
         val result = <JSDocTypeReference>createNode(SyntaxKind.JSDocTypeReference)
         result.name = parseSimplePropertyName()
 
@@ -5774,7 +5774,7 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseTypeArguments() {
+      def parseTypeArguments() = {
         // Move past the <
         nextToken()
         val typeArguments = parseDelimitedList(ParsingContext.JSDocTypeArguments, parseJSDocType)
@@ -5785,7 +5785,7 @@ object Parser {
         return typeArguments
       }
 
-      def checkForEmptyTypeArgumentList(typeArguments: NodeArray<Node>) {
+      def checkForEmptyTypeArgumentList(typeArguments: NodeArray<Node>) = {
         if (parseDiagnostics.length == 0 &&  typeArguments && typeArguments.length == 0) {
           val start = typeArguments.pos - "<".length
           val end = skipTrivia(sourceText, typeArguments.end) + ">".length
@@ -5793,7 +5793,7 @@ object Parser {
         }
       }
 
-      def parseQualifiedName(left: EntityName): QualifiedName {
+      def parseQualifiedName(left: EntityName): QualifiedName = {
         val result = <QualifiedName>createNode(SyntaxKind.QualifiedName, left.pos)
         result.left = left
         result.right = parseIdentifierName()
@@ -5801,7 +5801,7 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocRecordType(): JSDocRecordType {
+      def parseJSDocRecordType(): JSDocRecordType = {
         val result = <JSDocRecordType>createNode(SyntaxKind.JSDocRecordType)
         nextToken()
         result.members = parseDelimitedList(ParsingContext.JSDocRecordMembers, parseJSDocRecordMember)
@@ -5810,7 +5810,7 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocRecordMember(): JSDocRecordMember {
+      def parseJSDocRecordMember(): JSDocRecordMember = {
         val result = <JSDocRecordMember>createNode(SyntaxKind.JSDocRecordMember)
         result.name = parseSimplePropertyName()
 
@@ -5822,14 +5822,14 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocNonNullableType(): JSDocNonNullableType {
+      def parseJSDocNonNullableType(): JSDocNonNullableType = {
         val result = <JSDocNonNullableType>createNode(SyntaxKind.JSDocNonNullableType)
         nextToken()
         result.type = parseJSDocType()
         return finishNode(result)
       }
 
-      def parseJSDocTupleType(): JSDocTupleType {
+      def parseJSDocTupleType(): JSDocTupleType = {
         val result = <JSDocTupleType>createNode(SyntaxKind.JSDocTupleType)
         nextToken()
         result.types = parseDelimitedList(ParsingContext.JSDocTupleTypes, parseJSDocType)
@@ -5839,14 +5839,14 @@ object Parser {
         return finishNode(result)
       }
 
-      def checkForTrailingComma(list: NodeArray<Node>) {
+      def checkForTrailingComma(list: NodeArray<Node>) = {
         if (parseDiagnostics.length == 0 && list.hasTrailingComma) {
           val start = list.end - ",".length
           parseErrorAtPosition(start, ",".length, Diagnostics.Trailing_comma_not_allowed)
         }
       }
 
-      def parseJSDocUnionType(): JSDocUnionType {
+      def parseJSDocUnionType(): JSDocUnionType = {
         val result = <JSDocUnionType>createNode(SyntaxKind.JSDocUnionType)
         nextToken()
         result.types = parseJSDocTypeList(parseJSDocType())
@@ -5856,7 +5856,7 @@ object Parser {
         return finishNode(result)
       }
 
-      def parseJSDocTypeList(firstType: JSDocType) {
+      def parseJSDocTypeList(firstType: JSDocType) = {
         Debug.assert(!!firstType)
 
         val types = <NodeArray<JSDocType>>[]
@@ -5871,7 +5871,7 @@ object Parser {
         return types
       }
 
-      def parseJSDocAllType(): JSDocAllType {
+      def parseJSDocAllType(): JSDocAllType = {
         val result = <JSDocAllType>createNode(SyntaxKind.JSDocAllType)
         nextToken()
         return finishNode(result)
@@ -5909,7 +5909,7 @@ object Parser {
         }
       }
 
-      def parseIsolatedJSDocComment(content: String, start: Int, length: Int) {
+      def parseIsolatedJSDocComment(content: String, start: Int, length: Int) = {
         initializeState("file.js", content, ScriptTarget.Latest, /*isJavaScriptFile*/ true, /*_syntaxCursor:*/ ())
         sourceFile = <SourceFile>{ languageVariant: LanguageVariant.Standard, text: content }
         val jsDocComment = parseJSDocCommentWorker(start, length)
@@ -5919,7 +5919,7 @@ object Parser {
         return jsDocComment ? { jsDocComment, diagnostics } : ()
       }
 
-      def parseJSDocComment(parent: Node, start: Int, length: Int): JSDocComment {
+      def parseJSDocComment(parent: Node, start: Int, length: Int): JSDocComment = {
         val saveToken = token
         val saveParseDiagnosticsLength = parseDiagnostics.length
         val saveParseErrorBeforeNextFinishedNode = parseErrorBeforeNextFinishedNode
@@ -5936,7 +5936,7 @@ object Parser {
         return comment
       }
 
-      def parseJSDocCommentWorker(start: Int, length: Int): JSDocComment {
+      def parseJSDocCommentWorker(start: Int, length: Int): JSDocComment = {
         val content = sourceText
         start = start || 0
         val end = length == () ? content.length : start + length
@@ -6011,7 +6011,7 @@ object Parser {
 
         return result
 
-        def createJSDocComment(): JSDocComment {
+        def createJSDocComment(): JSDocComment = {
           if (!tags) {
             return ()
           }
@@ -6021,13 +6021,13 @@ object Parser {
           return finishNode(result, end)
         }
 
-        def skipWhitespace(): Unit {
+        def skipWhitespace(): Unit = {
           while (token == SyntaxKind.WhitespaceTrivia || token == SyntaxKind.NewLineTrivia) {
             nextJSDocToken()
           }
         }
 
-        def parseTag(): Unit {
+        def parseTag(): Unit = {
           Debug.assert(token == SyntaxKind.AtToken)
           val atToken = createNode(SyntaxKind.AtToken, scanner.getTokenPos())
           atToken.end = scanner.getTextPos()
@@ -6042,7 +6042,7 @@ object Parser {
           addTag(tag)
         }
 
-        def handleTag(atToken: Node, tagName: Identifier): JSDocTag {
+        def handleTag(atToken: Node, tagName: Identifier): JSDocTag = {
           if (tagName) {
             switch (tagName.text) {
               case "param":
@@ -6060,14 +6060,14 @@ object Parser {
           return ()
         }
 
-        def handleUnknownTag(atToken: Node, tagName: Identifier) {
+        def handleUnknownTag(atToken: Node, tagName: Identifier) = {
           val result = <JSDocTag>createNode(SyntaxKind.JSDocTag, atToken.pos)
           result.atToken = atToken
           result.tagName = tagName
           return finishNode(result)
         }
 
-        def addTag(tag: JSDocTag): Unit {
+        def addTag(tag: JSDocTag): Unit = {
           if (tag) {
             if (!tags) {
               tags = <NodeArray<JSDocTag>>[]
@@ -6079,7 +6079,7 @@ object Parser {
           }
         }
 
-        def tryParseTypeExpression(): JSDocTypeExpression {
+        def tryParseTypeExpression(): JSDocTypeExpression = {
           if (token != SyntaxKind.OpenBraceToken) {
             return ()
           }
@@ -6088,7 +6088,7 @@ object Parser {
           return typeExpression
         }
 
-        def handleParamTag(atToken: Node, tagName: Identifier) {
+        def handleParamTag(atToken: Node, tagName: Identifier) = {
           var typeExpression = tryParseTypeExpression()
 
           skipWhitespace()
@@ -6137,7 +6137,7 @@ object Parser {
           return finishNode(result)
         }
 
-        def handleReturnTag(atToken: Node, tagName: Identifier): JSDocReturnTag {
+        def handleReturnTag(atToken: Node, tagName: Identifier): JSDocReturnTag = {
           if (forEach(tags, t => t.kind == SyntaxKind.JSDocReturnTag)) {
             parseErrorAtPosition(tagName.pos, scanner.getTokenPos() - tagName.pos, Diagnostics._0_tag_already_specified, tagName.text)
           }
@@ -6149,7 +6149,7 @@ object Parser {
           return finishNode(result)
         }
 
-        def handleTypeTag(atToken: Node, tagName: Identifier): JSDocTypeTag {
+        def handleTypeTag(atToken: Node, tagName: Identifier): JSDocTypeTag = {
           if (forEach(tags, t => t.kind == SyntaxKind.JSDocTypeTag)) {
             parseErrorAtPosition(tagName.pos, scanner.getTokenPos() - tagName.pos, Diagnostics._0_tag_already_specified, tagName.text)
           }
@@ -6161,7 +6161,7 @@ object Parser {
           return finishNode(result)
         }
 
-        def handleTemplateTag(atToken: Node, tagName: Identifier): JSDocTemplateTag {
+        def handleTemplateTag(atToken: Node, tagName: Identifier): JSDocTemplateTag = {
           if (forEach(tags, t => t.kind == SyntaxKind.JSDocTemplateTag)) {
             parseErrorAtPosition(tagName.pos, scanner.getTokenPos() - tagName.pos, Diagnostics._0_tag_already_specified, tagName.text)
           }
@@ -6200,11 +6200,11 @@ object Parser {
           return result
         }
 
-        def nextJSDocToken(): SyntaxKind {
+        def nextJSDocToken(): SyntaxKind = {
           return token = scanner.scanJSDocToken()
         }
 
-        def parseJSDocIdentifier(): Identifier {
+        def parseJSDocIdentifier(): Identifier = {
           if (token != SyntaxKind.Identifier) {
             parseErrorAtCurrentToken(Diagnostics.Identifier_expected)
             return ()
@@ -6224,7 +6224,7 @@ object Parser {
   }
 
   package IncrementalParser {
-    def updateSourceFile(sourceFile: SourceFile, newText: String, textChangeRange: TextChangeRange, aggressiveChecks: Boolean): SourceFile {
+    def updateSourceFile(sourceFile: SourceFile, newText: String, textChangeRange: TextChangeRange, aggressiveChecks: Boolean): SourceFile = {
       aggressiveChecks = aggressiveChecks || Debug.shouldAssert(AssertionLevel.Aggressive)
 
       checkChangeRange(sourceFile, newText, textChangeRange, aggressiveChecks)
@@ -6305,7 +6305,7 @@ object Parser {
       return result
     }
 
-    def moveElementEntirelyPastChangeRange(element: IncrementalElement, isArray: Boolean, delta: Int, oldText: String, newText: String, aggressiveChecks: Boolean) {
+    def moveElementEntirelyPastChangeRange(element: IncrementalElement, isArray: Boolean, delta: Int, oldText: String, newText: String, aggressiveChecks: Boolean) = {
       if (isArray) {
         visitArray(<IncrementalNodeArray>element)
       }
@@ -6314,7 +6314,7 @@ object Parser {
       }
       return
 
-      def visitNode(node: IncrementalNode) {
+      def visitNode(node: IncrementalNode) = {
         var text = ""
         if (aggressiveChecks && shouldCheckNode(node)) {
           text = oldText.substring(node.pos, node.end)
@@ -6341,7 +6341,7 @@ object Parser {
         checkNodePositions(node, aggressiveChecks)
       }
 
-      def visitArray(array: IncrementalNodeArray) {
+      def visitArray(array: IncrementalNodeArray) = {
         array._children = ()
         array.pos += delta
         array.end += delta
@@ -6352,7 +6352,7 @@ object Parser {
       }
     }
 
-    def shouldCheckNode(node: Node) {
+    def shouldCheckNode(node: Node) = {
       switch (node.kind) {
         case SyntaxKind.StringLiteral:
         case SyntaxKind.NumericLiteral:
@@ -6363,7 +6363,7 @@ object Parser {
       return false
     }
 
-    def adjustIntersectingElement(element: IncrementalElement, changeStart: Int, changeRangeOldEnd: Int, changeRangeNewEnd: Int, delta: Int) {
+    def adjustIntersectingElement(element: IncrementalElement, changeStart: Int, changeRangeOldEnd: Int, changeRangeNewEnd: Int, delta: Int) = {
       Debug.assert(element.end >= changeStart, "Adjusting an element that was entirely before the change range")
       Debug.assert(element.pos <= changeRangeOldEnd, "Adjusting an element that was entirely after the change range")
       Debug.assert(element.pos <= element.end)
@@ -6438,7 +6438,7 @@ object Parser {
       }
     }
 
-    def checkNodePositions(node: Node, aggressiveChecks: Boolean) {
+    def checkNodePositions(node: Node, aggressiveChecks: Boolean) = {
       if (aggressiveChecks) {
         var pos = node.pos
         forEachChild(node, child => {
@@ -6462,7 +6462,7 @@ object Parser {
       visitNode(sourceFile)
       return
 
-      def visitNode(child: IncrementalNode) {
+      def visitNode(child: IncrementalNode) = {
         Debug.assert(child.pos <= child.end)
         if (child.pos > changeRangeOldEnd) {
           // Node is entirely past the change range.  We need to move both its pos and
@@ -6491,7 +6491,7 @@ object Parser {
         Debug.assert(fullEnd < changeStart)
       }
 
-      def visitArray(array: IncrementalNodeArray) {
+      def visitArray(array: IncrementalNodeArray) = {
         Debug.assert(array.pos <= array.end)
         if (array.pos > changeRangeOldEnd) {
           // Array is entirely after the change range.  We need to move it, and move any of
@@ -6521,7 +6521,7 @@ object Parser {
       }
     }
 
-    def extendToAffectedRange(sourceFile: SourceFile, changeRange: TextChangeRange): TextChangeRange {
+    def extendToAffectedRange(sourceFile: SourceFile, changeRange: TextChangeRange): TextChangeRange = {
       // Consider the following code:
       //    Unit foo() { /; }
       //
@@ -6553,7 +6553,7 @@ object Parser {
       return createTextChangeRange(finalSpan, finalLength)
     }
 
-    def findNearestNodeStartingBeforeOrAtPosition(sourceFile: SourceFile, position: Int): Node {
+    def findNearestNodeStartingBeforeOrAtPosition(sourceFile: SourceFile, position: Int): Node = {
       var bestResult: Node = sourceFile
       var lastNodeEntirelyBeforePosition: Node
 
@@ -6568,7 +6568,7 @@ object Parser {
 
       return bestResult
 
-      def getLastChild(node: Node): Node {
+      def getLastChild(node: Node): Node = {
         while (true) {
           val lastChild = getLastChildWorker(node)
           if (lastChild) {
@@ -6580,7 +6580,7 @@ object Parser {
         }
       }
 
-      def getLastChildWorker(node: Node): Node {
+      def getLastChildWorker(node: Node): Node = {
         var last: Node = ()
         forEachChild(node, child => {
           if (nodeIsPresent(child)) {
@@ -6590,7 +6590,7 @@ object Parser {
         return last
       }
 
-      def visit(child: Node) {
+      def visit(child: Node) = {
         if (nodeIsMissing(child)) {
           // Missing nodes are effectively invisible to us.  We never even consider them
           // When trying to find the nearest node before us.
@@ -6648,7 +6648,7 @@ object Parser {
       }
     }
 
-    def checkChangeRange(sourceFile: SourceFile, newText: String, textChangeRange: TextChangeRange, aggressiveChecks: Boolean) {
+    def checkChangeRange(sourceFile: SourceFile, newText: String, textChangeRange: TextChangeRange, aggressiveChecks: Boolean) = {
       val oldText = sourceFile.text
       if (textChangeRange) {
         Debug.assert((oldText.length - textChangeRange.span.length + textChangeRange.newLength) == newText.length)
@@ -6687,7 +6687,7 @@ object Parser {
       currentNode(position: Int): IncrementalNode
     }
 
-    def createSyntaxCursor(sourceFile: SourceFile): SyntaxCursor {
+    def createSyntaxCursor(sourceFile: SourceFile): SyntaxCursor = {
       var currentArray: NodeArray<Node> = sourceFile.statements
       var currentArrayIndex = 0
 
@@ -6733,7 +6733,7 @@ object Parser {
       // Finds the highest element in the tree we can find that starts at the provided position.
       // The element must be a direct child of some node list in the tree.  This way after we
       // return it, we can easily return its next sibling in the list.
-      def findHighestListElementThatStartsAtPosition(position: Int) {
+      def findHighestListElementThatStartsAtPosition(position: Int) = {
         // Clear out any cached state about the last node we found.
         currentArray = ()
         currentArrayIndex = InvalidPosition.Value
@@ -6743,7 +6743,7 @@ object Parser {
         forEachChild(sourceFile, visitNode, visitArray)
         return
 
-        def visitNode(node: Node) {
+        def visitNode(node: Node) = {
           if (position >= node.pos && position < node.end) {
             // Position was within this node.  Keep searching deeper to find the node.
             forEachChild(node, visitNode, visitArray)
@@ -6756,7 +6756,7 @@ object Parser {
           return false
         }
 
-        def visitArray(array: NodeArray<Node>) {
+        def visitArray(array: NodeArray<Node>) = {
           if (position >= array.pos && position < array.end) {
             // position was in this array.  Search through this array to see if we find a
             // viable element.

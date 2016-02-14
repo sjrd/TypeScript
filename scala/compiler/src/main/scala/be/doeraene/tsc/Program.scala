@@ -16,7 +16,7 @@ object Program {
 
   val version = "1.9.0"
 
-  def findConfigFile(searchPath: String, fileExists: (fileName: String) => Boolean): String {
+  def findConfigFile(searchPath: String, fileExists: (fileName: String) => Boolean): String = {
     var fileName = "tsconfig.json"
     while (true) {
       if (fileExists(fileName)) {
@@ -32,31 +32,31 @@ object Program {
     return ()
   }
 
-  def resolveTripleslashReference(moduleName: String, containingFile: String): String {
+  def resolveTripleslashReference(moduleName: String, containingFile: String): String = {
     val basePath = getDirectoryPath(containingFile)
     val referencedFileName = isRootedDiskPath(moduleName) ? moduleName : combinePaths(basePath, moduleName)
     return normalizePath(referencedFileName)
   }
 
   def trace(host: ModuleResolutionHost, message: DiagnosticMessage, ...args: any[]): Unit
-  def trace(host: ModuleResolutionHost, message: DiagnosticMessage): Unit {
+  def trace(host: ModuleResolutionHost, message: DiagnosticMessage): Unit = {
     host.trace(formatMessage.apply((), arguments))
   }
 
-  def isTraceEnabled(compilerOptions: CompilerOptions, host: ModuleResolutionHost): Boolean {
+  def isTraceEnabled(compilerOptions: CompilerOptions, host: ModuleResolutionHost): Boolean = {
     return compilerOptions.traceModuleResolution && host.trace != ()
   }
 
-  def startsWith(str: String, prefix: String): Boolean {
+  def startsWith(str: String, prefix: String): Boolean = {
     return str.lastIndexOf(prefix, 0) == 0
   }
 
-  def endsWith(str: String, suffix: String): Boolean {
+  def endsWith(str: String, suffix: String): Boolean = {
     val expectedPos = str.length - suffix.length
     return str.indexOf(suffix, expectedPos) == expectedPos
   }
 
-  def hasZeroOrOneAsteriskCharacter(str: String): Boolean {
+  def hasZeroOrOneAsteriskCharacter(str: String): Boolean = {
     var seenAsterisk = false
     for (var i = 0; i < str.length; i++) {
       if (str.charCodeAt(i) == CharacterCodes.asterisk) {
@@ -72,11 +72,11 @@ object Program {
     return true
   }
 
-  def createResolvedModule(resolvedFileName: String, isExternalLibraryImport: Boolean, failedLookupLocations: String[]): ResolvedModuleWithFailedLookupLocations {
+  def createResolvedModule(resolvedFileName: String, isExternalLibraryImport: Boolean, failedLookupLocations: String[]): ResolvedModuleWithFailedLookupLocations = {
     return { resolvedModule: resolvedFileName ? { resolvedFileName, isExternalLibraryImport } : (), failedLookupLocations }
   }
 
-  def moduleHasNonRelativeName(moduleName: String): Boolean {
+  def moduleHasNonRelativeName(moduleName: String): Boolean = {
     if (isRootedDiskPath(moduleName)) {
       return false
     }
@@ -94,7 +94,7 @@ object Program {
     skipTsx: Boolean
   }
 
-  def resolveModuleName(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
+  def resolveModuleName(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations = {
     val traceEnabled = isTraceEnabled(compilerOptions, host)
     if (traceEnabled) {
       trace(host, Diagnostics.Resolving_module_0_from_1, moduleName, containingFile)
@@ -367,7 +367,7 @@ object Program {
     }
   }
 
-  def nodeModuleNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
+  def nodeModuleNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations = {
     val containingDirectory = getDirectoryPath(containingFile)
     val supportedExtensions = getSupportedExtensions(compilerOptions)
     val traceEnabled = isTraceEnabled(compilerOptions, host)
@@ -409,7 +409,7 @@ object Program {
   }
 
   /* @internal */
-  def directoryProbablyExists(directoryName: String, host: { directoryExists?: (directoryName: String) => Boolean } ): Boolean {
+  def directoryProbablyExists(directoryName: String, host: { directoryExists?: (directoryName: String) => Boolean } ): Boolean = {
     // if host does not support 'directoryExists' assume that directory will exist
     return !host.directoryExists || host.directoryExists(directoryName)
   }
@@ -418,10 +418,10 @@ object Program {
    * @param {Boolean} onlyRecordFailures - if true then def won't try to actually load files but instead record all attempts as failures. This flag is necessary
    * in cases when we know upfront that all load attempts will fail (because containing folder does not exists) however we still need to record all failed lookup locations.
    */
-  def loadModuleFromFile(candidate: String, extensions: String[], failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String {
+  def loadModuleFromFile(candidate: String, extensions: String[], failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String = {
     return forEach(extensions, tryLoad)
 
-    def tryLoad(ext: String): String {
+    def tryLoad(ext: String): String = {
       if (ext == ".tsx" && state.skipTsx) {
         return ()
       }
@@ -442,7 +442,7 @@ object Program {
     }
   }
 
-  def loadNodeModuleFromDirectory(extensions: String[], candidate: String, failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String {
+  def loadNodeModuleFromDirectory(extensions: String[], candidate: String, failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String = {
     val packageJsonPath = combinePaths(candidate, "package.json")
     val directoryExists = !onlyRecordFailures && directoryProbablyExists(candidate, state.host)
     if (directoryExists && state.host.fileExists(packageJsonPath)) {
@@ -493,7 +493,7 @@ object Program {
     return loadModuleFromFile(combinePaths(candidate, "index"), extensions, failedLookupLocation, !directoryExists, state)
   }
 
-  def loadModuleFromNodeModules(moduleName: String, directory: String, failedLookupLocations: String[], state: ModuleResolutionState): String {
+  def loadModuleFromNodeModules(moduleName: String, directory: String, failedLookupLocations: String[], state: ModuleResolutionState): String = {
     directory = normalizeSlashes(directory)
     while (true) {
       val baseName = getBaseFileName(directory)
@@ -522,7 +522,7 @@ object Program {
     return ()
   }
 
-  def classicNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
+  def classicNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations = {
     val traceEnabled = isTraceEnabled(compilerOptions, host)
     val state = { compilerOptions, host, traceEnabled, skipTsx: !compilerOptions.jsx }
     val failedLookupLocations: String[] = []
@@ -561,10 +561,10 @@ object Program {
     sourceMap: false,
   }
 
-  def createCompilerHost(options: CompilerOptions, setParentNodes?: Boolean): CompilerHost {
+  def createCompilerHost(options: CompilerOptions, setParentNodes?: Boolean): CompilerHost = {
     val existingDirectories: Map<Boolean> = {}
 
-    def getCanonicalFileName(fileName: String): String {
+    def getCanonicalFileName(fileName: String): String = {
       // if underlying system can distinguish between two files whose names differs only in cases then file name already in canonical form.
       // otherwise use toLowerCase as a canonical form.
       return sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase()
@@ -573,7 +573,7 @@ object Program {
     // returned by CScript sys environment
     val unsupportedFileEncodingErrorCode = -2147024809
 
-    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => Unit): SourceFile {
+    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => Unit): SourceFile = {
       var text: String
       try {
         val start = new Date().getTime()
@@ -592,7 +592,7 @@ object Program {
       return text != () ? createSourceFile(fileName, text, languageVersion, setParentNodes) : ()
     }
 
-    def directoryExists(directoryPath: String): Boolean {
+    def directoryExists(directoryPath: String): Boolean = {
       if (hasProperty(existingDirectories, directoryPath)) {
         return true
       }
@@ -603,7 +603,7 @@ object Program {
       return false
     }
 
-    def ensureDirectoriesExist(directoryPath: String) {
+    def ensureDirectoriesExist(directoryPath: String) = {
       if (directoryPath.length > getRootLength(directoryPath) && !directoryExists(directoryPath)) {
         val parentDirectory = getDirectoryPath(directoryPath)
         ensureDirectoriesExist(parentDirectory)
@@ -611,7 +611,7 @@ object Program {
       }
     }
 
-    def writeFile(fileName: String, data: String, writeByteOrderMark: Boolean, onError?: (message: String) => Unit) {
+    def writeFile(fileName: String, data: String, writeByteOrderMark: Boolean, onError?: (message: String) => Unit) = {
       try {
         val start = new Date().getTime()
         ensureDirectoriesExist(getDirectoryPath(normalizePath(fileName)))
@@ -655,7 +655,7 @@ object Program {
     return sortAndDeduplicateDiagnostics(diagnostics)
   }
 
-  def flattenDiagnosticMessageText(messageText: String | DiagnosticMessageChain, newLine: String): String {
+  def flattenDiagnosticMessageText(messageText: String | DiagnosticMessageChain, newLine: String): String = {
     if (typeof messageText == "String") {
       return messageText
     }
@@ -681,7 +681,7 @@ object Program {
     }
   }
 
-  def createProgram(rootNames: String[], options: CompilerOptions, host?: CompilerHost, oldProgram?: Program): Program {
+  def createProgram(rootNames: String[], options: CompilerOptions, host?: CompilerHost, oldProgram?: Program): Program = {
     var program: Program
     var files: SourceFile[] = []
     var fileProcessingDiagnostics = createDiagnosticCollection()
@@ -785,7 +785,7 @@ object Program {
 
     return program
 
-    def getCommonSourceDirectory() {
+    def getCommonSourceDirectory() = {
       if (typeof commonSourceDirectory == "()") {
         if (options.rootDir && checkSourceFilesBelongToPath(files, options.rootDir)) {
           // If a rootDir is specified and is valid use it as the commonSourceDirectory
@@ -804,7 +804,7 @@ object Program {
       return commonSourceDirectory
     }
 
-    def getClassifiableNames() {
+    def getClassifiableNames() = {
       if (!classifiableNames) {
         // Initialize a checker so that all our files are bound.
         getTypeChecker()
@@ -818,7 +818,7 @@ object Program {
       return classifiableNames
     }
 
-    def tryReuseStructureFromOldProgram(): Boolean {
+    def tryReuseStructureFromOldProgram(): Boolean = {
       if (!oldProgram) {
         return false
       }
@@ -916,7 +916,7 @@ object Program {
       return true
     }
 
-    def getEmitHost(writeFileCallback?: WriteFileCallback): EmitHost {
+    def getEmitHost(writeFileCallback?: WriteFileCallback): EmitHost = {
       return {
         getCanonicalFileName,
         getCommonSourceDirectory: program.getCommonSourceDirectory,
@@ -931,23 +931,23 @@ object Program {
       }
     }
 
-    def getDiagnosticsProducingTypeChecker() {
+    def getDiagnosticsProducingTypeChecker() = {
       return diagnosticsProducingTypeChecker || (diagnosticsProducingTypeChecker = createTypeChecker(program, /*produceDiagnostics:*/ true))
     }
 
-    def getTypeChecker() {
+    def getTypeChecker() = {
       return noDiagnosticsTypeChecker || (noDiagnosticsTypeChecker = createTypeChecker(program, /*produceDiagnostics:*/ false))
     }
 
-    def emit(sourceFile?: SourceFile, writeFileCallback?: WriteFileCallback, cancellationToken?: CancellationToken): EmitResult {
+    def emit(sourceFile?: SourceFile, writeFileCallback?: WriteFileCallback, cancellationToken?: CancellationToken): EmitResult = {
       return runWithCancellationToken(() => emitWorker(this, sourceFile, writeFileCallback, cancellationToken))
     }
 
-    def isEmitBlocked(emitFileName: String): Boolean {
+    def isEmitBlocked(emitFileName: String): Boolean = {
       return hasEmitBlockingDiagnostics.contains(toPath(emitFileName, currentDirectory, getCanonicalFileName))
     }
 
-    def emitWorker(program: Program, sourceFile: SourceFile, writeFileCallback: WriteFileCallback, cancellationToken: CancellationToken): EmitResult {
+    def emitWorker(program: Program, sourceFile: SourceFile, writeFileCallback: WriteFileCallback, cancellationToken: CancellationToken): EmitResult = {
       // If the noEmitOnError flag is set, then check if we have any errors so far.  If so,
       // immediately bail out.  Note that we pass '()' for 'sourceFile' so that we
       // get any preEmit diagnostics, not just the ones
@@ -979,7 +979,7 @@ object Program {
       return emitResult
     }
 
-    def getSourceFile(fileName: String): SourceFile {
+    def getSourceFile(fileName: String): SourceFile = {
       return filesByName.get(toPath(fileName, currentDirectory, getCanonicalFileName))
     }
 
@@ -1018,7 +1018,7 @@ object Program {
       return sourceFile.parseDiagnostics
     }
 
-    def runWithCancellationToken<T>(func: () => T): T {
+    def runWithCancellationToken<T>(func: () => T): T = {
       try {
         return func()
       }
@@ -1067,7 +1067,7 @@ object Program {
 
         return diagnostics
 
-        def walk(node: Node): Boolean {
+        def walk(node: Node): Boolean = {
           if (!node) {
             return false
           }
@@ -1178,7 +1178,7 @@ object Program {
           return forEachChild(node, walk)
         }
 
-        def checkTypeParameters(typeParameters: NodeArray<TypeParameterDeclaration>): Boolean {
+        def checkTypeParameters(typeParameters: NodeArray<TypeParameterDeclaration>): Boolean = {
           if (typeParameters) {
             val start = typeParameters.pos
             diagnostics.push(createFileDiagnostic(sourceFile, start, typeParameters.end - start, Diagnostics.type_parameter_declarations_can_only_be_used_in_a_ts_file))
@@ -1187,7 +1187,7 @@ object Program {
           return false
         }
 
-        def checkTypeAnnotation(type: TypeNode): Boolean {
+        def checkTypeAnnotation(type: TypeNode): Boolean = {
           if (type) {
             diagnostics.push(createDiagnosticForNode(type, Diagnostics.types_can_only_be_used_in_a_ts_file))
             return true
@@ -1196,7 +1196,7 @@ object Program {
           return false
         }
 
-        def checkModifiers(modifiers: ModifiersArray): Boolean {
+        def checkModifiers(modifiers: ModifiersArray): Boolean = {
           if (modifiers) {
             for (val modifier of modifiers) {
               switch (modifier.kind) {
@@ -1247,27 +1247,27 @@ object Program {
       return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
 
-    def hasExtension(fileName: String): Boolean {
+    def hasExtension(fileName: String): Boolean = {
       return getBaseFileName(fileName).indexOf(".") >= 0
     }
 
-    def processRootFile(fileName: String, isDefaultLib: Boolean) {
+    def processRootFile(fileName: String, isDefaultLib: Boolean) = {
       processSourceFile(normalizePath(fileName), isDefaultLib)
     }
 
-    def fileReferenceIsEqualTo(a: FileReference, b: FileReference): Boolean {
+    def fileReferenceIsEqualTo(a: FileReference, b: FileReference): Boolean = {
       return a.fileName == b.fileName
     }
 
-    def moduleNameIsEqualTo(a: LiteralExpression, b: LiteralExpression): Boolean {
+    def moduleNameIsEqualTo(a: LiteralExpression, b: LiteralExpression): Boolean = {
       return a.text == b.text
     }
 
-    def getTextOfLiteral(literal: LiteralExpression): String {
+    def getTextOfLiteral(literal: LiteralExpression): String = {
       return literal.text
     }
 
-    def collectExternalModuleReferences(file: SourceFile): Unit {
+    def collectExternalModuleReferences(file: SourceFile): Unit = {
       if (file.imports) {
         return
       }
@@ -1290,7 +1290,7 @@ object Program {
 
       return
 
-      def collectModuleReferences(node: Node, inAmbientModule: Boolean): Unit {
+      def collectModuleReferences(node: Node, inAmbientModule: Boolean): Unit = {
         switch (node.kind) {
           case SyntaxKind.ImportDeclaration:
           case SyntaxKind.ImportEqualsDeclaration:
@@ -1336,7 +1336,7 @@ object Program {
         }
       }
 
-      def collectRequireCalls(node: Node): Unit {
+      def collectRequireCalls(node: Node): Unit = {
         if (isRequireCall(node, /*checkArgumentIsStringLiteral*/true)) {
           (imports || (imports = [])).push(<StringLiteral>(<CallExpression>node).arguments[0])
         }
@@ -1346,7 +1346,7 @@ object Program {
       }
     }
 
-    def processSourceFile(fileName: String, isDefaultLib: Boolean, refFile?: SourceFile, refPos?: Int, refEnd?: Int) {
+    def processSourceFile(fileName: String, isDefaultLib: Boolean, refFile?: SourceFile, refPos?: Int, refEnd?: Int) = {
       var diagnosticArgument: String[]
       var diagnostic: DiagnosticMessage
       if (hasExtension(fileName)) {
@@ -1388,7 +1388,7 @@ object Program {
       }
     }
 
-    def reportFileNamesDifferOnlyInCasingError(fileName: String, existingFileName: String, refFile: SourceFile, refPos: Int, refEnd: Int): Unit {
+    def reportFileNamesDifferOnlyInCasingError(fileName: String, existingFileName: String, refFile: SourceFile, refPos: Int, refEnd: Int): Unit = {
       if (refFile != () && refPos != () && refEnd != ()) {
         fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos,
           Diagnostics.File_name_0_differs_from_already_included_file_name_1_only_in_casing, fileName, existingFileName))
@@ -1399,7 +1399,7 @@ object Program {
     }
 
     // Get source file from normalized fileName
-    def findSourceFile(fileName: String, path: Path, isDefaultLib: Boolean, refFile?: SourceFile, refPos?: Int, refEnd?: Int): SourceFile {
+    def findSourceFile(fileName: String, path: Path, isDefaultLib: Boolean, refFile?: SourceFile, refPos?: Int, refEnd?: Int): SourceFile = {
       if (filesByName.contains(path)) {
         val file = filesByName.get(path)
         // try to check if we've already seen this file but with a different casing in path
@@ -1458,18 +1458,18 @@ object Program {
       return file
     }
 
-    def processReferencedFiles(file: SourceFile, basePath: String) {
+    def processReferencedFiles(file: SourceFile, basePath: String) = {
       forEach(file.referencedFiles, ref => {
         val referencedFileName = resolveTripleslashReference(ref.fileName, file.fileName)
         processSourceFile(referencedFileName, /*isDefaultLib*/ false, file, ref.pos, ref.end)
       })
     }
 
-    def getCanonicalFileName(fileName: String): String {
+    def getCanonicalFileName(fileName: String): String = {
       return host.getCanonicalFileName(fileName)
     }
 
-    def processImportedModules(file: SourceFile, basePath: String) {
+    def processImportedModules(file: SourceFile, basePath: String) = {
       collectExternalModuleReferences(file)
       if (file.imports.length || file.moduleAugmentations.length) {
         file.resolvedModules = {}
@@ -1511,7 +1511,7 @@ object Program {
       return
     }
 
-    def computeCommonSourceDirectory(sourceFiles: SourceFile[]): String {
+    def computeCommonSourceDirectory(sourceFiles: SourceFile[]): String = {
       var commonPathComponents: String[]
       val failed = forEach(files, sourceFile => {
         // Each file contributes into common source file path
@@ -1559,7 +1559,7 @@ object Program {
       return getNormalizedPathFromPathComponents(commonPathComponents)
     }
 
-    def checkSourceFilesBelongToPath(sourceFiles: SourceFile[], rootDirectory: String): Boolean {
+    def checkSourceFilesBelongToPath(sourceFiles: SourceFile[], rootDirectory: String): Boolean = {
       var allFilesBelongToPath = true
       if (sourceFiles) {
         val absoluteRootDirectoryPath = host.getCanonicalFileName(getNormalizedAbsolutePath(rootDirectory, currentDirectory))
@@ -1578,7 +1578,7 @@ object Program {
       return allFilesBelongToPath
     }
 
-    def verifyCompilerOptions() {
+    def verifyCompilerOptions() = {
       if (options.isolatedModules) {
         if (options.declaration) {
           programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_0_cannot_be_specified_with_option_1, "declaration", "isolatedModules"))
@@ -1736,7 +1736,7 @@ object Program {
       }
 
       // Verify that all the emit files are unique and don't overwrite input files
-      def verifyEmitFilePath(emitFileName: String, emitFilesSeen: FileMap<Boolean>) {
+      def verifyEmitFilePath(emitFileName: String, emitFilesSeen: FileMap<Boolean>) = {
         if (emitFileName) {
           val emitFilePath = toPath(emitFileName, currentDirectory, getCanonicalFileName)
           // Report error if the output overwrites input file
@@ -1756,7 +1756,7 @@ object Program {
       }
     }
 
-    def createEmitBlockingDiagnostics(emitFileName: String, emitFilePath: Path, message: DiagnosticMessage) {
+    def createEmitBlockingDiagnostics(emitFileName: String, emitFilePath: Path, message: DiagnosticMessage) = {
       hasEmitBlockingDiagnostics.set(toPath(emitFileName, currentDirectory, getCanonicalFileName), true)
       programDiagnostics.add(createCompilerDiagnostic(message, emitFileName))
     }

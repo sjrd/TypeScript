@@ -10,7 +10,7 @@ object TSC {
 
   var reportDiagnostic = reportDiagnosticSimply
 
-  def reportDiagnostics(diagnostics: Diagnostic[], host: CompilerHost): Unit {
+  def reportDiagnostics(diagnostics: Diagnostic[], host: CompilerHost): Unit = {
     for (val diagnostic of diagnostics) {
       reportDiagnostic(diagnostic, host)
     }
@@ -20,7 +20,7 @@ object TSC {
    * Checks to see if the locale is in the appropriate format,
    * and if it is, attempts to set the appropriate language.
    */
-  def validateLocaleAndSetLanguage(locale: String, errors: Diagnostic[]): Boolean {
+  def validateLocaleAndSetLanguage(locale: String, errors: Diagnostic[]): Boolean = {
     val matchResult = /^([a-z]+)([_\-]([a-z]+))?$/.exec(locale.toLowerCase())
 
     if (!matchResult) {
@@ -42,7 +42,7 @@ object TSC {
     return true
   }
 
-  def trySetLanguageAndTerritory(language: String, territory: String, errors: Diagnostic[]): Boolean {
+  def trySetLanguageAndTerritory(language: String, territory: String, errors: Diagnostic[]): Boolean = {
     val compilerFilePath = normalizePath(sys.getExecutingFilePath())
     val containingDirectoryPath = getDirectoryPath(compilerFilePath)
 
@@ -78,7 +78,7 @@ object TSC {
     return true
   }
 
-  def countLines(program: Program): Int {
+  def countLines(program: Program): Int = {
     var count = 0
     forEach(program.getSourceFiles(), file => {
       count += getLineStarts(file).length
@@ -86,16 +86,16 @@ object TSC {
     return count
   }
 
-  def getDiagnosticText(message: DiagnosticMessage, ...args: any[]): String {
+  def getDiagnosticText(message: DiagnosticMessage, ...args: any[]): String = {
     val diagnostic = createCompilerDiagnostic.apply((), arguments)
     return <String>diagnostic.messageText
   }
 
-  def getRelativeFileName(fileName: String, host: CompilerHost): String {
+  def getRelativeFileName(fileName: String, host: CompilerHost): String = {
     return host ? convertToRelativePath(fileName, host.getCurrentDirectory(), fileName => host.getCanonicalFileName(fileName)) : fileName
   }
 
-  def reportDiagnosticSimply(diagnostic: Diagnostic, host: CompilerHost): Unit {
+  def reportDiagnosticSimply(diagnostic: Diagnostic, host: CompilerHost): Unit = {
     var output = ""
 
     if (diagnostic.file) {
@@ -124,11 +124,11 @@ object TSC {
     [DiagnosticCategory.Message]: blueForegroundEscapeSequence,
   }
 
-  def formatAndReset(text: String, formatStyle: String) {
+  def formatAndReset(text: String, formatStyle: String) = {
     return formatStyle + text + resetEscapeSequence
   }
 
-  def reportDiagnosticWithColorAndContext(diagnostic: Diagnostic, host: CompilerHost): Unit {
+  def reportDiagnosticWithColorAndContext(diagnostic: Diagnostic, host: CompilerHost): Unit = {
     var output = ""
 
     if (diagnostic.file) {
@@ -198,7 +198,7 @@ object TSC {
     sys.write(output)
   }
 
-  def reportWatchDiagnostic(diagnostic: Diagnostic) {
+  def reportWatchDiagnostic(diagnostic: Diagnostic) = {
     var output = new Date().toLocaleTimeString() + " - "
 
     if (diagnostic.file) {
@@ -211,14 +211,14 @@ object TSC {
     sys.write(output)
   }
 
-  def padLeft(s: String, length: Int) {
+  def padLeft(s: String, length: Int) = {
     while (s.length < length) {
       s = " " + s
     }
     return s
   }
 
-  def padRight(s: String, length: Int) {
+  def padRight(s: String, length: Int) = {
     while (s.length < length) {
       s = s + " "
     }
@@ -226,23 +226,23 @@ object TSC {
     return s
   }
 
-  def reportStatisticalValue(name: String, value: String) {
+  def reportStatisticalValue(name: String, value: String) = {
     sys.write(padRight(name + ":", 12) + padLeft(value.toString(), 10) + sys.newLine)
   }
 
-  def reportCountStatistic(name: String, count: Int) {
+  def reportCountStatistic(name: String, count: Int) = {
     reportStatisticalValue(name, "" + count)
   }
 
-  def reportTimeStatistic(name: String, time: Int) {
+  def reportTimeStatistic(name: String, time: Int) = {
     reportStatisticalValue(name, (time / 1000).toFixed(2) + "s")
   }
 
-  def isJSONSupported() {
+  def isJSONSupported() = {
     return typeof JSON == "object" && typeof JSON.parse == "def"
   }
 
-  def executeCommandLine(args: String[]): Unit {
+  def executeCommandLine(args: String[]): Unit = {
     val commandLine = parseCommandLine(args)
     var configFileName: String;                 // Configuration file name (if any)
     var cachedConfigFileText: String;               // Cached configuration file text, used for reparsing (if any)
@@ -352,7 +352,7 @@ object TSC {
 
     performCompilation()
 
-    def parseConfigFile(): ParsedCommandLine {
+    def parseConfigFile(): ParsedCommandLine = {
       if (!cachedConfigFileText) {
         try {
           cachedConfigFileText = sys.readFile(configFileName)
@@ -388,7 +388,7 @@ object TSC {
     }
 
     // Invoked to perform initial compilation or re-compilation in watch mode
-    def performCompilation() {
+    def performCompilation() = {
 
       if (!cachedProgram) {
         if (configFileName) {
@@ -425,14 +425,14 @@ object TSC {
       reportWatchDiagnostic(createCompilerDiagnostic(Diagnostics.Compilation_complete_Watching_for_file_changes))
     }
 
-    def cachedFileExists(fileName: String): Boolean {
+    def cachedFileExists(fileName: String): Boolean = {
       if (hasProperty(cachedExistingFiles, fileName)) {
         return cachedExistingFiles[fileName]
       }
       return cachedExistingFiles[fileName] = hostFileExists(fileName)
     }
 
-    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => Unit) {
+    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => Unit) = {
       // Return existing SourceFile object if one is available
       if (cachedProgram) {
         val sourceFile = cachedProgram.getSourceFile(fileName)
@@ -452,7 +452,7 @@ object TSC {
     }
 
     // Change cached program to the given program
-    def setCachedProgram(program: Program) {
+    def setCachedProgram(program: Program) = {
       if (cachedProgram) {
         val newSourceFiles = program ? program.getSourceFiles() : ()
         forEach(cachedProgram.getSourceFiles(), sourceFile => {
@@ -468,7 +468,7 @@ object TSC {
     }
 
     // If a source file changes, mark it as unwatched and start the recompilation timer
-    def sourceFileChanged(sourceFile: SourceFile, removed?: Boolean) {
+    def sourceFileChanged(sourceFile: SourceFile, removed?: Boolean) = {
       sourceFile.fileWatcher.close()
       sourceFile.fileWatcher = ()
       if (removed) {
@@ -481,13 +481,13 @@ object TSC {
     }
 
     // If the configuration file changes, forget cached program and start the recompilation timer
-    def configFileChanged() {
+    def configFileChanged() = {
       setCachedProgram(())
       cachedConfigFileText = ()
       startTimerForRecompilation()
     }
 
-    def watchedDirectoryChanged(fileName: String) {
+    def watchedDirectoryChanged(fileName: String) = {
       if (fileName && !ts.isSupportedSourceFileName(fileName, compilerOptions)) {
         return
       }
@@ -495,14 +495,14 @@ object TSC {
       startTimerForHandlingDirectoryChanges()
     }
 
-    def startTimerForHandlingDirectoryChanges() {
+    def startTimerForHandlingDirectoryChanges() = {
       if (timerHandleForDirectoryChanges) {
         clearTimeout(timerHandleForDirectoryChanges)
       }
       timerHandleForDirectoryChanges = setTimeout(directoryChangeHandler, 250)
     }
 
-    def directoryChangeHandler() {
+    def directoryChangeHandler() = {
       val parsedCommandLine = parseConfigFile()
       val newFileNames = ts.map(parsedCommandLine.fileNames, compilerHost.getCanonicalFileName)
       val canonicalRootFileNames = ts.map(rootFileNames, compilerHost.getCanonicalFileName)
@@ -517,21 +517,21 @@ object TSC {
     // Upon detecting a file change, wait for 250ms and then perform a recompilation. This gives batch
     // operations (such as saving all modified files in an editor) a chance to complete before we kick
     // off a new compilation.
-    def startTimerForRecompilation() {
+    def startTimerForRecompilation() = {
       if (timerHandleForRecompilation) {
         clearTimeout(timerHandleForRecompilation)
       }
       timerHandleForRecompilation = setTimeout(recompile, 250)
     }
 
-    def recompile() {
+    def recompile() = {
       timerHandleForRecompilation = ()
       reportWatchDiagnostic(createCompilerDiagnostic(Diagnostics.File_change_detected_Starting_incremental_compilation))
       performCompilation()
     }
   }
 
-  def compile(fileNames: String[], compilerOptions: CompilerOptions, compilerHost: CompilerHost) {
+  def compile(fileNames: String[], compilerOptions: CompilerOptions, compilerHost: CompilerHost) = {
     ioReadTime = 0
     ioWriteTime = 0
     programTime = 0
@@ -576,7 +576,7 @@ object TSC {
 
     return { program, exitStatus }
 
-    def compileProgram(): ExitStatus {
+    def compileProgram(): ExitStatus = {
       var diagnostics: Diagnostic[]
 
       // First get and report any syntactic errors.
@@ -620,11 +620,11 @@ object TSC {
     }
   }
 
-  def printVersion() {
+  def printVersion() = {
     sys.write(getDiagnosticText(Diagnostics.Version_0, ts.version) + sys.newLine)
   }
 
-  def printHelp() {
+  def printHelp() = {
     var output = ""
 
     // We want to align our "syntax" and "examples" commands to a certain margin.
@@ -700,19 +700,19 @@ object TSC {
     sys.write(output)
     return
 
-    def getParamType(option: CommandLineOption) {
+    def getParamType(option: CommandLineOption) = {
       if (option.paramType != ()) {
         return " " + getDiagnosticText(option.paramType)
       }
       return ""
     }
 
-    def makePadding(paddingLength: Int): String {
+    def makePadding(paddingLength: Int): String = {
       return Array(paddingLength + 1).join(" ")
     }
   }
 
-  def writeConfigFile(options: CompilerOptions, fileNames: String[]) {
+  def writeConfigFile(options: CompilerOptions, fileNames: String[]) = {
     val currentDirectory = sys.getCurrentDirectory()
     val file = normalizePath(combinePaths(currentDirectory, "tsconfig.json"))
     if (sys.fileExists(file)) {

@@ -78,7 +78,7 @@ object Sys {
 
   var sys: System = (def () {
 
-    def getWScriptSystem(): System {
+    def getWScriptSystem(): System = {
 
       val fso = new ActiveXObject("Scripting.FileSystemObject")
 
@@ -93,7 +93,7 @@ object Sys {
         args[i] = WScript.Arguments.Item(i)
       }
 
-      def readFile(fileName: String, encoding?: String): String {
+      def readFile(fileName: String, encoding?: String): String = {
         if (!fso.FileExists(fileName)) {
           return ()
         }
@@ -124,7 +124,7 @@ object Sys {
         }
       }
 
-      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): Unit {
+      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): Unit = {
         fileStream.Open()
         binaryStream.Open()
         try {
@@ -148,7 +148,7 @@ object Sys {
         }
       }
 
-      def getCanonicalPath(path: String): String {
+      def getCanonicalPath(path: String): String = {
         return path.toLowerCase()
       }
 
@@ -165,7 +165,7 @@ object Sys {
         exclude = map(exclude, s => getCanonicalPath(combinePaths(path, s)))
         visitDirectory(path)
         return result
-        def visitDirectory(path: String) {
+        def visitDirectory(path: String) = {
           val folder = fso.GetFolder(path || ".")
           val files = getNames(folder.files)
           for (val current of files) {
@@ -224,23 +224,23 @@ object Sys {
       }
     }
 
-    def getNodeSystem(): System {
+    def getNodeSystem(): System = {
       val _fs = require("fs")
       val _path = require("path")
       val _os = require("os")
 
       // average async stat takes about 30 microseconds
       // set chunk size to do 30 files in < 1 millisecond
-      def createPollingWatchedFileSet(interval = 2500, chunkSize = 30) {
+      def createPollingWatchedFileSet(interval = 2500, chunkSize = 30) = {
         var watchedFiles: WatchedFile[] = []
         var nextFileToCheck = 0
         var watchTimer: any
 
-        def getModifiedTime(fileName: String): Date {
+        def getModifiedTime(fileName: String): Date = {
           return _fs.statSync(fileName).mtime
         }
 
-        def poll(checkedIndex: Int) {
+        def poll(checkedIndex: Int) = {
           val watchedFile = watchedFiles[checkedIndex]
           if (!watchedFile) {
             return
@@ -260,7 +260,7 @@ object Sys {
         // this implementation uses polling and
         // stat due to inconsistencies of fs.watch
         // and efficiency of stat on modern filesystems
-        def startWatchTimer() {
+        def startWatchTimer() = {
           watchTimer = setInterval(() => {
             var count = 0
             var nextToCheck = nextFileToCheck
@@ -280,7 +280,7 @@ object Sys {
           }, interval)
         }
 
-        def addFile(filePath: Path, callback: FileWatcherCallback): WatchedFile {
+        def addFile(filePath: Path, callback: FileWatcherCallback): WatchedFile = {
           val file: WatchedFile = {
             filePath,
             callback,
@@ -294,7 +294,7 @@ object Sys {
           return file
         }
 
-        def removeFile(file: WatchedFile) {
+        def removeFile(file: WatchedFile) = {
           watchedFiles = copyListRemovingItem(file, watchedFiles)
         }
 
@@ -307,13 +307,13 @@ object Sys {
         }
       }
 
-      def createWatchedFileSet() {
+      def createWatchedFileSet() = {
         val dirWatchers = createFileMap<DirectoryWatcher>()
         // One file can have multiple watchers
         val fileWatcherCallbacks = createFileMap<FileWatcherCallback[]>()
         return { addFile, removeFile }
 
-        def reduceDirWatcherRefCountForFile(filePath: Path) {
+        def reduceDirWatcherRefCountForFile(filePath: Path) = {
           val dirPath = getDirectoryPath(filePath)
           if (dirWatchers.contains(dirPath)) {
             val watcher = dirWatchers.get(dirPath)
@@ -325,7 +325,7 @@ object Sys {
           }
         }
 
-        def addDirWatcher(dirPath: Path): Unit {
+        def addDirWatcher(dirPath: Path): Unit = {
           if (dirWatchers.contains(dirPath)) {
             val watcher = dirWatchers.get(dirPath)
             watcher.referenceCount += 1
@@ -342,7 +342,7 @@ object Sys {
           return
         }
 
-        def addFileWatcherCallback(filePath: Path, callback: FileWatcherCallback): Unit {
+        def addFileWatcherCallback(filePath: Path, callback: FileWatcherCallback): Unit = {
           if (fileWatcherCallbacks.contains(filePath)) {
             fileWatcherCallbacks.get(filePath).push(callback)
           }
@@ -351,19 +351,19 @@ object Sys {
           }
         }
 
-        def addFile(filePath: Path, callback: FileWatcherCallback): WatchedFile {
+        def addFile(filePath: Path, callback: FileWatcherCallback): WatchedFile = {
           addFileWatcherCallback(filePath, callback)
           addDirWatcher(getDirectoryPath(filePath))
 
           return { filePath, callback }
         }
 
-        def removeFile(watchedFile: WatchedFile) {
+        def removeFile(watchedFile: WatchedFile) = {
           removeFileWatcherCallback(watchedFile.filePath, watchedFile.callback)
           reduceDirWatcherRefCountForFile(watchedFile.filePath)
         }
 
-        def removeFileWatcherCallback(filePath: Path, callback: FileWatcherCallback) {
+        def removeFileWatcherCallback(filePath: Path, callback: FileWatcherCallback) = {
           if (fileWatcherCallbacks.contains(filePath)) {
             val newCallbacks = copyListRemovingItem(callback, fileWatcherCallbacks.get(filePath))
             if (newCallbacks.length == 0) {
@@ -375,7 +375,7 @@ object Sys {
           }
         }
 
-        def fileEventHandler(eventName: String, relativeFileName: String, baseDirPath: Path) {
+        def fileEventHandler(eventName: String, relativeFileName: String, baseDirPath: Path) = {
           // When files are deleted from disk, the triggered "rename" event would have a relativefileName of "()"
           val filePath = typeof relativeFileName != "String"
             ? ()
@@ -405,7 +405,7 @@ object Sys {
       val pollingWatchedFileSet = createPollingWatchedFileSet()
       val watchedFileSet = createWatchedFileSet()
 
-      def isNode4OrLater(): Boolean {
+      def isNode4OrLater(): Boolean = {
          return parseInt(process.version.charAt(1)) >= 4
        }
 
@@ -413,7 +413,7 @@ object Sys {
       // win32\win64 are case insensitive platforms, MacOS (darwin) by default is also case insensitive
       val useCaseSensitiveFileNames = platform != "win32" && platform != "win64" && platform != "darwin"
 
-      def readFile(fileName: String, encoding?: String): String {
+      def readFile(fileName: String, encoding?: String): String = {
         if (!fileExists(fileName)) {
           return ()
         }
@@ -442,7 +442,7 @@ object Sys {
         return buffer.toString("utf8")
       }
 
-      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): Unit {
+      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): Unit = {
         // If a BOM is required, emit one
         if (writeByteOrderMark) {
           data = "\uFEFF" + data
@@ -461,7 +461,7 @@ object Sys {
         }
       }
 
-      def getCanonicalPath(path: String): String {
+      def getCanonicalPath(path: String): String = {
         return useCaseSensitiveFileNames ? path : path.toLowerCase()
       }
 
@@ -470,7 +470,7 @@ object Sys {
         Directory
       }
 
-      def fileSystemEntryExists(path: String, entryKind: FileSystemEntryKind): Boolean {
+      def fileSystemEntryExists(path: String, entryKind: FileSystemEntryKind): Boolean = {
         try {
           val stat = _fs.statSync(path)
           switch (entryKind) {
@@ -483,11 +483,11 @@ object Sys {
         }
       }
 
-      def fileExists(path: String): Boolean {
+      def fileExists(path: String): Boolean = {
         return fileSystemEntryExists(path, FileSystemEntryKind.File)
       }
 
-      def directoryExists(path: String): Boolean {
+      def directoryExists(path: String): Boolean = {
         return fileSystemEntryExists(path, FileSystemEntryKind.Directory)
       }
 
@@ -496,7 +496,7 @@ object Sys {
         exclude = map(exclude, s => getCanonicalPath(combinePaths(path, s)))
         visitDirectory(path)
         return result
-        def visitDirectory(path: String) {
+        def visitDirectory(path: String) = {
           val files = _fs.readdirSync(path || ".").sort()
           val directories: String[] = []
           for (val current of files) {
@@ -593,7 +593,7 @@ object Sys {
       }
     }
 
-    def getChakraSystem(): System {
+    def getChakraSystem(): System = {
 
       return {
         newLine: ChakraHost.newLine || "\r\n",

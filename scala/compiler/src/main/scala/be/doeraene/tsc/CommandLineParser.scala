@@ -339,7 +339,7 @@ object CommandLineParser {
 
   var optionNameMapCache: OptionNameMap
   /* @internal */
-  def getOptionNameMap(): OptionNameMap {
+  def getOptionNameMap(): OptionNameMap = {
     if (optionNameMapCache) {
       return optionNameMapCache
     }
@@ -357,7 +357,7 @@ object CommandLineParser {
     return optionNameMapCache
   }
 
-  def parseCommandLine(commandLine: String[], readFile?: (path: String) => String): ParsedCommandLine {
+  def parseCommandLine(commandLine: String[], readFile?: (path: String) => String): ParsedCommandLine = {
     val options: CompilerOptions = {}
     val fileNames: String[] = []
     val errors: Diagnostic[] = []
@@ -370,7 +370,7 @@ object CommandLineParser {
       errors
     }
 
-    def parseStrings(args: String[]) {
+    def parseStrings(args: String[]) = {
       var i = 0
       while (i < args.length) {
         var s = args[i]
@@ -434,7 +434,7 @@ object CommandLineParser {
       }
     }
 
-    def parseResponseFile(fileName: String) {
+    def parseResponseFile(fileName: String) = {
       val text = readFile ? readFile(fileName) : sys.readFile(fileName)
 
       if (!text) {
@@ -505,7 +505,7 @@ object CommandLineParser {
    *
    * This method replace comment content by whitespace rather than completely remove them to keep positions in json parsing error reporting accurate.
    */
-  def removeComments(jsonText: String): String {
+  def removeComments(jsonText: String): String = {
     var output = ""
     val scanner = createScanner(ScriptTarget.ES5, /* skipTrivia */ false, LanguageVariant.Standard, jsonText)
     var token: SyntaxKind
@@ -531,7 +531,7 @@ object CommandLineParser {
     * @param basePath A root directory to resolve relative path entries in the config
     *  file to. e.g. outDir
     */
-  def parseJsonConfigFileContent(json: any, host: ParseConfigHost, basePath: String, existingOptions: CompilerOptions = {}, configFileName?: String): ParsedCommandLine {
+  def parseJsonConfigFileContent(json: any, host: ParseConfigHost, basePath: String, existingOptions: CompilerOptions = {}, configFileName?: String): ParsedCommandLine = {
     val { options: optionsFromJsonConfigFile, errors } = convertCompilerOptionsFromJson(json["compilerOptions"], basePath, configFileName)
 
     val options = extend(existingOptions, optionsFromJsonConfigFile)
