@@ -29,7 +29,7 @@ object Program {
       searchPath = parentPath
       fileName = "../" + fileName
     }
-    return undefined
+    return ()
   }
 
   def resolveTripleslashReference(moduleName: String, containingFile: String): String {
@@ -38,13 +38,13 @@ object Program {
     return normalizePath(referencedFileName)
   }
 
-  def trace(host: ModuleResolutionHost, message: DiagnosticMessage, ...args: any[]): void
-  def trace(host: ModuleResolutionHost, message: DiagnosticMessage): void {
-    host.trace(formatMessage.apply(undefined, arguments))
+  def trace(host: ModuleResolutionHost, message: DiagnosticMessage, ...args: any[]): Unit
+  def trace(host: ModuleResolutionHost, message: DiagnosticMessage): Unit {
+    host.trace(formatMessage.apply((), arguments))
   }
 
   def isTraceEnabled(compilerOptions: CompilerOptions, host: ModuleResolutionHost): Boolean {
-    return compilerOptions.traceModuleResolution && host.trace != undefined
+    return compilerOptions.traceModuleResolution && host.trace != ()
   }
 
   def startsWith(str: String, prefix: String): Boolean {
@@ -73,7 +73,7 @@ object Program {
   }
 
   def createResolvedModule(resolvedFileName: String, isExternalLibraryImport: Boolean, failedLookupLocations: String[]): ResolvedModuleWithFailedLookupLocations {
-    return { resolvedModule: resolvedFileName ? { resolvedFileName, isExternalLibraryImport } : undefined, failedLookupLocations }
+    return { resolvedModule: resolvedFileName ? { resolvedFileName, isExternalLibraryImport } : (), failedLookupLocations }
   }
 
   def moduleHasNonRelativeName(moduleName: String): Boolean {
@@ -86,7 +86,7 @@ object Program {
     return !startsWithDotSlashOrDotDotSlash
   }
 
-  interface ModuleResolutionState {
+  trait ModuleResolutionState {
     host: ModuleResolutionHost
     compilerOptions: CompilerOptions
     traceEnabled: Boolean
@@ -101,7 +101,7 @@ object Program {
     }
 
     var moduleResolution = compilerOptions.moduleResolution
-    if (moduleResolution == undefined) {
+    if (moduleResolution == ()) {
       moduleResolution = getEmitModuleKind(compilerOptions) == ModuleKind.CommonJS ? ModuleResolutionKind.NodeJs : ModuleResolutionKind.Classic
       if (traceEnabled) {
         trace(host, Diagnostics.Module_resolution_kind_is_not_specified_using_0, ModuleResolutionKind[moduleResolution])
@@ -220,7 +220,7 @@ object Program {
     failedLookupLocations: String[], supportedExtensions: String[], state: ModuleResolutionState): String {
 
     if (!state.compilerOptions.rootDirs) {
-      return undefined
+      return ()
     }
 
     if (state.traceEnabled) {
@@ -241,7 +241,7 @@ object Program {
       }
       val isLongestMatchingPrefix =
         startsWith(candidate, normalizedRoot) &&
-        (matchedNormalizedPrefix == undefined || matchedNormalizedPrefix.length < normalizedRoot.length)
+        (matchedNormalizedPrefix == () || matchedNormalizedPrefix.length < normalizedRoot.length)
 
       if (state.traceEnabled) {
         trace(state.host, Diagnostics.Checking_if_0_is_the_longest_matching_prefix_for_1_2, normalizedRoot, candidate, isLongestMatchingPrefix)
@@ -290,14 +290,14 @@ object Program {
         trace(state.host, Diagnostics.Module_resolution_using_rootDirs_has_failed)
       }
     }
-    return undefined
+    return ()
   }
 
   def tryLoadModuleUsingBaseUrl(moduleName: String, loader: ResolutionKindSpecificLoader, failedLookupLocations: String[],
     supportedExtensions: String[], state: ModuleResolutionState): String {
 
     if (!state.compilerOptions.baseUrl) {
-      return undefined
+      return ()
     }
     if (state.traceEnabled) {
       trace(state.host, Diagnostics.baseUrl_option_is_set_to_0_using_this_value_to_resolve_non_relative_module_name_1, state.compilerOptions.baseUrl, moduleName)
@@ -333,7 +333,7 @@ object Program {
         else if (pattern == moduleName) {
           // pattern was matched as is - no need to search further
           matchedPattern = pattern
-          matchedStar = undefined
+          matchedStar = ()
           break
         }
       }
@@ -354,7 +354,7 @@ object Program {
           return resolvedFileName
         }
       }
-      return undefined
+      return ()
     }
     else {
       val candidate = normalizePath(combinePaths(state.compilerOptions.baseUrl, moduleName))
@@ -387,7 +387,7 @@ object Program {
         trace(host, Diagnostics.Loading_module_0_from_node_modules_folder, moduleName)
       }
       resolvedFileName = loadModuleFromNodeModules(moduleName, containingDirectory, failedLookupLocations, state)
-      isExternalLibraryImport = resolvedFileName != undefined
+      isExternalLibraryImport = resolvedFileName != ()
     }
     else {
       val candidate = normalizePath(combinePaths(containingDirectory, moduleName))
@@ -423,7 +423,7 @@ object Program {
 
     def tryLoad(ext: String): String {
       if (ext == ".tsx" && state.skipTsx) {
-        return undefined
+        return ()
       }
       val fileName = fileExtensionIs(candidate, ext) ? candidate : candidate + ext
       if (!onlyRecordFailures && state.host.fileExists(fileName)) {
@@ -437,7 +437,7 @@ object Program {
           trace(state.host, Diagnostics.File_0_does_not_exist, fileName)
         }
         failedLookupLocation.push(fileName)
-        return undefined
+        return ()
       }
     }
   }
@@ -454,11 +454,11 @@ object Program {
 
       try {
         val jsonText = state.host.readFile(packageJsonPath)
-        jsonContent = jsonText ? <{ typings?: String }>JSON.parse(jsonText) : { typings: undefined }
+        jsonContent = jsonText ? <{ typings?: String }>JSON.parse(jsonText) : { typings: () }
       }
       catch (e) {
         // gracefully handle if readFile fails or returns not JSON
-        jsonContent = { typings: undefined }
+        jsonContent = { typings: () }
       }
 
       if (jsonContent.typings) {
@@ -519,7 +519,7 @@ object Program {
 
       directory = parentPath
     }
-    return undefined
+    return ()
   }
 
   def classicNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations {
@@ -550,7 +550,7 @@ object Program {
 
     return referencedSourceFile
       ? { resolvedModule: { resolvedFileName: referencedSourceFile  }, failedLookupLocations }
-      : { resolvedModule: undefined, failedLookupLocations }
+      : { resolvedModule: (), failedLookupLocations }
   }
 
   /* @internal */
@@ -573,7 +573,7 @@ object Program {
     // returned by CScript sys environment
     val unsupportedFileEncodingErrorCode = -2147024809
 
-    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => void): SourceFile {
+    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => Unit): SourceFile {
       var text: String
       try {
         val start = new Date().getTime()
@@ -589,7 +589,7 @@ object Program {
         text = ""
       }
 
-      return text != undefined ? createSourceFile(fileName, text, languageVersion, setParentNodes) : undefined
+      return text != () ? createSourceFile(fileName, text, languageVersion, setParentNodes) : ()
     }
 
     def directoryExists(directoryPath: String): Boolean {
@@ -611,7 +611,7 @@ object Program {
       }
     }
 
-    def writeFile(fileName: String, data: String, writeByteOrderMark: Boolean, onError?: (message: String) => void) {
+    def writeFile(fileName: String, data: String, writeByteOrderMark: Boolean, onError?: (message: String) => Unit) {
       try {
         val start = new Date().getTime()
         ensureDirectoriesExist(getDirectoryPath(normalizePath(fileName)))
@@ -726,7 +726,7 @@ object Program {
     val filesByName = createFileMap<SourceFile>()
     // stores 'filename -> file association' ignoring case
     // used to track cases when two file names differ only in casing
-    val filesByNameIgnoreCase = host.useCaseSensitiveFileNames() ? createFileMap<SourceFile>(fileName => fileName.toLowerCase()) : undefined
+    val filesByNameIgnoreCase = host.useCaseSensitiveFileNames() ? createFileMap<SourceFile>(fileName => fileName.toLowerCase()) : ()
 
     if (oldProgram) {
       // check properties that can affect structure of the program or module resolution strategy
@@ -738,7 +738,7 @@ object Program {
         (oldOptions.noLib != options.noLib) ||
         (oldOptions.jsx != options.jsx) ||
         (oldOptions.allowJs != options.allowJs)) {
-        oldProgram = undefined
+        oldProgram = ()
       }
     }
 
@@ -753,8 +753,8 @@ object Program {
       }
     }
 
-    // unconditionally set oldProgram to undefined to prevent it from being captured in closure
-    oldProgram = undefined
+    // unconditionally set oldProgram to () to prevent it from being captured in closure
+    oldProgram = ()
 
     program = {
       getRootFileNames: () => rootNames,
@@ -786,7 +786,7 @@ object Program {
     return program
 
     def getCommonSourceDirectory() {
-      if (typeof commonSourceDirectory == "undefined") {
+      if (typeof commonSourceDirectory == "()") {
         if (options.rootDir && checkSourceFilesBelongToPath(files, options.rootDir)) {
           // If a rootDir is specified and is valid use it as the commonSourceDirectory
           commonSourceDirectory = getNormalizedAbsolutePath(options.rootDir, currentDirectory)
@@ -949,12 +949,12 @@ object Program {
 
     def emitWorker(program: Program, sourceFile: SourceFile, writeFileCallback: WriteFileCallback, cancellationToken: CancellationToken): EmitResult {
       // If the noEmitOnError flag is set, then check if we have any errors so far.  If so,
-      // immediately bail out.  Note that we pass 'undefined' for 'sourceFile' so that we
+      // immediately bail out.  Note that we pass '()' for 'sourceFile' so that we
       // get any preEmit diagnostics, not just the ones
       if (options.noEmitOnError) {
-        val preEmitDiagnostics = getPreEmitDiagnostics(program, /*sourceFile:*/ undefined, cancellationToken)
+        val preEmitDiagnostics = getPreEmitDiagnostics(program, /*sourceFile:*/ (), cancellationToken)
         if (preEmitDiagnostics.length > 0) {
-          return { diagnostics: preEmitDiagnostics, sourceMaps: undefined, emitSkipped: true }
+          return { diagnostics: preEmitDiagnostics, sourceMaps: (), emitSkipped: true }
         }
       }
 
@@ -966,7 +966,7 @@ object Program {
       // This is because in the -out scenario all files need to be emitted, and therefore all
       // files need to be type checked. And the way to specify that all files need to be type
       // checked is to not pass the file to getEmitResolver.
-      val emitResolver = getDiagnosticsProducingTypeChecker().getEmitResolver((options.outFile || options.out) ? undefined : sourceFile)
+      val emitResolver = getDiagnosticsProducingTypeChecker().getEmitResolver((options.outFile || options.out) ? () : sourceFile)
 
       val start = new Date().getTime()
 
@@ -1033,8 +1033,8 @@ object Program {
           // cancel when the user has made a change anyways.  And, in that case, we (the
           // program instance) will get thrown away anyways.  So trying to keep one of
           // these type checkers alive doesn't serve much purpose.
-          noDiagnosticsTypeChecker = undefined
-          diagnosticsProducingTypeChecker = undefined
+          noDiagnosticsTypeChecker = ()
+          diagnosticsProducingTypeChecker = ()
         }
 
         throw e
@@ -1267,7 +1267,7 @@ object Program {
       return literal.text
     }
 
-    def collectExternalModuleReferences(file: SourceFile): void {
+    def collectExternalModuleReferences(file: SourceFile): Unit {
       if (file.imports) {
         return
       }
@@ -1290,7 +1290,7 @@ object Program {
 
       return
 
-      def collectModuleReferences(node: Node, inAmbientModule: Boolean): void {
+      def collectModuleReferences(node: Node, inAmbientModule: Boolean): Unit {
         switch (node.kind) {
           case SyntaxKind.ImportDeclaration:
           case SyntaxKind.ImportEqualsDeclaration:
@@ -1336,7 +1336,7 @@ object Program {
         }
       }
 
-      def collectRequireCalls(node: Node): void {
+      def collectRequireCalls(node: Node): Unit {
         if (isRequireCall(node, /*checkArgumentIsStringLiteral*/true)) {
           (imports || (imports = [])).push(<StringLiteral>(<CallExpression>node).arguments[0])
         }
@@ -1379,7 +1379,7 @@ object Program {
       }
 
       if (diagnostic) {
-        if (refFile != undefined && refEnd != undefined && refPos != undefined) {
+        if (refFile != () && refEnd != () && refPos != ()) {
           fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos, diagnostic, ...diagnosticArgument))
         }
         else {
@@ -1388,8 +1388,8 @@ object Program {
       }
     }
 
-    def reportFileNamesDifferOnlyInCasingError(fileName: String, existingFileName: String, refFile: SourceFile, refPos: Int, refEnd: Int): void {
-      if (refFile != undefined && refPos != undefined && refEnd != undefined) {
+    def reportFileNamesDifferOnlyInCasingError(fileName: String, existingFileName: String, refFile: SourceFile, refPos: Int, refEnd: Int): Unit {
+      if (refFile != () && refPos != () && refEnd != ()) {
         fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos,
           Diagnostics.File_name_0_differs_from_already_included_file_name_1_only_in_casing, fileName, existingFileName))
       }
@@ -1413,7 +1413,7 @@ object Program {
 
       // We haven't looked for this file, do so now and cache result
       val file = host.getSourceFile(fileName, options.target, hostErrorMessage => {
-        if (refFile != undefined && refPos != undefined && refEnd != undefined) {
+        if (refFile != () && refPos != () && refEnd != ()) {
           fileProcessingDiagnostics.add(createFileDiagnostic(refFile, refPos, refEnd - refPos,
             Diagnostics.Cannot_read_file_0_Colon_1, fileName, hostErrorMessage))
         }
@@ -1506,7 +1506,7 @@ object Program {
       }
       else {
         // no imports - drop cached module resolutions
-        file.resolvedModules = undefined
+        file.resolvedModules = ()
       }
       return
     }
@@ -1606,7 +1606,7 @@ object Program {
         }
       }
 
-      if (options.paths && options.baseUrl == undefined) {
+      if (options.paths && options.baseUrl == ()) {
         programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_paths_cannot_be_used_without_specifying_baseUrl_option))
       }
 
@@ -1652,13 +1652,13 @@ object Program {
       val languageVersion = options.target || ScriptTarget.ES3
       val outFile = options.outFile || options.out
 
-      val firstExternalModuleSourceFile = forEach(files, f => isExternalModule(f) ? f : undefined)
+      val firstExternalModuleSourceFile = forEach(files, f => isExternalModule(f) ? f : ())
       if (options.isolatedModules) {
         if (options.module == ModuleKind.None && languageVersion < ScriptTarget.ES6) {
           programDiagnostics.add(createCompilerDiagnostic(Diagnostics.Option_isolatedModules_can_only_be_used_when_either_option_module_is_provided_or_option_target_is_ES2015_or_higher))
         }
 
-        val firstNonExternalModuleSourceFile = forEach(files, f => !isExternalModule(f) && !isDeclarationFile(f) ? f : undefined)
+        val firstNonExternalModuleSourceFile = forEach(files, f => !isExternalModule(f) && !isDeclarationFile(f) ? f : ())
         if (firstNonExternalModuleSourceFile) {
           val span = getErrorSpanForNode(firstNonExternalModuleSourceFile, firstNonExternalModuleSourceFile)
           programDiagnostics.add(createFileDiagnostic(firstNonExternalModuleSourceFile, span.start, span.length, Diagnostics.Cannot_compile_namespaces_when_the_isolatedModules_flag_is_provided))
@@ -1728,7 +1728,7 @@ object Program {
       // If the emit is enabled make sure that every output file is unique and not overwriting any of the input files
       if (!options.noEmit && !options.suppressOutputPathCheck) {
         val emitHost = getEmitHost()
-        val emitFilesSeen = createFileMap<Boolean>(!host.useCaseSensitiveFileNames() ? key => key.toLocaleLowerCase() : undefined)
+        val emitFilesSeen = createFileMap<Boolean>(!host.useCaseSensitiveFileNames() ? key => key.toLocaleLowerCase() : ())
         forEachExpectedEmitFile(emitHost, (emitFileNames, sourceFiles, isBundledEmit) => {
           verifyEmitFilePath(emitFileNames.jsFilePath, emitFilesSeen)
           verifyEmitFilePath(emitFileNames.declarationFilePath, emitFilesSeen)

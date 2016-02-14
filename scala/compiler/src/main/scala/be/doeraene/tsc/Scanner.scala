@@ -4,8 +4,8 @@ package be.doeraene.tsc
 /// <reference path="diagnosticInformationMap.generated.ts"/>
 
 object Scanner {
-  interface ErrorCallback {
-    (message: DiagnosticMessage, length: Int): void
+  trait ErrorCallback {
+    (message: DiagnosticMessage, length: Int): Unit
   }
 
   /* @internal */
@@ -13,7 +13,7 @@ object Scanner {
     return token >= SyntaxKind.Identifier
   }
 
-  interface Scanner {
+  trait Scanner {
     getStartPos(): Int
     getToken(): SyntaxKind
     getTextPos(): Int
@@ -35,11 +35,11 @@ object Scanner {
     scan(): SyntaxKind
     // Sets the text for the scanner to scan.  An optional subrange starting point and length
     // can be provided to have the scanner only scan a portion of the text.
-    setText(text: String, start?: Int, length?: Int): void
-    setOnError(onError: ErrorCallback): void
-    setScriptTarget(scriptTarget: ScriptTarget): void
-    setLanguageVariant(variant: LanguageVariant): void
-    setTextPos(textPos: Int): void
+    setText(text: String, start?: Int, length?: Int): Unit
+    setOnError(onError: ErrorCallback): Unit
+    setScriptTarget(scriptTarget: ScriptTarget): Unit
+    setLanguageVariant(variant: LanguageVariant): Unit
+    setTextPos(textPos: Int): Unit
     // Invokes the provided callback then unconditionally restores the scanner to the state it
     // was in immediately prior to invoking the callback.  The result of invoking the callback
     // is returned from this def.
@@ -88,7 +88,7 @@ object Scanner {
     "import": SyntaxKind.ImportKeyword,
     "in": SyntaxKind.InKeyword,
     "instanceof": SyntaxKind.InstanceOfKeyword,
-    "interface": SyntaxKind.InterfaceKeyword,
+    "trait": SyntaxKind.InterfaceKeyword,
     "is": SyntaxKind.IsKeyword,
     "var": SyntaxKind.LetKeyword,
     "module": SyntaxKind.ModuleKeyword,
@@ -117,7 +117,7 @@ object Scanner {
     "type": SyntaxKind.TypeKeyword,
     "typeof": SyntaxKind.TypeOfKeyword,
     "var": SyntaxKind.VarKeyword,
-    "void": SyntaxKind.VoidKeyword,
+    "Unit": SyntaxKind.VoidKeyword,
     "while": SyntaxKind.WhileKeyword,
     "with": SyntaxKind.WithKeyword,
     "yield": SyntaxKind.YieldKeyword,
@@ -436,7 +436,7 @@ object Scanner {
     /* @internal */
     def skipTrivia(text: String, pos: Int, stopAfterLineBreak?: Boolean): Int {
       // Using ! with a greater than test is a fast way of testing the following conditions:
-      //  pos == undefined || pos == null || isNaN(pos) || pos < 0
+      //  pos == () || pos == null || isNaN(pos) || pos < 0
       if (!(pos >= 0)) {
         return pos
       }
@@ -587,7 +587,7 @@ object Scanner {
    * The return value is an array containing a TextRange for each comment.
    * Single-line comment ranges include the beginning '//' characters but not the ending line break.
    * Multi - line comment ranges include the beginning '/* and ending '<asterisk>/' characters.
-   * The return value is undefined if no comments were found.
+   * The return value is () if no comments were found.
    * @param trailing
    * If false, whitespace is skipped until the first line break and comments between that location
    * and the next token are returned.
@@ -682,7 +682,7 @@ object Scanner {
   def getShebang(text: String): String {
     return shebangTriviaRegex.test(text)
       ? shebangTriviaRegex.exec(text)[0]
-      : undefined
+      : ()
   }
 
   def isIdentifierStart(ch: Int, languageVersion: ScriptTarget): Boolean {
@@ -770,7 +770,7 @@ object Scanner {
       scanRange,
     }
 
-    def error(message: DiagnosticMessage, length?: Int): void {
+    def error(message: DiagnosticMessage, length?: Int): Unit {
       if (onError) {
         onError(message, length || 0)
       }
@@ -949,7 +949,7 @@ object Scanner {
         pos++
       }
 
-      Debug.assert(resultingToken != undefined)
+      Debug.assert(resultingToken != ())
 
       tokenValue = contents
       return resultingToken
@@ -1788,7 +1788,7 @@ object Scanner {
 
     def setText(newText: String, start: Int, length: Int) {
       text = newText || ""
-      end = length == undefined ? text.length : start + length
+      end = length == () ? text.length : start + length
       setTextPos(start || 0)
     }
 
@@ -1812,7 +1812,7 @@ object Scanner {
       token = SyntaxKind.Unknown
       precedingLineBreak = false
 
-      tokenValue = undefined
+      tokenValue = ()
       hasExtendedUnicodeEscape = false
       tokenIsUnterminated = false
     }

@@ -44,7 +44,7 @@ object Parser {
   // Invokes a callback for each child of the given node. The 'cbNode' callback is invoked for all child nodes
   // stored in properties. If a 'cbNodes' callback is specified, it is invoked for embedded arrays; otherwise,
   // embedded arrays are flattened and the 'cbNode' callback is invoked for each element. If a callback returns
-  // a truthy value, iteration stops and that value is returned. Otherwise, undefined is returned.
+  // a truthy value, iteration stops and that value is returned. Otherwise, () is returned.
   def forEachChild<T>(node: Node, cbNode: (node: Node) => T, cbNodeArray?: (nodes: Node[]) => T): T {
     if (!node) {
       return
@@ -403,7 +403,7 @@ object Parser {
 
   def createSourceFile(fileName: String, sourceText: String, languageVersion: ScriptTarget, setParentNodes = false): SourceFile {
     val start = new Date().getTime()
-    val result = Parser.parseSourceFile(fileName, sourceText, languageVersion, /*syntaxCursor*/ undefined, setParentNodes)
+    val result = Parser.parseSourceFile(fileName, sourceText, languageVersion, /*syntaxCursor*/ (), setParentNodes)
 
     parseTime += new Date().getTime() - start
     return result
@@ -577,14 +577,14 @@ object Parser {
     def clearState() {
       // Clear out the text the scanner is pointing at, so it doesn't keep anything alive unnecessarily.
       scanner.setText("")
-      scanner.setOnError(undefined)
+      scanner.setOnError(())
 
       // Clear any data.  We don't want to accidentally hold onto it for too long.
-      parseDiagnostics = undefined
-      sourceFile = undefined
-      identifiers = undefined
-      syntaxCursor = undefined
-      sourceText = undefined
+      parseDiagnostics = ()
+      sourceFile = ()
+      identifiers = ()
+      syntaxCursor = ()
+      sourceText = ()
     }
 
     def parseSourceFileWorker(fileName: String, languageVersion: ScriptTarget, setParentNodes: Boolean): SourceFile {
@@ -640,7 +640,7 @@ object Parser {
       forEachChild(sourceFile, visitNode)
       return
 
-      def visitNode(n: Node): void {
+      def visitNode(n: Node): Unit {
         // walk down setting parents that differ from the parent we think it should be.  This
         // allows us to quickly bail out of setting parents for subtrees during incremental
         // parsing
@@ -786,14 +786,14 @@ object Parser {
       return inContext(NodeFlags.AwaitContext)
     }
 
-    def parseErrorAtCurrentToken(message: DiagnosticMessage, arg0?: any): void {
+    def parseErrorAtCurrentToken(message: DiagnosticMessage, arg0?: any): Unit {
       val start = scanner.getTokenPos()
       val length = scanner.getTextPos() - start
 
       parseErrorAtPosition(start, length, message, arg0)
     }
 
-    def parseErrorAtPosition(start: Int, length: Int, message: DiagnosticMessage, arg0?: any): void {
+    def parseErrorAtPosition(start: Int, length: Int, message: DiagnosticMessage, arg0?: any): Unit {
       // Don't report another error if it would just be at the same position as the last error.
       val lastError = lastOrUndefined(parseDiagnostics)
       if (!lastError || start != lastError.start) {
@@ -943,7 +943,7 @@ object Parser {
       if (token == t) {
         return parseTokenNode()
       }
-      return undefined
+      return ()
     }
 
     def parseExpectedToken(t: SyntaxKind, reportAtCurrentPosition: Boolean, diagnosticMessage: DiagnosticMessage, arg0?: any): Node {
@@ -992,7 +992,7 @@ object Parser {
     }
 
     def finishNode<T extends Node>(node: T, end?: Int): T {
-      node.end = end == undefined ? scanner.getStartPos() : end
+      node.end = end == () ? scanner.getStartPos() : end
 
       if (contextFlags) {
         node.flags |= contextFlags
@@ -1415,30 +1415,30 @@ object Parser {
       // on it (or its leftmost child) as having the error.  For now though, being conservative
       // is nice and likely won't ever affect perf.
       if (parseErrorBeforeNextFinishedNode) {
-        return undefined
+        return ()
       }
 
       if (!syntaxCursor) {
         // if we don't have a cursor, we could never return a node from the old tree.
-        return undefined
+        return ()
       }
 
       val node = syntaxCursor.currentNode(scanner.getStartPos())
 
       // Can't reuse a missing node.
       if (nodeIsMissing(node)) {
-        return undefined
+        return ()
       }
 
       // Can't reuse a node that intersected the change range.
       if (node.intersectsChange) {
-        return undefined
+        return ()
       }
 
       // Can't reuse a node that contains a parse error.  This is necessary so that we
       // produce the same set of errors again.
       if (containsParseError(node)) {
-        return undefined
+        return ()
       }
 
       // We can only reuse a node if it was parsed under the same strict mode that we're
@@ -1454,13 +1454,13 @@ object Parser {
       // This also applies to all our other context flags as well.
       val nodeContextFlags = node.flags & NodeFlags.ContextFlags
       if (nodeContextFlags != contextFlags) {
-        return undefined
+        return ()
       }
 
       // Ok, we have a node that looks like it could be reused.  Now verify that it is valid
       // in the current list parsing context that we're currently at.
       if (!canReuseNode(node, parsingContext)) {
-        return undefined
+        return ()
       }
 
       return node
@@ -1665,7 +1665,7 @@ object Parser {
       // In order to prevent this, we do not allow a variable declarator to be reused if it
       // has an initializer.
       val variableDeclarator = <VariableDeclaration>node
-      return variableDeclarator.initializer == undefined
+      return variableDeclarator.initializer == ()
     }
 
     def isReusableParameter(node: Node) {
@@ -1675,7 +1675,7 @@ object Parser {
 
       // See the comment in isReusableVariableDeclaration for why we do this.
       val parameter = <ParameterDeclaration>node
-      return parameter.initializer == undefined
+      return parameter.initializer == ()
     }
 
     // Returns true if we should abort parsing.
@@ -1997,7 +1997,7 @@ object Parser {
         return parseType()
       }
 
-      return undefined
+      return ()
     }
 
     def isStartOfParameter(): Boolean {
@@ -2028,7 +2028,7 @@ object Parser {
         // def foo(static)
         // isParameter('static') == true, because of isModifier('static')
         // however 'static' is not a legal identifier in a strict mode.
-        // so result of this def will be ParameterDeclaration (flags = 0, name = missing, type = undefined, initializer = undefined)
+        // so result of this def will be ParameterDeclaration (flags = 0, name = missing, type = (), initializer = ())
         // and current token will not change => parsing of the enclosing parameter list will last till the end of time (or OOM)
         // to avoid this we'll advance cursor to the next token.
         nextToken()
@@ -2063,7 +2063,7 @@ object Parser {
         yieldContext: Boolean,
         awaitContext: Boolean,
         requireCompleteParameterList: Boolean,
-        signature: SignatureDeclaration): void {
+        signature: SignatureDeclaration): Unit {
 
       val returnTokenRequired = returnToken == SyntaxKind.EqualsGreaterThanToken
       signature.typeParameters = parseTypeParameters()
@@ -2106,8 +2106,8 @@ object Parser {
 
         if (!parseExpected(SyntaxKind.CloseParenToken) && requireCompleteParameterList) {
           // Caller insisted that we had to end with a )   We didn't.  So just return
-          // undefined here.
-          return undefined
+          // () here.
+          return ()
         }
 
         return result
@@ -2116,7 +2116,7 @@ object Parser {
       // We didn't even have an open paren.  If the caller requires a complete parameter list,
       // we definitely can't provide that.  However, if they're ok with an incomplete one,
       // then just return an empty set of parameters.
-      return requireCompleteParameterList ? undefined : createMissingList<ParameterDeclaration>()
+      return requireCompleteParameterList ? () : createMissingList<ParameterDeclaration>()
     }
 
     def parseTypeMemberSemicolon() {
@@ -2238,7 +2238,7 @@ object Parser {
 
         if (token == SyntaxKind.EqualsToken) {
           // Although type literal properties cannot not have initializers, we attempt
-          // to parse an initializer so we can report in the checker that an interface
+          // to parse an initializer so we can report in the checker that an trait
           // property or type literal property cannot have an initializer.
           property.initializer = parseNonParameterInitializer()
         }
@@ -2290,7 +2290,7 @@ object Parser {
       val fullStart = getNodePos()
       val modifiers = parseModifiers()
       if (isIndexSignature()) {
-        return parseIndexSignatureDeclaration(fullStart, /*decorators*/ undefined, modifiers)
+        return parseIndexSignatureDeclaration(fullStart, /*decorators*/ (), modifiers)
       }
       return parsePropertyOrMethodSignature(fullStart, modifiers)
     }
@@ -2344,7 +2344,7 @@ object Parser {
 
     def parseKeywordAndNoDot(): TypeNode {
       val node = parseTokenNode<TypeNode>()
-      return token == SyntaxKind.DotToken ? undefined : node
+      return token == SyntaxKind.DotToken ? () : node
     }
 
     def parseNonArrayType(): TypeNode {
@@ -2541,7 +2541,7 @@ object Parser {
     }
 
     def parseTypeAnnotation(): TypeNode {
-      return parseOptional(SyntaxKind.ColonToken) ? parseType() : undefined
+      return parseOptional(SyntaxKind.ColonToken) ? parseType() : ()
     }
 
     // EXPRESSIONS
@@ -2651,7 +2651,7 @@ object Parser {
         if (scanner.hasPrecedingLineBreak() || (inParameter && token == SyntaxKind.OpenBraceToken) || !isStartOfExpression()) {
           // preceding line break, open brace in a parameter (likely a def body) or current token is not an expression -
           // do not try to parse initializer
-          return undefined
+          return ()
         }
       }
 
@@ -2797,12 +2797,12 @@ object Parser {
       val triState = isParenthesizedArrowFunctionExpression()
       if (triState == Tristate.False) {
         // It's definitely not a parenthesized arrow def expression.
-        return undefined
+        return ()
       }
 
       // If we definitely have an arrow def, then we can just parse one, not requiring a
       // following => or { token. Otherwise, we *might* have an arrow def.  Try to parse
-      // it out, but don't allow any ambiguity, and return 'undefined' if this could be an
+      // it out, but don't allow any ambiguity, and return '()' if this could be an
       // expression instead.
       val arrowFunction = triState == Tristate.True
         ? parseParenthesizedArrowFunctionExpressionHead(/*allowAmbiguity*/ true)
@@ -2810,7 +2810,7 @@ object Parser {
 
       if (!arrowFunction) {
         // Didn't appear to actually be a parenthesized arrow def.  Just bail out.
-        return undefined
+        return ()
       }
 
       val isAsync = !!(arrowFunction.flags & NodeFlags.Async)
@@ -2972,7 +2972,7 @@ object Parser {
 
       // If we couldn't get parameters, we definitely could not parse out an arrow def.
       if (!node.parameters) {
-        return undefined
+        return ()
       }
 
       // Parsing a signature isn't enough.
@@ -2984,8 +2984,8 @@ object Parser {
       //
       // So we need just a bit of lookahead to ensure that it can only be a signature.
       if (!allowAmbiguity && token != SyntaxKind.EqualsGreaterThanToken && token != SyntaxKind.OpenBraceToken) {
-        // Returning undefined here will cause our caller to rewind to where we started from.
-        return undefined
+        // Returning () here will cause our caller to rewind to where we started from.
+        return ()
       }
 
       return node
@@ -3271,7 +3271,7 @@ object Parser {
      * ES7 SimpleUnaryExpression:
      *    1) IncrementExpression[?yield]
      *    2) delete UnaryExpression[?yield]
-     *    3) void UnaryExpression[?yield]
+     *    3) Unit UnaryExpression[?yield]
      *    4) typeof UnaryExpression[?yield]
      *    5) + UnaryExpression[?yield]
      *    6) - UnaryExpression[?yield]
@@ -3531,7 +3531,7 @@ object Parser {
           badNode.end = invalidElement.end
           badNode.left = result
           badNode.right = invalidElement
-          badNode.operatorToken = createMissingNode(SyntaxKind.CommaToken, /*reportAtCurrentPosition*/ false, /*diagnosticMessage*/ undefined)
+          badNode.operatorToken = createMissingNode(SyntaxKind.CommaToken, /*reportAtCurrentPosition*/ false, /*diagnosticMessage*/ ())
           badNode.operatorToken.pos = badNode.operatorToken.end = badNode.right.pos
           return <JsxElement><Node>badNode
         }
@@ -3609,7 +3609,7 @@ object Parser {
           parseExpected(SyntaxKind.GreaterThanToken)
         }
         else {
-          parseExpected(SyntaxKind.GreaterThanToken, /*diagnostic*/ undefined, /*shouldAdvance*/ false)
+          parseExpected(SyntaxKind.GreaterThanToken, /*diagnostic*/ (), /*shouldAdvance*/ false)
           scanJsxText()
         }
         node = <JsxSelfClosingElement>createNode(SyntaxKind.JsxSelfClosingElement, fullStart)
@@ -3645,7 +3645,7 @@ object Parser {
         parseExpected(SyntaxKind.CloseBraceToken)
       }
       else {
-        parseExpected(SyntaxKind.CloseBraceToken, /*message*/ undefined, /*shouldAdvance*/ false)
+        parseExpected(SyntaxKind.CloseBraceToken, /*message*/ (), /*shouldAdvance*/ false)
         scanJsxText()
       }
 
@@ -3690,7 +3690,7 @@ object Parser {
         parseExpected(SyntaxKind.GreaterThanToken)
       }
       else {
-        parseExpected(SyntaxKind.GreaterThanToken, /*diagnostic*/ undefined, /*shouldAdvance*/ false)
+        parseExpected(SyntaxKind.GreaterThanToken, /*diagnostic*/ (), /*shouldAdvance*/ false)
         scanJsxText()
       }
       return finishNode(node)
@@ -3792,20 +3792,20 @@ object Parser {
 
     def parseTypeArgumentsInExpression() {
       if (!parseOptional(SyntaxKind.LessThanToken)) {
-        return undefined
+        return ()
       }
 
       val typeArguments = parseDelimitedList(ParsingContext.TypeArguments, parseType)
       if (!parseExpected(SyntaxKind.GreaterThanToken)) {
         // If it doesn't have the closing >  then it's definitely not an type argument list.
-        return undefined
+        return ()
       }
 
       // If we have a '<', then only parse this as a argument list if the type arguments
       // are complete and we have an open paren.  if we don't, rewind and return nothing.
       return typeArguments && canFollowTypeArgumentsInExpression()
         ? typeArguments
-        : undefined
+        : ()
     }
 
     def canFollowTypeArgumentsInExpression(): Boolean {
@@ -3938,7 +3938,7 @@ object Parser {
         return parseAccessorDeclaration(SyntaxKind.SetAccessor, fullStart, decorators, modifiers)
       }
 
-      return undefined
+      return ()
     }
 
     def parseObjectLiteralElement(): ObjectLiteralElement {
@@ -4038,7 +4038,7 @@ object Parser {
     }
 
     def parseOptionalIdentifier() {
-      return isIdentifier() ? parseIdentifier() : undefined
+      return isIdentifier() ? parseIdentifier() : ()
     }
 
     def parseNewExpression(): NewExpression {
@@ -4105,7 +4105,7 @@ object Parser {
       node.expression = allowInAnd(parseExpression)
       parseExpected(SyntaxKind.CloseParenToken)
       node.thenStatement = parseStatement()
-      node.elseStatement = parseOptional(SyntaxKind.ElseKeyword) ? parseStatement() : undefined
+      node.elseStatement = parseOptional(SyntaxKind.ElseKeyword) ? parseStatement() : ()
       return finishNode(node)
     }
 
@@ -4141,7 +4141,7 @@ object Parser {
       parseExpected(SyntaxKind.ForKeyword)
       parseExpected(SyntaxKind.OpenParenToken)
 
-      var initializer: VariableDeclarationList | Expression = undefined
+      var initializer: VariableDeclarationList | Expression = ()
       if (token != SyntaxKind.SemicolonToken) {
         if (token == SyntaxKind.VarKeyword || token == SyntaxKind.LetKeyword || token == SyntaxKind.ConstKeyword) {
           initializer = parseVariableDeclarationList(/*inForStatementInitializer*/ true)
@@ -4261,11 +4261,11 @@ object Parser {
       // Because of automatic semicolon insertion, we need to report error if this
       // throw could be terminated with a semicolon.  Note: we can't call 'parseExpression'
       // directly as that might consume an expression on the following line.
-      // We just return 'undefined' in that case.  The actual error will be reported in the
+      // We just return '()' in that case.  The actual error will be reported in the
       // grammar walker.
       val node = <ThrowStatement>createNode(SyntaxKind.ThrowStatement)
       parseExpected(SyntaxKind.ThrowKeyword)
-      node.expression = scanner.hasPrecedingLineBreak() ? undefined : allowInAnd(parseExpression)
+      node.expression = scanner.hasPrecedingLineBreak() ? () : allowInAnd(parseExpression)
       parseSemicolon()
       return finishNode(node)
     }
@@ -4276,7 +4276,7 @@ object Parser {
 
       parseExpected(SyntaxKind.TryKeyword)
       node.tryBlock = parseBlock(/*ignoreMissingOpenBrace*/ false)
-      node.catchClause = token == SyntaxKind.CatchKeyword ? parseCatchClause() : undefined
+      node.catchClause = token == SyntaxKind.CatchKeyword ? parseCatchClause() : ()
 
       // If we don't have a catch clause, then we must have a finally clause.  Try to parse
       // one out no matter what.
@@ -4354,7 +4354,7 @@ object Parser {
           case SyntaxKind.EnumKeyword:
             return true
 
-          // 'declare', 'module', 'package', 'interface'* and 'type' are all legal JavaScript identifiers
+          // 'declare', 'module', 'package', 'trait'* and 'type' are all legal JavaScript identifiers
           // however, an identifier cannot be followed by another identifier on the same line. This is what we
           // count on to parse out the respective declarations. For instance, we exploit this to say that
           //
@@ -4368,10 +4368,10 @@ object Parser {
           // as the identifier 'package' on one line followed by the identifier 'n' on another.
           // We need to look one token ahead to see if it permissible to try parsing a declaration.
           //
-          // *Note*: 'interface' is actually a strict mode reserved word. So while
+          // *Note*: 'trait' is actually a strict mode reserved word. So while
           //
           //   "use strict"
-          //   interface
+          //   trait
           //   I {}
           //
           // could be legal, it would add complexity for very little gain.
@@ -4498,16 +4498,16 @@ object Parser {
         case SyntaxKind.OpenBraceToken:
           return parseBlock(/*ignoreMissingOpenBrace*/ false)
         case SyntaxKind.VarKeyword:
-          return parseVariableStatement(scanner.getStartPos(), /*decorators*/ undefined, /*modifiers*/ undefined)
+          return parseVariableStatement(scanner.getStartPos(), /*decorators*/ (), /*modifiers*/ ())
         case SyntaxKind.LetKeyword:
           if (isLetDeclaration()) {
-            return parseVariableStatement(scanner.getStartPos(), /*decorators*/ undefined, /*modifiers*/ undefined)
+            return parseVariableStatement(scanner.getStartPos(), /*decorators*/ (), /*modifiers*/ ())
           }
           break
         case SyntaxKind.FunctionKeyword:
-          return parseFunctionDeclaration(scanner.getStartPos(), /*decorators*/ undefined, /*modifiers*/ undefined)
+          return parseFunctionDeclaration(scanner.getStartPos(), /*decorators*/ (), /*modifiers*/ ())
         case SyntaxKind.ClassKeyword:
-          return parseClassDeclaration(scanner.getStartPos(), /*decorators*/ undefined, /*modifiers*/ undefined)
+          return parseClassDeclaration(scanner.getStartPos(), /*decorators*/ (), /*modifiers*/ ())
         case SyntaxKind.IfKeyword:
           return parseIfStatement()
         case SyntaxKind.DoKeyword:
@@ -4888,7 +4888,7 @@ object Parser {
       }
 
       // If we were able to get any potential identifier...
-      if (idToken != undefined) {
+      if (idToken != ()) {
         // If we have a non-keyword identifier, or if we have an accessor, then it's safe to parse.
         if (!isKeyword(idToken) || idToken == SyntaxKind.SetKeyword || idToken == SyntaxKind.GetKeyword) {
           return true
@@ -5037,7 +5037,7 @@ object Parser {
       if (decorators || modifiers) {
         // treat this as a property declaration with a missing name.
         val name = <Identifier>createMissingNode(SyntaxKind.Identifier, /*reportAtCurrentPosition*/ true, Diagnostics.Declaration_expected)
-        return parsePropertyDeclaration(fullStart, decorators, modifiers, name, /*questionToken*/ undefined)
+        return parsePropertyDeclaration(fullStart, decorators, modifiers, name, /*questionToken*/ ())
       }
 
       // 'isClassMemberStart' should have hinted not to attempt parsing.
@@ -5047,8 +5047,8 @@ object Parser {
     def parseClassExpression(): ClassExpression {
       return <ClassExpression>parseClassDeclarationOrExpression(
         /*fullStart*/ scanner.getStartPos(),
-        /*decorators*/ undefined,
-        /*modifiers*/ undefined,
+        /*decorators*/ (),
+        /*modifiers*/ (),
         SyntaxKind.ClassExpression)
     }
 
@@ -5086,7 +5086,7 @@ object Parser {
       // 'isImplementsClause' helps to disambiguate between these two cases
       return isIdentifier() && !isImplementsClause()
         ? parseIdentifier()
-        : undefined
+        : ()
     }
 
     def isImplementsClause() {
@@ -5101,7 +5101,7 @@ object Parser {
         return parseList(ParsingContext.HeritageClauses, parseHeritageClause)
       }
 
-      return undefined
+      return ()
     }
 
     def parseHeritageClause() {
@@ -5113,7 +5113,7 @@ object Parser {
         return finishNode(node)
       }
 
-      return undefined
+      return ()
     }
 
     def parseExpressionWithTypeArguments(): ExpressionWithTypeArguments {
@@ -5208,7 +5208,7 @@ object Parser {
       node.flags |= flags
       node.name = parseIdentifier()
       node.body = parseOptional(SyntaxKind.DotToken)
-        ? parseModuleOrNamespaceDeclaration(getNodePos(), /*decorators*/ undefined, /*modifiers*/ undefined, NodeFlags.Export | namespaceFlag)
+        ? parseModuleOrNamespaceDeclaration(getNodePos(), /*decorators*/ (), /*modifiers*/ (), NodeFlags.Export | namespaceFlag)
         : parseModuleBlock()
       return finishNode(node)
     }
@@ -5459,7 +5459,7 @@ object Parser {
       return finishNode(node)
     }
 
-    def processReferenceComments(sourceFile: SourceFile): void {
+    def processReferenceComments(sourceFile: SourceFile): Unit {
       val triviaScanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/false, LanguageVariant.Standard, sourceText)
       val referencedFiles: FileReference[] = []
       val amdDependencies: { path: String; name: String }[] = []
@@ -5512,7 +5512,7 @@ object Parser {
             val pathMatchResult = pathRegex.exec(comment)
             val nameMatchResult = nameRegex.exec(comment)
             if (pathMatchResult) {
-              val amdDependency = { path: pathMatchResult[2], name: nameMatchResult ? nameMatchResult[2] : undefined }
+              val amdDependency = { path: pathMatchResult[2], name: nameMatchResult ? nameMatchResult[2] : () }
               amdDependencies.push(amdDependency)
             }
           }
@@ -5532,7 +5532,7 @@ object Parser {
           || node.kind == SyntaxKind.ExportAssignment
           || node.kind == SyntaxKind.ExportDeclaration
           ? node
-          : undefined)
+          : ())
     }
 
     val enum ParsingContext {
@@ -5540,7 +5540,7 @@ object Parser {
       BlockStatements,       // Statements in block
       SwitchClauses,       // Clauses in switch statement
       SwitchClauseStatements,  // Statements in switch clause
-      TypeMembers,         // Members in interface or type literal
+      TypeMembers,         // Members in trait or type literal
       ClassMembers,        // Members in class declaration
       EnumMembers,         // Members in enum declaration
       HeritageClauseElement,   // Elements in a heritage clause
@@ -5556,7 +5556,7 @@ object Parser {
       TypeParameters,      // Type parameters in type parameter list
       TypeArguments,       // Type arguments in type argument list
       TupleElementTypes,     // Element types in tuple element type list
-      HeritageClauses,       // Heritage clauses for a class or interface declaration.
+      HeritageClauses,       // Heritage clauses for a class or trait declaration.
       ImportOrExportSpecifiers,  // Named import clause's import specifier list
       JSDocFunctionParameters,
       JSDocTypeArguments,
@@ -5591,14 +5591,14 @@ object Parser {
       }
 
       def parseJSDocTypeExpressionForTests(content: String, start: Int, length: Int) {
-        initializeState("file.js", content, ScriptTarget.Latest, /*isJavaScriptFile*/ true, /*_syntaxCursor:*/ undefined)
+        initializeState("file.js", content, ScriptTarget.Latest, /*isJavaScriptFile*/ true, /*_syntaxCursor:*/ ())
         scanner.setText(content, start, length)
         token = scanner.scan()
         val jsDocTypeExpression = parseJSDocTypeExpression()
         val diagnostics = parseDiagnostics
         clearState()
 
-        return jsDocTypeExpression ? { jsDocTypeExpression, diagnostics } : undefined
+        return jsDocTypeExpression ? { jsDocTypeExpression, diagnostics } : ()
       }
 
       // Parses out a JSDoc type expression.
@@ -5910,13 +5910,13 @@ object Parser {
       }
 
       def parseIsolatedJSDocComment(content: String, start: Int, length: Int) {
-        initializeState("file.js", content, ScriptTarget.Latest, /*isJavaScriptFile*/ true, /*_syntaxCursor:*/ undefined)
+        initializeState("file.js", content, ScriptTarget.Latest, /*isJavaScriptFile*/ true, /*_syntaxCursor:*/ ())
         sourceFile = <SourceFile>{ languageVariant: LanguageVariant.Standard, text: content }
         val jsDocComment = parseJSDocCommentWorker(start, length)
         val diagnostics = parseDiagnostics
         clearState()
 
-        return jsDocComment ? { jsDocComment, diagnostics } : undefined
+        return jsDocComment ? { jsDocComment, diagnostics } : ()
       }
 
       def parseJSDocComment(parent: Node, start: Int, length: Int): JSDocComment {
@@ -5939,7 +5939,7 @@ object Parser {
       def parseJSDocCommentWorker(start: Int, length: Int): JSDocComment {
         val content = sourceText
         start = start || 0
-        val end = length == undefined ? content.length : start + length
+        val end = length == () ? content.length : start + length
         length = end - start
 
         Debug.assert(start >= 0)
@@ -6013,7 +6013,7 @@ object Parser {
 
         def createJSDocComment(): JSDocComment {
           if (!tags) {
-            return undefined
+            return ()
           }
 
           val result = <JSDocComment>createNode(SyntaxKind.JSDocComment, start)
@@ -6021,13 +6021,13 @@ object Parser {
           return finishNode(result, end)
         }
 
-        def skipWhitespace(): void {
+        def skipWhitespace(): Unit {
           while (token == SyntaxKind.WhitespaceTrivia || token == SyntaxKind.NewLineTrivia) {
             nextJSDocToken()
           }
         }
 
-        def parseTag(): void {
+        def parseTag(): Unit {
           Debug.assert(token == SyntaxKind.AtToken)
           val atToken = createNode(SyntaxKind.AtToken, scanner.getTokenPos())
           atToken.end = scanner.getTextPos()
@@ -6057,7 +6057,7 @@ object Parser {
             }
           }
 
-          return undefined
+          return ()
         }
 
         def handleUnknownTag(atToken: Node, tagName: Identifier) {
@@ -6067,7 +6067,7 @@ object Parser {
           return finishNode(result)
         }
 
-        def addTag(tag: JSDocTag): void {
+        def addTag(tag: JSDocTag): Unit {
           if (tag) {
             if (!tags) {
               tags = <NodeArray<JSDocTag>>[]
@@ -6081,7 +6081,7 @@ object Parser {
 
         def tryParseTypeExpression(): JSDocTypeExpression {
           if (token != SyntaxKind.OpenBraceToken) {
-            return undefined
+            return ()
           }
 
           val typeExpression = parseJSDocTypeExpression()
@@ -6112,7 +6112,7 @@ object Parser {
 
           if (!name) {
             parseErrorAtPosition(scanner.getStartPos(), 0, Diagnostics.Identifier_expected)
-            return undefined
+            return ()
           }
 
           var preName: Identifier, postName: Identifier
@@ -6174,7 +6174,7 @@ object Parser {
             val name = parseJSDocIdentifier()
             if (!name) {
               parseErrorAtPosition(scanner.getStartPos(), 0, Diagnostics.Identifier_expected)
-              return undefined
+              return ()
             }
 
             val typeParameter = <TypeParameterDeclaration>createNode(SyntaxKind.TypeParameter, name.pos)
@@ -6207,7 +6207,7 @@ object Parser {
         def parseJSDocIdentifier(): Identifier {
           if (token != SyntaxKind.Identifier) {
             parseErrorAtCurrentToken(Diagnostics.Identifier_expected)
-            return undefined
+            return ()
           }
 
           val pos = scanner.getTokenPos()
@@ -6236,7 +6236,7 @@ object Parser {
       if (sourceFile.statements.length == 0) {
         // If we don't have any statements in the current source file, then there's no real
         // way to incrementally parse.  So just do a full parse instead.
-        return Parser.parseSourceFile(sourceFile.fileName, newText, sourceFile.languageVersion, /*syntaxCursor*/ undefined, /*setParentNodes*/ true)
+        return Parser.parseSourceFile(sourceFile.fileName, newText, sourceFile.languageVersion, /*syntaxCursor*/ (), /*setParentNodes*/ true)
       }
 
       // Make sure we're not trying to incrementally update a source file more than once.  Once
@@ -6323,11 +6323,11 @@ object Parser {
         // Ditch any existing LS children we may have created.  This way we can avoid
         // moving them forward.
         if (node._children) {
-          node._children = undefined
+          node._children = ()
         }
 
         if (node.jsDocComment) {
-          node.jsDocComment = undefined
+          node.jsDocComment = ()
         }
 
         node.pos += delta
@@ -6342,7 +6342,7 @@ object Parser {
       }
 
       def visitArray(array: IncrementalNodeArray) {
-        array._children = undefined
+        array._children = ()
         array.pos += delta
         array.end += delta
 
@@ -6457,7 +6457,7 @@ object Parser {
       delta: Int,
       oldText: String,
       newText: String,
-      aggressiveChecks: Boolean): void {
+      aggressiveChecks: Boolean): Unit {
 
       visitNode(sourceFile)
       return
@@ -6477,7 +6477,7 @@ object Parser {
         val fullEnd = child.end
         if (fullEnd >= changeStart) {
           child.intersectsChange = true
-          child._children = undefined
+          child._children = ()
 
           // Adjust the pos or end (or both) of the intersecting element accordingly.
           adjustIntersectingElement(child, changeStart, changeRangeOldEnd, changeRangeNewEnd, delta)
@@ -6506,7 +6506,7 @@ object Parser {
         val fullEnd = array.end
         if (fullEnd >= changeStart) {
           array.intersectsChange = true
-          array._children = undefined
+          array._children = ()
 
           // Adjust the pos or end (or both) of the intersecting array accordingly.
           adjustIntersectingElement(array, changeStart, changeRangeOldEnd, changeRangeNewEnd, delta)
@@ -6523,10 +6523,10 @@ object Parser {
 
     def extendToAffectedRange(sourceFile: SourceFile, changeRange: TextChangeRange): TextChangeRange {
       // Consider the following code:
-      //    void foo() { /; }
+      //    Unit foo() { /; }
       //
       // If the text changes with an insertion of / just before the semicolon then we end up with:
-      //    void foo() { //; }
+      //    Unit foo() { //; }
       //
       // If we were to just use the changeRange a is, then we would not rescan the { token
       // (as it does not intersect the actual original change range).  Because an edit may
@@ -6581,7 +6581,7 @@ object Parser {
       }
 
       def getLastChildWorker(node: Node): Node {
-        var last: Node = undefined
+        var last: Node = ()
         forEachChild(node, child => {
           if (nodeIsPresent(child)) {
             last = child
@@ -6665,25 +6665,25 @@ object Parser {
       }
     }
 
-    interface IncrementalElement extends TextRange {
+    trait IncrementalElement extends TextRange {
       parent?: Node
       intersectsChange: Boolean
       length?: Int
       _children: Node[]
     }
 
-    interface IncrementalNode extends Node, IncrementalElement {
+    trait IncrementalNode extends Node, IncrementalElement {
       hasBeenIncrementallyParsed: Boolean
     }
 
-    interface IncrementalNodeArray extends NodeArray<IncrementalNode>, IncrementalElement {
+    trait IncrementalNodeArray extends NodeArray<IncrementalNode>, IncrementalElement {
       length: Int
     }
 
     // Allows finding nodes in the source file at a certain position in an efficient manner.
     // The implementation takes advantage of the calling pattern it knows the parser will
     // make in order to optimize finding nodes as quickly as possible.
-    interface SyntaxCursor {
+    trait SyntaxCursor {
       currentNode(position: Int): IncrementalNode
     }
 
@@ -6735,9 +6735,9 @@ object Parser {
       // return it, we can easily return its next sibling in the list.
       def findHighestListElementThatStartsAtPosition(position: Int) {
         // Clear out any cached state about the last node we found.
-        currentArray = undefined
+        currentArray = ()
         currentArrayIndex = InvalidPosition.Value
-        current = undefined
+        current = ()
 
         // Recurse into the source file to find the highest node at this position.
         forEachChild(sourceFile, visitNode, visitArray)

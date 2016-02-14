@@ -4,13 +4,13 @@ package be.doeraene.tsc
 /// <reference path="commandLineParser.ts"/>
 
 object TSC {
-  interface SourceFile {
+  trait SourceFile {
     fileWatcher?: FileWatcher
   }
 
   var reportDiagnostic = reportDiagnosticSimply
 
-  def reportDiagnostics(diagnostics: Diagnostic[], host: CompilerHost): void {
+  def reportDiagnostics(diagnostics: Diagnostic[], host: CompilerHost): Unit {
     for (val diagnostic of diagnostics) {
       reportDiagnostic(diagnostic, host)
     }
@@ -33,7 +33,7 @@ object TSC {
 
     // First try the entire locale, then fall back to just language if that's all we have.
     if (!trySetLanguageAndTerritory(language, territory, errors) &&
-      !trySetLanguageAndTerritory(language, undefined, errors)) {
+      !trySetLanguageAndTerritory(language, (), errors)) {
 
       errors.push(createCompilerDiagnostic(Diagnostics.Unsupported_locale_0, locale))
       return false
@@ -87,7 +87,7 @@ object TSC {
   }
 
   def getDiagnosticText(message: DiagnosticMessage, ...args: any[]): String {
-    val diagnostic = createCompilerDiagnostic.apply(undefined, arguments)
+    val diagnostic = createCompilerDiagnostic.apply((), arguments)
     return <String>diagnostic.messageText
   }
 
@@ -95,7 +95,7 @@ object TSC {
     return host ? convertToRelativePath(fileName, host.getCurrentDirectory(), fileName => host.getCanonicalFileName(fileName)) : fileName
   }
 
-  def reportDiagnosticSimply(diagnostic: Diagnostic, host: CompilerHost): void {
+  def reportDiagnosticSimply(diagnostic: Diagnostic, host: CompilerHost): Unit {
     var output = ""
 
     if (diagnostic.file) {
@@ -128,7 +128,7 @@ object TSC {
     return formatStyle + text + resetEscapeSequence
   }
 
-  def reportDiagnosticWithColorAndContext(diagnostic: Diagnostic, host: CompilerHost): void {
+  def reportDiagnosticWithColorAndContext(diagnostic: Diagnostic, host: CompilerHost): Unit {
     var output = ""
 
     if (diagnostic.file) {
@@ -169,7 +169,7 @@ object TSC {
         if (i == firstLine) {
           // If we're on the last line, then limit it to the last character of the last line.
           // Otherwise, we'll just squiggle the rest of the line, giving 'slice' no end position.
-          val lastCharForLine = i == lastLine ? lastLineChar : undefined
+          val lastCharForLine = i == lastLine ? lastLineChar : ()
 
           output += lineContent.slice(0, firstLineChar).replace(/\S/g, " ")
           output += lineContent.slice(firstLineChar, lastCharForLine).replace(/./g, "~")
@@ -242,7 +242,7 @@ object TSC {
     return typeof JSON == "object" && typeof JSON.parse == "def"
   }
 
-  def executeCommandLine(args: String[]): void {
+  def executeCommandLine(args: String[]): Unit {
     val commandLine = parseCommandLine(args)
     var configFileName: String;                 // Configuration file name (if any)
     var cachedConfigFileText: String;               // Cached configuration file text, used for reparsing (if any)
@@ -263,7 +263,7 @@ object TSC {
 
     if (commandLine.options.locale) {
       if (!isJSONSupported()) {
-        reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_current_host_does_not_support_the_0_option, "--locale"), /* compilerHost */ undefined)
+        reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_current_host_does_not_support_the_0_option, "--locale"), /* compilerHost */ ())
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
       }
       validateLocaleAndSetLanguage(commandLine.options.locale, commandLine.errors)
@@ -294,11 +294,11 @@ object TSC {
 
     if (commandLine.options.project) {
       if (!isJSONSupported()) {
-        reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_current_host_does_not_support_the_0_option, "--project"), /* compilerHost */ undefined)
+        reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_current_host_does_not_support_the_0_option, "--project"), /* compilerHost */ ())
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
       }
       if (commandLine.fileNames.length != 0) {
-        reportDiagnostic(createCompilerDiagnostic(Diagnostics.Option_project_cannot_be_mixed_with_source_files_on_a_command_line), /* compilerHost */ undefined)
+        reportDiagnostic(createCompilerDiagnostic(Diagnostics.Option_project_cannot_be_mixed_with_source_files_on_a_command_line), /* compilerHost */ ())
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
       }
 
@@ -306,14 +306,14 @@ object TSC {
       if (!fileOrDirectory /* current directory "." */ || sys.directoryExists(fileOrDirectory)) {
         configFileName = combinePaths(fileOrDirectory, "tsconfig.json")
         if (!sys.fileExists(configFileName)) {
-          reportDiagnostic(createCompilerDiagnostic(Diagnostics.Cannot_find_a_tsconfig_json_file_at_the_specified_directory_Colon_0, commandLine.options.project), /* compilerHost */ undefined)
+          reportDiagnostic(createCompilerDiagnostic(Diagnostics.Cannot_find_a_tsconfig_json_file_at_the_specified_directory_Colon_0, commandLine.options.project), /* compilerHost */ ())
           return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
         }
       }
       else {
         configFileName = fileOrDirectory
         if (!sys.fileExists(configFileName)) {
-          reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_specified_path_does_not_exist_Colon_0, commandLine.options.project), /* compilerHost */ undefined)
+          reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_specified_path_does_not_exist_Colon_0, commandLine.options.project), /* compilerHost */ ())
           return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
         }
       }
@@ -332,7 +332,7 @@ object TSC {
     // Firefox has Object.prototype.watch
     if (commandLine.options.watch && commandLine.options.hasOwnProperty("watch")) {
       if (!sys.watchFile) {
-        reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_current_host_does_not_support_the_0_option, "--watch"), /* compilerHost */ undefined)
+        reportDiagnostic(createCompilerDiagnostic(Diagnostics.The_current_host_does_not_support_the_0_option, "--watch"), /* compilerHost */ ())
         return sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
       }
       if (configFileName) {
@@ -366,7 +366,7 @@ object TSC {
       }
       if (!cachedConfigFileText) {
         val error = createCompilerDiagnostic(Diagnostics.File_0_not_found, configFileName)
-        reportDiagnostics([error], /* compilerHost */ undefined)
+        reportDiagnostics([error], /* compilerHost */ ())
         sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
         return
       }
@@ -374,13 +374,13 @@ object TSC {
       val result = parseConfigFileTextToJson(configFileName, cachedConfigFileText)
       val configObject = result.config
       if (!configObject) {
-        reportDiagnostics([result.error], /* compilerHost */ undefined)
+        reportDiagnostics([result.error], /* compilerHost */ ())
         sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
         return
       }
       val configParseResult = parseJsonConfigFileContent(configObject, sys, getNormalizedAbsolutePath(getDirectoryPath(configFileName), sys.getCurrentDirectory()), commandLine.options, configFileName)
       if (configParseResult.errors.length > 0) {
-        reportDiagnostics(configParseResult.errors, /* compilerHost */ undefined)
+        reportDiagnostics(configParseResult.errors, /* compilerHost */ ())
         sys.exit(ExitStatus.DiagnosticsPresent_OutputsSkipped)
         return
       }
@@ -432,7 +432,7 @@ object TSC {
       return cachedExistingFiles[fileName] = hostFileExists(fileName)
     }
 
-    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => void) {
+    def getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => Unit) {
       // Return existing SourceFile object if one is available
       if (cachedProgram) {
         val sourceFile = cachedProgram.getSourceFile(fileName)
@@ -454,12 +454,12 @@ object TSC {
     // Change cached program to the given program
     def setCachedProgram(program: Program) {
       if (cachedProgram) {
-        val newSourceFiles = program ? program.getSourceFiles() : undefined
+        val newSourceFiles = program ? program.getSourceFiles() : ()
         forEach(cachedProgram.getSourceFiles(), sourceFile => {
           if (!(newSourceFiles && contains(newSourceFiles, sourceFile))) {
             if (sourceFile.fileWatcher) {
               sourceFile.fileWatcher.close()
-              sourceFile.fileWatcher = undefined
+              sourceFile.fileWatcher = ()
             }
           }
         })
@@ -470,7 +470,7 @@ object TSC {
     // If a source file changes, mark it as unwatched and start the recompilation timer
     def sourceFileChanged(sourceFile: SourceFile, removed?: Boolean) {
       sourceFile.fileWatcher.close()
-      sourceFile.fileWatcher = undefined
+      sourceFile.fileWatcher = ()
       if (removed) {
         val index = rootFileNames.indexOf(sourceFile.fileName)
         if (index >= 0) {
@@ -482,8 +482,8 @@ object TSC {
 
     // If the configuration file changes, forget cached program and start the recompilation timer
     def configFileChanged() {
-      setCachedProgram(undefined)
-      cachedConfigFileText = undefined
+      setCachedProgram(())
+      cachedConfigFileText = ()
       startTimerForRecompilation()
     }
 
@@ -509,7 +509,7 @@ object TSC {
 
       // We check if the project file list has changed. If so, we just throw away the old program and start fresh.
       if (!arrayIsEqualTo(newFileNames && newFileNames.sort(), canonicalRootFileNames && canonicalRootFileNames.sort())) {
-        setCachedProgram(undefined)
+        setCachedProgram(())
         startTimerForRecompilation()
       }
     }
@@ -525,7 +525,7 @@ object TSC {
     }
 
     def recompile() {
-      timerHandleForRecompilation = undefined
+      timerHandleForRecompilation = ()
       reportWatchDiagnostic(createCompilerDiagnostic(Diagnostics.File_change_detected_Starting_incremental_compilation))
       performCompilation()
     }
@@ -701,7 +701,7 @@ object TSC {
     return
 
     def getParamType(option: CommandLineOption) {
-      if (option.paramType != undefined) {
+      if (option.paramType != ()) {
         return " " + getDiagnosticText(option.paramType)
       }
       return ""
@@ -716,7 +716,7 @@ object TSC {
     val currentDirectory = sys.getCurrentDirectory()
     val file = normalizePath(combinePaths(currentDirectory, "tsconfig.json"))
     if (sys.fileExists(file)) {
-      reportDiagnostic(createCompilerDiagnostic(Diagnostics.A_tsconfig_json_file_is_already_defined_at_Colon_0, file), /* compilerHost */ undefined)
+      reportDiagnostic(createCompilerDiagnostic(Diagnostics.A_tsconfig_json_file_is_already_defined_at_Colon_0, file), /* compilerHost */ ())
     }
     else {
       val compilerOptions = extend(options, defaultInitCompilerOptions)
@@ -730,8 +730,8 @@ object TSC {
         configurations.files = fileNames
       }
 
-      sys.writeFile(file, JSON.stringify(configurations, undefined, 4))
-      reportDiagnostic(createCompilerDiagnostic(Diagnostics.Successfully_created_a_tsconfig_json_file), /* compilerHost */ undefined)
+      sys.writeFile(file, JSON.stringify(configurations, (), 4))
+      reportDiagnostic(createCompilerDiagnostic(Diagnostics.Successfully_created_a_tsconfig_json_file), /* compilerHost */ ())
     }
 
     return

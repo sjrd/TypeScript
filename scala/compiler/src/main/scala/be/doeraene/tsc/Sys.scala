@@ -3,40 +3,40 @@ package be.doeraene.tsc
 /// <reference path="core.ts"/>
 
 object Sys {
-  type FileWatcherCallback = (path: String, removed?: Boolean) => void
-  type DirectoryWatcherCallback = (path: String) => void
+  type FileWatcherCallback = (path: String, removed?: Boolean) => Unit
+  type DirectoryWatcherCallback = (path: String) => Unit
 
-  interface System {
+  trait System {
     args: String[]
     newLine: String
     useCaseSensitiveFileNames: Boolean
-    write(s: String): void
+    write(s: String): Unit
     readFile(path: String, encoding?: String): String
-    writeFile(path: String, data: String, writeByteOrderMark?: Boolean): void
+    writeFile(path: String, data: String, writeByteOrderMark?: Boolean): Unit
     watchFile?(path: Path, callback: FileWatcherCallback): FileWatcher
     watchDirectory?(path: String, callback: DirectoryWatcherCallback, recursive?: Boolean): FileWatcher
     resolvePath(path: String): String
     fileExists(path: String): Boolean
     directoryExists(path: String): Boolean
-    createDirectory(path: String): void
+    createDirectory(path: String): Unit
     getExecutingFilePath(): String
     getCurrentDirectory(): String
     readDirectory(path: String, extension?: String, exclude?: String[]): String[]
     getMemoryUsage?(): Int
-    exit(exitCode?: Int): void
+    exit(exitCode?: Int): Unit
   }
 
-  interface WatchedFile {
+  trait WatchedFile {
     filePath: Path
     callback: FileWatcherCallback
     mtime?: Date
   }
 
-  interface FileWatcher {
-    close(): void
+  trait FileWatcher {
+    close(): Unit
   }
 
-  interface DirectoryWatcher extends FileWatcher {
+  trait DirectoryWatcher extends FileWatcher {
     directoryPath: Path
     referenceCount: Int
   }
@@ -63,14 +63,14 @@ object Sys {
     executingFile: String
     newLine?: String
     useCaseSensitiveFileNames?: Boolean
-    echo(s: String): void
-    quit(exitCode?: Int): void
+    echo(s: String): Unit
+    quit(exitCode?: Int): Unit
     fileExists(path: String): Boolean
     directoryExists(path: String): Boolean
-    createDirectory(path: String): void
+    createDirectory(path: String): Unit
     resolvePath(path: String): String
     readFile(path: String): String
-    writeFile(path: String, contents: String): void
+    writeFile(path: String, contents: String): Unit
     readDirectory(path: String, extension?: String, exclude?: String[]): String[]
     watchFile?(path: String, callback: FileWatcherCallback): FileWatcher
     watchDirectory?(path: String, callback: DirectoryWatcherCallback, recursive?: Boolean): FileWatcher
@@ -95,7 +95,7 @@ object Sys {
 
       def readFile(fileName: String, encoding?: String): String {
         if (!fso.FileExists(fileName)) {
-          return undefined
+          return ()
         }
         fileStream.Open()
         try {
@@ -124,7 +124,7 @@ object Sys {
         }
       }
 
-      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): void {
+      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): Unit {
         fileStream.Open()
         binaryStream.Open()
         try {
@@ -188,7 +188,7 @@ object Sys {
         args,
         newLine: "\r\n",
         useCaseSensitiveFileNames: false,
-        write(s: String): void {
+        write(s: String): Unit {
           WScript.StdOut.Write(s)
         },
         readFile,
@@ -214,7 +214,7 @@ object Sys {
           return new ActiveXObject("WScript.Shell").CurrentDirectory
         },
         readDirectory,
-        exit(exitCode?: Int): void {
+        exit(exitCode?: Int): Unit {
           try {
             WScript.Quit(exitCode)
           }
@@ -325,7 +325,7 @@ object Sys {
           }
         }
 
-        def addDirWatcher(dirPath: Path): void {
+        def addDirWatcher(dirPath: Path): Unit {
           if (dirWatchers.contains(dirPath)) {
             val watcher = dirWatchers.get(dirPath)
             watcher.referenceCount += 1
@@ -342,7 +342,7 @@ object Sys {
           return
         }
 
-        def addFileWatcherCallback(filePath: Path, callback: FileWatcherCallback): void {
+        def addFileWatcherCallback(filePath: Path, callback: FileWatcherCallback): Unit {
           if (fileWatcherCallbacks.contains(filePath)) {
             fileWatcherCallbacks.get(filePath).push(callback)
           }
@@ -376,9 +376,9 @@ object Sys {
         }
 
         def fileEventHandler(eventName: String, relativeFileName: String, baseDirPath: Path) {
-          // When files are deleted from disk, the triggered "rename" event would have a relativefileName of "undefined"
+          // When files are deleted from disk, the triggered "rename" event would have a relativefileName of "()"
           val filePath = typeof relativeFileName != "String"
-            ? undefined
+            ? ()
             : toPath(relativeFileName, baseDirPath, createGetCanonicalFileName(sys.useCaseSensitiveFileNames))
           // Some applications save a working file via rename operations
           if ((eventName == "change" || eventName == "rename") && fileWatcherCallbacks.contains(filePath)) {
@@ -415,7 +415,7 @@ object Sys {
 
       def readFile(fileName: String, encoding?: String): String {
         if (!fileExists(fileName)) {
-          return undefined
+          return ()
         }
         val buffer = _fs.readFileSync(fileName)
         var len = buffer.length
@@ -442,7 +442,7 @@ object Sys {
         return buffer.toString("utf8")
       }
 
-      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): void {
+      def writeFile(fileName: String, data: String, writeByteOrderMark?: Boolean): Unit {
         // If a BOM is required, emit one
         if (writeByteOrderMark) {
           data = "\uFEFF" + data
@@ -452,10 +452,10 @@ object Sys {
 
         try {
           fd = _fs.openSync(fileName, "w")
-          _fs.writeSync(fd, data, undefined, "utf8")
+          _fs.writeSync(fd, data, (), "utf8")
         }
         finally {
-          if (fd != undefined) {
+          if (fd != ()) {
             _fs.closeSync(fd)
           }
         }
@@ -523,7 +523,7 @@ object Sys {
         args: process.argv.slice(2),
         newLine: _os.EOL,
         useCaseSensitiveFileNames: useCaseSensitiveFileNames,
-        write(s: String): void {
+        write(s: String): Unit {
           process.stdout.write(s)
         },
         readFile,
@@ -587,7 +587,7 @@ object Sys {
           }
           return process.memoryUsage().heapUsed
         },
-        exit(exitCode?: Int): void {
+        exit(exitCode?: Int): Unit {
           process.exit(exitCode)
         }
       }
@@ -623,19 +623,19 @@ object Sys {
       }
     }
 
-    if (typeof WScript != "undefined" && typeof ActiveXObject == "def") {
+    if (typeof WScript != "()" && typeof ActiveXObject == "def") {
       return getWScriptSystem()
     }
-    else if (typeof process != "undefined" && process.nextTick && !process.browser && typeof require != "undefined") {
+    else if (typeof process != "()" && process.nextTick && !process.browser && typeof require != "()") {
       // process and process.nextTick checks if current environment is node-like
       // process.browser check excludes webpack and browserify
       return getNodeSystem()
     }
-    else if (typeof ChakraHost != "undefined") {
+    else if (typeof ChakraHost != "()") {
       return getChakraSystem()
     }
     else {
-      return undefined; // Unsupported host
+      return (); // Unsupported host
     }
   })()
 }

@@ -30,7 +30,7 @@ object Binder {
 
   def getModuleInstanceState(node: Node): ModuleInstanceState {
     // A module is uninstantiated if it contains only
-    // 1. interface declarations, type alias declarations
+    // 1. trait declarations, type alias declarations
     if (node.kind == SyntaxKind.InterfaceDeclaration || node.kind == SyntaxKind.TypeAliasDeclaration) {
       return ModuleInstanceState.NonInstantiated
     }
@@ -103,7 +103,7 @@ object Binder {
     bindTime += new Date().getTime() - start
   }
 
-  def createBinder(): (file: SourceFile, options: CompilerOptions) => void {
+  def createBinder(): (file: SourceFile, options: CompilerOptions) => Unit {
     var file: SourceFile
     var options: CompilerOptions
     var parent: Node
@@ -148,17 +148,17 @@ object Binder {
         file.classifiableNames = classifiableNames
       }
 
-      file = undefined
-      options = undefined
-      parent = undefined
-      container = undefined
-      blockScopeContainer = undefined
-      lastContainer = undefined
+      file = ()
+      options = ()
+      parent = ()
+      container = ()
+      blockScopeContainer = ()
+      lastContainer = ()
       seenThisKeyword = false
       hasExplicitReturn = false
-      labelStack = undefined
-      labelIndexMap = undefined
-      implicitLabels = undefined
+      labelStack = ()
+      labelIndexMap = ()
+      implicitLabels = ()
       hasClassExtends = false
       hasAsyncFunctions = false
       hasDecorators = false
@@ -252,7 +252,7 @@ object Binder {
 
         case SyntaxKind.FunctionDeclaration:
         case SyntaxKind.ClassDeclaration:
-          return node.flags & NodeFlags.Default ? "default" : undefined
+          return node.flags & NodeFlags.Default ? "default" : ()
         case SyntaxKind.JSDocFunctionType:
           return isJSDocConstructSignature(node) ? "__new" : "__call"
         case SyntaxKind.Parameter:
@@ -285,7 +285,7 @@ object Binder {
       val name = isDefaultExport && parent ? "default" : getDeclarationName(node)
 
       var symbol: Symbol
-      if (name != undefined) {
+      if (name != ()) {
 
         // Check and see if the symbol table already has a symbol with this name.  If not,
         // create a new symbol with this name and add it to the table.  Note that we don't
@@ -355,7 +355,7 @@ object Binder {
           return declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
         }
         else {
-          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes)
+          return declareSymbol(container.locals, (), node, symbolFlags, symbolExcludes)
         }
       }
       else {
@@ -380,13 +380,13 @@ object Binder {
             (symbolFlags & SymbolFlags.Value ? SymbolFlags.ExportValue : 0) |
             (symbolFlags & SymbolFlags.Type ? SymbolFlags.ExportType : 0) |
             (symbolFlags & SymbolFlags.Namespace ? SymbolFlags.ExportNamespace : 0)
-          val local = declareSymbol(container.locals, undefined, node, exportKind, symbolExcludes)
+          val local = declareSymbol(container.locals, (), node, exportKind, symbolExcludes)
           local.exportSymbol = declareSymbol(container.symbol.exports, container.symbol, node, symbolFlags, symbolExcludes)
           node.localSymbol = local
           return local
         }
         else {
-          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes)
+          return declareSymbol(container.locals, (), node, symbolFlags, symbolExcludes)
         }
       }
     }
@@ -434,7 +434,7 @@ object Binder {
       }
       else if (containerFlags & ContainerFlags.IsBlockScopedContainer) {
         blockScopeContainer = node
-        blockScopeContainer.locals = undefined
+        blockScopeContainer.locals = ()
       }
 
       var savedReachabilityState: Reachability
@@ -466,7 +466,7 @@ object Binder {
 
         currentReachabilityState = Reachability.Reachable
         hasExplicitReturn = false
-        labelStack = labelIndexMap = implicitLabels = undefined
+        labelStack = labelIndexMap = implicitLabels = ()
       }
 
       if (isInJavaScriptFile(node) && node.jsDocComment) {
@@ -520,7 +520,7 @@ object Binder {
      * Returns true if node and its subnodes were successfully traversed.
      * Returning false means that node was not examined and caller needs to dive into the node himself.
      */
-    def bindReachableStatement(node: Node): void {
+    def bindReachableStatement(node: Node): Unit {
       if (checkUnreachable(node)) {
         forEachChild(node, bind)
         return
@@ -569,7 +569,7 @@ object Binder {
       }
     }
 
-    def bindWhileStatement(n: WhileStatement): void {
+    def bindWhileStatement(n: WhileStatement): Unit {
       val preWhileState =
         n.expression.kind == SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState
       val postWhileState =
@@ -584,7 +584,7 @@ object Binder {
       popImplicitLabel(postWhileLabel, postWhileState)
     }
 
-    def bindDoStatement(n: DoStatement): void {
+    def bindDoStatement(n: DoStatement): Unit {
       val preDoState = currentReachabilityState
 
       val postDoLabel = pushImplicitLabel()
@@ -596,7 +596,7 @@ object Binder {
       bind(n.expression)
     }
 
-    def bindForStatement(n: ForStatement): void {
+    def bindForStatement(n: ForStatement): Unit {
       val preForState = currentReachabilityState
       val postForLabel = pushImplicitLabel()
 
@@ -615,7 +615,7 @@ object Binder {
       popImplicitLabel(postForLabel, postForState)
     }
 
-    def bindForInOrForOfStatement(n: ForInStatement | ForOfStatement): void {
+    def bindForInOrForOfStatement(n: ForInStatement | ForOfStatement): Unit {
       val preStatementState = currentReachabilityState
       val postStatementLabel = pushImplicitLabel()
 
@@ -627,7 +627,7 @@ object Binder {
       popImplicitLabel(postStatementLabel, preStatementState)
     }
 
-    def bindIfStatement(n: IfStatement): void {
+    def bindIfStatement(n: IfStatement): Unit {
       // denotes reachability state when entering 'thenStatement' part of the if statement:
       // i.e. if condition is false then thenStatement is unreachable
       val ifTrueState = n.expression.kind == SyntaxKind.FalseKeyword ? Reachability.Unreachable : currentReachabilityState
@@ -652,7 +652,7 @@ object Binder {
       }
     }
 
-    def bindReturnOrThrow(n: ReturnStatement | ThrowStatement): void {
+    def bindReturnOrThrow(n: ReturnStatement | ThrowStatement): Unit {
       // bind expression (don't affect reachability)
       bind(n.expression)
       if (n.kind == SyntaxKind.ReturnStatement) {
@@ -661,7 +661,7 @@ object Binder {
       currentReachabilityState = Reachability.Unreachable
     }
 
-    def bindBreakOrContinueStatement(n: BreakOrContinueStatement): void {
+    def bindBreakOrContinueStatement(n: BreakOrContinueStatement): Unit {
       // call bind on label (don't affect reachability)
       bind(n.label)
       // for continue case touch label so it will be marked a used
@@ -671,7 +671,7 @@ object Binder {
       }
     }
 
-    def bindTryStatement(n: TryStatement): void {
+    def bindTryStatement(n: TryStatement): Unit {
       // catch\finally blocks has the same reachability as try block
       val preTryState = currentReachabilityState
       bind(n.tryBlock)
@@ -690,7 +690,7 @@ object Binder {
       currentReachabilityState = or(postTryState, postCatchState)
     }
 
-    def bindSwitchStatement(n: SwitchStatement): void {
+    def bindSwitchStatement(n: SwitchStatement): Unit {
       val preSwitchState = currentReachabilityState
       val postSwitchLabel = pushImplicitLabel()
 
@@ -707,7 +707,7 @@ object Binder {
       popImplicitLabel(postSwitchLabel, postSwitchState)
     }
 
-    def bindCaseBlock(n: CaseBlock): void {
+    def bindCaseBlock(n: CaseBlock): Unit {
       val startState = currentReachabilityState
 
       for (val clause of n.clauses) {
@@ -719,7 +719,7 @@ object Binder {
       }
     }
 
-    def bindLabeledStatement(n: LabeledStatement): void {
+    def bindLabeledStatement(n: LabeledStatement): Unit {
       // call bind on label (don't affect reachability)
       bind(n.label)
 
@@ -797,8 +797,8 @@ object Binder {
       lastContainer = next
     }
 
-    def declareSymbolAndAddToSymbolTable(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): void {
-      // Just call this directly so that the return type of this def stays "void".
+    def declareSymbolAndAddToSymbolTable(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags): Unit {
+      // Just call this directly so that the return type of this def stays "Unit".
       declareSymbolAndAddToSymbolTableWorker(node, symbolFlags, symbolExcludes)
     }
 
@@ -828,7 +828,7 @@ object Binder {
           // Interface/Object-types always have their children added to the 'members' of
           // their container. They are only accessible through an instance of their
           // container, and are never in scope otherwise (even inside the body of the
-          // object / type / interface declaring them). An exception is type parameters,
+          // object / type / trait declaring them). An exception is type parameters,
           // which are in scope without qualification (similar to 'locals').
           return declareSymbol(container.symbol.members, container.symbol, node, symbolFlags, symbolExcludes)
 
@@ -853,7 +853,7 @@ object Binder {
           // their container in the tree.  To accomplish this, we simply add their declared
           // symbol to the 'locals' of the container.  These symbols can then be found as
           // the type checker walks up the containers, checking them for matching names.
-          return declareSymbol(container.locals, undefined, node, symbolFlags, symbolExcludes)
+          return declareSymbol(container.locals, (), node, symbolFlags, symbolExcludes)
       }
     }
 
@@ -866,7 +866,7 @@ object Binder {
     def declareSourceFileMember(node: Declaration, symbolFlags: SymbolFlags, symbolExcludes: SymbolFlags) {
       return isExternalModule(file)
         ? declareModuleMember(node, symbolFlags, symbolExcludes)
-        : declareSymbol(file.locals, undefined, node, symbolFlags, symbolExcludes)
+        : declareSymbol(file.locals, (), node, symbolFlags, symbolExcludes)
     }
 
     def hasExportDeclarations(node: ModuleDeclaration | SourceFile): Boolean {
@@ -914,7 +914,7 @@ object Binder {
           }
           else {
             val currentModuleIsConstEnumOnly = state == ModuleInstanceState.ConstEnumOnly
-            if (node.symbol.constEnumOnlyModule == undefined) {
+            if (node.symbol.constEnumOnlyModule == ()) {
               // non-merged case - use the current state
               node.symbol.constEnumOnlyModule = currentModuleIsConstEnumOnly
             }
@@ -927,7 +927,7 @@ object Binder {
       }
     }
 
-    def bindFunctionOrConstructorType(node: SignatureDeclaration): void {
+    def bindFunctionOrConstructorType(node: SignatureDeclaration): Unit {
       // For a given def symbol "<...>(...) => T" we want to generate a symbol identical
       // to the one we would get for: { <...>(...): T }
       //
@@ -959,7 +959,7 @@ object Binder {
           val identifier = <Identifier>prop.name
 
           // ECMA-262 11.1.5 Object Initializer
-          // If previous is not undefined then throw a SyntaxError exception if any of the following conditions are true
+          // If previous is not () then throw a SyntaxError exception if any of the following conditions are true
           // a.This production is contained in strict code and IsDataDescriptor(previous) is true and
           // IsDataDescriptor(propId.descriptor) is true.
           //  b.IsDataDescriptor(previous) is true and IsAccessorDescriptor(propId.descriptor) is true.
@@ -1008,7 +1008,7 @@ object Binder {
             blockScopeContainer.locals = {}
             addToContainerChain(blockScopeContainer)
           }
-          declareSymbol(blockScopeContainer.locals, undefined, node, symbolFlags, symbolExcludes)
+          declareSymbol(blockScopeContainer.locals, (), node, symbolFlags, symbolExcludes)
       }
     }
 
@@ -1152,7 +1152,7 @@ object Binder {
       return "__" + indexOf((<SignatureDeclaration>node.parent).parameters, node)
     }
 
-    def bind(node: Node): void {
+    def bind(node: Node): Unit {
       if (!node) {
         return
       }
@@ -1480,7 +1480,7 @@ object Binder {
 
     def bindClassLikeDeclaration(node: ClassLikeDeclaration) {
       if (!isDeclarationFile(file) && !isInAmbientContext(node)) {
-        if (getClassExtendsHeritageClauseElement(node) != undefined) {
+        if (getClassExtendsHeritageClauseElement(node) != ()) {
           hasClassExtends = true
         }
         if (nodeIsDecorated(node)) {
@@ -1643,17 +1643,17 @@ object Binder {
       return index
     }
 
-    def popNamedLabel(label: Identifier, outerState: Reachability): void {
+    def popNamedLabel(label: Identifier, outerState: Reachability): Unit {
       val index = labelIndexMap[label.text]
-      Debug.assert(index != undefined)
+      Debug.assert(index != ())
       Debug.assert(labelStack.length == index + 1)
 
-      labelIndexMap[label.text] = undefined
+      labelIndexMap[label.text] = ()
 
       setCurrentStateAtLabel(labelStack.pop(), outerState, label)
     }
 
-    def popImplicitLabel(implicitLabelIndex: Int, outerState: Reachability): void {
+    def popImplicitLabel(implicitLabelIndex: Int, outerState: Reachability): Unit {
       if (labelStack.length != implicitLabelIndex + 1) {
         Debug.assert(false, `Label stack: ${labelStack.length}, index:${implicitLabelIndex}`)
       }
@@ -1664,10 +1664,10 @@ object Binder {
         Debug.assert(false, `i: ${i}, index: ${implicitLabelIndex}`)
       }
 
-      setCurrentStateAtLabel(labelStack.pop(), outerState, /*name*/ undefined)
+      setCurrentStateAtLabel(labelStack.pop(), outerState, /*name*/ ())
     }
 
-    def setCurrentStateAtLabel(innerMergedState: Reachability, outerState: Reachability, label: Identifier): void {
+    def setCurrentStateAtLabel(innerMergedState: Reachability, outerState: Reachability, label: Identifier): Unit {
       if (innerMergedState == Reachability.Uninitialized) {
         if (label && !options.allowUnusedLabels) {
           file.bindDiagnostics.push(createDiagnosticForNode(label, Diagnostics.Unused_label))
@@ -1683,7 +1683,7 @@ object Binder {
       initializeReachabilityStateIfNecessary()
 
       val index = label ? labelIndexMap[label.text] : lastOrUndefined(implicitLabels)
-      if (index == undefined) {
+      if (index == ()) {
         // reference to unknown label or
         // break/continue used outside of loops
         return false
@@ -1743,7 +1743,7 @@ object Binder {
       }
     }
 
-    def initializeReachabilityStateIfNecessary(): void {
+    def initializeReachabilityStateIfNecessary(): Unit {
       if (labelIndexMap) {
         return
       }

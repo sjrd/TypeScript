@@ -30,7 +30,7 @@ object Core {
       clear
     }
 
-    def forEachValueInMap(f: (key: Path, value: T) => void) {
+    def forEachValueInMap(f: (key: Path, value: T) => Unit) {
       for (val key in files) {
         f(<Path>key, files[key])
       }
@@ -79,7 +79,7 @@ object Core {
   /**
    * Iterates through 'array' by index and performs the callback on each element of array until the callback
    * returns a truthy value, then returns that value.
-   * If no such value is found, the callback is applied to each element of array and undefined is returned.
+   * If no such value is found, the callback is applied to each element of array and () is returned.
    */
   def forEach<T, U>(array: T[], callback: (element: T, index: Int) => U): U {
     if (array) {
@@ -90,7 +90,7 @@ object Core {
         }
       }
     }
-    return undefined
+    return ()
   }
 
   def contains<T>(array: T[], value: T): Boolean {
@@ -179,7 +179,7 @@ object Core {
     return result
   }
 
-  def addRange<T>(to: T[], from: T[]): void {
+  def addRange<T>(to: T[], from: T[]): Unit {
     if (to && from) {
       for (val v of from) {
         to.push(v)
@@ -198,11 +198,11 @@ object Core {
   }
 
   /**
-   * Returns the last element of an array if non-empty, undefined otherwise.
+   * Returns the last element of an array if non-empty, () otherwise.
    */
   def lastOrUndefined<T>(array: T[]): T {
     if (array.length == 0) {
-      return undefined
+      return ()
     }
 
     return array[array.length - 1]
@@ -281,7 +281,7 @@ object Core {
   }
 
   def getProperty<T>(map: Map<T>, key: String): T {
-    return hasOwnProperty.call(map, key) ? map[key] : undefined
+    return hasOwnProperty.call(map, key) ? map[key] : ()
   }
 
   def isEmpty<T>(map: Map<T>) {
@@ -331,10 +331,10 @@ object Core {
   }
 
   def lookUp<T>(map: Map<T>, key: String): T {
-    return hasProperty(map, key) ? map[key] : undefined
+    return hasProperty(map, key) ? map[key] : ()
   }
 
-  def copyMap<T>(source: Map<T>, target: Map<T>): void {
+  def copyMap<T>(source: Map<T>, target: Map<T>): Unit {
     for (val p in source) {
       target[p] = source[p]
     }
@@ -392,7 +392,7 @@ object Core {
     return () => {
       if (callback) {
         value = callback()
-        callback = undefined
+        callback = ()
       }
       return value
     }
@@ -404,7 +404,7 @@ object Core {
     return text.replace(/{(\d+)}/g, (match, index?) => args[+index + baseIndex])
   }
 
-  var localizedDiagnosticMessages: Map<String> = undefined
+  var localizedDiagnosticMessages: Map<String> = ()
 
   def getLocaleSpecificMessage(message: DiagnosticMessage) {
     return localizedDiagnosticMessages && localizedDiagnosticMessages[message.key]
@@ -461,9 +461,9 @@ object Core {
     }
 
     return {
-      file: undefined,
-      start: undefined,
-      length: undefined,
+      file: (),
+      start: (),
+      length: (),
 
       messageText: text,
       category: message.category,
@@ -500,13 +500,13 @@ object Core {
 
   def compareValues<T>(a: T, b: T): Comparison {
     if (a == b) return Comparison.EqualTo
-    if (a == undefined) return Comparison.LessThan
-    if (b == undefined) return Comparison.GreaterThan
+    if (a == ()) return Comparison.LessThan
+    if (b == ()) return Comparison.GreaterThan
     return a < b ? Comparison.LessThan : Comparison.GreaterThan
   }
 
   def getDiagnosticFileName(diagnostic: Diagnostic): String {
-    return diagnostic.file ? diagnostic.file.fileName : undefined
+    return diagnostic.file ? diagnostic.file.fileName : ()
   }
 
   def compareDiagnostics(d1: Diagnostic, d2: Diagnostic): Comparison {
@@ -529,8 +529,8 @@ object Core {
         return res
       }
 
-      text1 = typeof text1 == "String" ? undefined : text1.next
-      text2 = typeof text2 == "String" ? undefined : text2.next
+      text1 = typeof text1 == "String" ? () : text1.next
+      text2 = typeof text2 == "String" ? () : text2.next
     }
 
     if (!text1 && !text2) {
@@ -759,8 +759,8 @@ object Core {
   }
 
   def getBaseFileName(path: String) {
-    if (path == undefined) {
-      return undefined
+    if (path == ()) {
+      return ()
     }
     val i = path.lastIndexOf(directorySeparator)
     return i < 0 ? path : path.substring(i + 1)
@@ -812,7 +812,7 @@ object Core {
     return path
   }
 
-  interface ObjectAllocator {
+  trait ObjectAllocator {
     getNodeConstructor(): new (kind: SyntaxKind, pos?: Int, end?: Int) => Node
     getSourceFileConstructor(): new (kind: SyntaxKind, pos?: Int, end?: Int) => SourceFile
     getSymbolConstructor(): new (flags: SymbolFlags, name: String) => Symbol
@@ -823,7 +823,7 @@ object Core {
   def Symbol(flags: SymbolFlags, name: String) {
     this.flags = flags
     this.name = name
-    this.declarations = undefined
+    this.declarations = ()
   }
 
   def Type(checker: TypeChecker, flags: TypeFlags) {
@@ -838,7 +838,7 @@ object Core {
     this.pos = pos
     this.end = end
     this.flags = NodeFlags.None
-    this.parent = undefined
+    this.parent = ()
   }
 
   var objectAllocator: ObjectAllocator = {
@@ -863,7 +863,7 @@ object Core {
       return currentAssertionLevel >= level
     }
 
-    def assert(expression: Boolean, message?: String, verboseDebugInfo?: () => String): void {
+    def assert(expression: Boolean, message?: String, verboseDebugInfo?: () => String): Unit {
       if (!expression) {
         var verboseDebugString = ""
         if (verboseDebugInfo) {
@@ -874,7 +874,7 @@ object Core {
       }
     }
 
-    def fail(message?: String): void {
+    def fail(message?: String): Unit {
       Debug.assert(/*expression*/ false, message)
     }
   }

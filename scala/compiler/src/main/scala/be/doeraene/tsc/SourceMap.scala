@@ -4,17 +4,17 @@ package be.doeraene.tsc
 
 /* @internal */
 object SourceMap {
-  interface SourceMapWriter {
+  trait SourceMapWriter {
     getSourceMapData(): SourceMapData
-    setSourceFile(sourceFile: SourceFile): void
-    emitPos(pos: Int): void
-    emitStart(range: TextRange): void
-    emitEnd(range: TextRange, stopOverridingSpan?: Boolean): void
-    changeEmitSourcePos(): void
+    setSourceFile(sourceFile: SourceFile): Unit
+    emitPos(pos: Int): Unit
+    emitStart(range: TextRange): Unit
+    emitEnd(range: TextRange, stopOverridingSpan?: Boolean): Unit
+    changeEmitSourcePos(): Unit
     getText(): String
     getSourceMappingURL(): String
-    initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean): void
-    reset(): void
+    initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean): Unit
+    reset(): Unit
   }
 
   var nullSourceMapWriter: SourceMapWriter
@@ -28,18 +28,18 @@ object SourceMap {
   }
 
   def getNullSourceMapWriter(): SourceMapWriter {
-    if (nullSourceMapWriter == undefined) {
+    if (nullSourceMapWriter == ()) {
       nullSourceMapWriter = {
-        getSourceMapData(): SourceMapData { return undefined; },
-        setSourceFile(sourceFile: SourceFile): void { },
-        emitStart(range: TextRange): void { },
-        emitEnd(range: TextRange, stopOverridingSpan?: Boolean): void { },
-        emitPos(pos: Int): void { },
-        changeEmitSourcePos(): void { },
-        getText(): String { return undefined; },
-        getSourceMappingURL(): String { return undefined; },
-        initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean): void { },
-        reset(): void { },
+        getSourceMapData(): SourceMapData { return (); },
+        setSourceFile(sourceFile: SourceFile): Unit { },
+        emitStart(range: TextRange): Unit { },
+        emitEnd(range: TextRange, stopOverridingSpan?: Boolean): Unit { },
+        emitPos(pos: Int): Unit { },
+        changeEmitSourcePos(): Unit { },
+        getText(): String { return (); },
+        getSourceMappingURL(): String { return (); },
+        initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean): Unit { },
+        reset(): Unit { },
       }
     }
 
@@ -82,27 +82,27 @@ object SourceMap {
         reset()
       }
 
-      currentSourceFile = undefined
+      currentSourceFile = ()
 
       // Current source map file and its index in the sources list
       sourceMapSourceIndex = -1
 
       // Last recorded and encoded spans
-      lastRecordedSourceMapSpan = undefined
+      lastRecordedSourceMapSpan = ()
       lastEncodedSourceMapSpan = defaultLastEncodedSourceMapSpan
       lastEncodedNameIndex = 0
 
       // Initialize source map data
       sourceMapData = {
         sourceMapFilePath: sourceMapFilePath,
-        jsSourceMappingURL: !compilerOptions.inlineSourceMap ? getBaseFileName(normalizeSlashes(sourceMapFilePath)) : undefined,
+        jsSourceMappingURL: !compilerOptions.inlineSourceMap ? getBaseFileName(normalizeSlashes(sourceMapFilePath)) : (),
         sourceMapFile: getBaseFileName(normalizeSlashes(filePath)),
         sourceMapSourceRoot: compilerOptions.sourceRoot || "",
         sourceMapSources: [],
         inputSourceFileNames: [],
         sourceMapNames: [],
         sourceMapMappings: "",
-        sourceMapSourcesContent: compilerOptions.inlineSources ? [] : undefined,
+        sourceMapSourcesContent: compilerOptions.inlineSources ? [] : (),
         sourceMapDecodedMappings: []
       }
 
@@ -142,13 +142,13 @@ object SourceMap {
     }
 
     def reset() {
-      currentSourceFile = undefined
-      sourceMapDir = undefined
-      sourceMapSourceIndex = undefined
-      lastRecordedSourceMapSpan = undefined
-      lastEncodedSourceMapSpan = undefined
-      lastEncodedNameIndex = undefined
-      sourceMapData = undefined
+      currentSourceFile = ()
+      sourceMapDir = ()
+      sourceMapSourceIndex = ()
+      lastRecordedSourceMapSpan = ()
+      lastEncodedSourceMapSpan = ()
+      lastEncodedNameIndex = ()
+      sourceMapData = ()
     }
 
     def updateLastEncodedAndRecordedSpans() {

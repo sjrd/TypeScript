@@ -13,7 +13,7 @@ object Emitter {
   def getExternalModuleNameFromDeclaration(host: EmitHost, resolver: EmitResolver, declaration: ImportEqualsDeclaration | ImportDeclaration | ExportDeclaration): String {
     val file = resolver.getExternalModuleFileFromDeclaration(declaration)
     if (!file || isDeclarationFile(file)) {
-      return undefined
+      return ()
     }
     return getResolvedExternalModuleName(host, file)
   }
@@ -332,7 +332,7 @@ object Emitter {
    * NOTE: values to out parameters are not copies if loop is abrupted with 'return' - in this case this will end the entire enclosing def
    * so nobody can observe this new value.
    */
-  interface LoopOutParameter {
+  trait LoopOutParameter {
     originalName: Identifier
     outParamName: String
   }
@@ -381,7 +381,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
     val compilerOptions = host.getCompilerOptions()
     val languageVersion = getEmitScriptTarget(compilerOptions)
     val modulekind = getEmitModuleKind(compilerOptions)
-    val sourceMapDataList: SourceMapData[] = compilerOptions.sourceMap || compilerOptions.inlineSourceMap ? [] : undefined
+    val sourceMapDataList: SourceMapData[] = compilerOptions.sourceMap || compilerOptions.inlineSourceMap ? [] : ()
     val emitterDiagnostics = createDiagnosticCollection()
     var emitSkipped = false
     val newLine = host.getNewLine()
@@ -407,7 +407,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
       return true
     }
 
-    interface ConvertedLoopState {
+    trait ConvertedLoopState {
       /*
        * set of labels that occurred inside the converted loop
        * used to determine if labeled jump can be emitted as is or it should be dispatched to calling code
@@ -476,7 +476,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
       loopOutParameters?: LoopOutParameter[]
     }
 
-    def setLabeledJump(state: ConvertedLoopState, isBreak: Boolean, labelText: String, labelMarker: String): void {
+    def setLabeledJump(state: ConvertedLoopState, isBreak: Boolean, labelText: String, labelMarker: String): Unit {
       if (isBreak) {
         if (!state.labeledNonLocalBreaks) {
           state.labeledNonLocalBreaks = {}
@@ -491,7 +491,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
       }
     }
 
-    def hoistVariableDeclarationFromLoop(state: ConvertedLoopState, declaration: VariableDeclaration): void {
+    def hoistVariableDeclarationFromLoop(state: ConvertedLoopState, declaration: VariableDeclaration): Unit {
       if (!state.hoistedLocalVariables) {
         state.hoistedLocalVariables = []
       }
@@ -510,7 +510,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
       }
     }
 
-    def createFileEmitter(): (jsFilePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean) => void {
+    def createFileEmitter(): (jsFilePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean) => Unit {
       val writer = createTextWriter(newLine)
       val { write, writeTextOfNode, writeLine, increaseIndent, decreaseIndent } = writer
 
@@ -566,7 +566,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
 
       val setSourceMapWriterEmit = compilerOptions.sourceMap || compilerOptions.inlineSourceMap ? changeSourceMapEmit : def (writer: SourceMapWriter) { }
 
-      val moduleEmitDelegates: Map<(node: SourceFile, emitRelativePathAsModuleName?: Boolean) => void> = {
+      val moduleEmitDelegates: Map<(node: SourceFile, emitRelativePathAsModuleName?: Boolean) => Unit> = {
         [ModuleKind.ES6]: emitES6Module,
         [ModuleKind.AMD]: emitAMDModule,
         [ModuleKind.System]: emitSystemModule,
@@ -574,7 +574,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         [ModuleKind.CommonJS]: emitCommonJSModule,
       }
 
-      val bundleEmitDelegates: Map<(node: SourceFile, emitRelativePathAsModuleName?: Boolean) => void> = {
+      val bundleEmitDelegates: Map<(node: SourceFile, emitRelativePathAsModuleName?: Boolean) => Unit> = {
         [ModuleKind.ES6]() {},
         [ModuleKind.AMD]: emitAMDModule,
         [ModuleKind.System]: emitSystemModule,
@@ -611,41 +611,41 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         // reset the state
         sourceMap.reset()
         writer.reset()
-        currentSourceFile = undefined
-        currentText = undefined
-        currentLineMap = undefined
-        exportFunctionForFile = undefined
-        contextObjectForFile = undefined
-        generatedNameSet = undefined
-        nodeToGeneratedName = undefined
-        decoratedClassAliases = undefined
-        computedPropertyNamesToGeneratedNames = undefined
-        convertedLoopState = undefined
+        currentSourceFile = ()
+        currentText = ()
+        currentLineMap = ()
+        exportFunctionForFile = ()
+        contextObjectForFile = ()
+        generatedNameSet = ()
+        nodeToGeneratedName = ()
+        decoratedClassAliases = ()
+        computedPropertyNamesToGeneratedNames = ()
+        convertedLoopState = ()
         extendsEmitted = false
         decorateEmitted = false
         paramEmitted = false
         awaiterEmitted = false
         tempFlags = 0
-        tempVariables = undefined
-        tempParameters = undefined
-        externalImports = undefined
-        exportSpecifiers = undefined
-        exportEquals = undefined
-        hasExportStarsToExportValues = undefined
-        detachedCommentsInfo = undefined
-        sourceMapData = undefined
+        tempVariables = ()
+        tempParameters = ()
+        externalImports = ()
+        exportSpecifiers = ()
+        exportEquals = ()
+        hasExportStarsToExportValues = ()
+        detachedCommentsInfo = ()
+        sourceMapData = ()
         isEs6Module = false
-        renamedDependencies = undefined
+        renamedDependencies = ()
         isCurrentFileExternalModule = false
       }
 
-      def emitSourceFile(sourceFile: SourceFile): void {
+      def emitSourceFile(sourceFile: SourceFile): Unit {
         currentSourceFile = sourceFile
 
         currentText = sourceFile.text
         currentLineMap = getLineStarts(sourceFile)
-        exportFunctionForFile = undefined
-        contextObjectForFile = undefined
+        exportFunctionForFile = ()
+        contextObjectForFile = ()
         isEs6Module = sourceFile.symbol && sourceFile.symbol.exports && !!sourceFile.symbol.exports["___esModule"]
         renamedDependencies = sourceFile.renamedDependencies
         currentFileIdentifiers = sourceFile.identifiers
@@ -769,7 +769,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         return result
       }
 
-      def recordTempDeclaration(name: Identifier): void {
+      def recordTempDeclaration(name: Identifier): Unit {
         if (!tempVariables) {
           tempVariables = []
         }
@@ -803,7 +803,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         * @param tokenKind the kind of the token to search and emit
         * @param startPos the position in the source to start searching for the token
         * @param emitFn if given will be invoked to emit the text instead of actual token emit */
-      def emitToken(tokenKind: SyntaxKind, startPos: Int, emitFn?: () => void) {
+      def emitToken(tokenKind: SyntaxKind, startPos: Int, emitFn?: () => Unit) {
         val tokenStartPos = skipTrivia(currentText, startPos)
         emitPos(tokenStartPos)
 
@@ -881,7 +881,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitList<TNode extends Node>(nodes: TNode[], start: Int, count: Int, multiLine: Boolean, trailingComma: Boolean, leadingComma?: Boolean, noTrailingNewLine?: Boolean, emitNode?: (node: TNode) => void): Int {
+      def emitList<TNode extends Node>(nodes: TNode[], start: Int, count: Int, multiLine: Boolean, trailingComma: Boolean, leadingComma?: Boolean, noTrailingNewLine?: Boolean, emitNode?: (node: TNode) => Unit): Int {
         if (!emitNode) {
           emitNode = emit
         }
@@ -928,7 +928,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         emitLinesStartingAt(nodes, /*startIndex*/ 0)
       }
 
-      def emitLinesStartingAt(nodes: Node[], startIndex: Int): void {
+      def emitLinesStartingAt(nodes: Node[], startIndex: Int): Unit {
         for (var i = startIndex; i < nodes.length; i++) {
           writeLine()
           emit(nodes[i])
@@ -1023,7 +1023,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         write(`"${text}"`)
       }
 
-      def emitDownlevelTaggedTemplateArray(node: TaggedTemplateExpression, literalEmitter: (literal: LiteralExpression | TemplateLiteralFragment) => void) {
+      def emitDownlevelTaggedTemplateArray(node: TaggedTemplateExpression, literalEmitter: (literal: LiteralExpression | TemplateLiteralFragment) => Unit) {
         write("[")
         if (node.template.kind == SyntaxKind.NoSubstitutionTemplateLiteral) {
           literalEmitter(<LiteralExpression>node.template)
@@ -1067,7 +1067,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         write("))")
       }
 
-      def emitTemplateExpression(node: TemplateExpression): void {
+      def emitTemplateExpression(node: TemplateExpression): Unit {
         // In ES6 mode and above, we can simply emit each portion of a template in order, but in
         // ES3 & ES5 we must convert the template expression into a series of String concatenations.
         if (languageVersion >= ScriptTarget.ES6) {
@@ -1628,7 +1628,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
             val declaration = resolver.getReferencedValueDeclaration(node)
             if (declaration) {
               val classAlias = decoratedClassAliases[getNodeId(declaration)]
-              if (classAlias != undefined) {
+              if (classAlias != ()) {
                 write(classAlias)
                 return
               }
@@ -1864,7 +1864,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitObjectLiteralBody(node: ObjectLiteralExpression, numElements: Int): void {
+      def emitObjectLiteralBody(node: ObjectLiteralExpression, numElements: Int): Unit {
         if (numElements == 0) {
           write("{}")
           return
@@ -2023,7 +2023,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitObjectLiteral(node: ObjectLiteralExpression): void {
+      def emitObjectLiteral(node: ObjectLiteralExpression): Unit {
         val properties = node.properties
 
         if (languageVersion < ScriptTarget.ES6) {
@@ -2126,7 +2126,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         // This is to ensure that we emit comment in the following case:
         //    For example:
         //      obj = {
-        //        id: /*comment1*/ ()=>void
+        //        id: /*comment1*/ ()=>Unit
         //      }
         // "comment1" is not considered to be leading comment for node.initializer
         // but rather a trailing comment on the previous node.
@@ -2167,7 +2167,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
 
       def tryEmitConstantValue(node: PropertyAccessExpression | ElementAccessExpression): Boolean {
         val constantValue = tryGetConstEnumValue(node)
-        if (constantValue != undefined) {
+        if (constantValue != ()) {
           write(constantValue.toString())
           if (!compilerOptions.removeComments) {
             val propertyName: String = node.kind == SyntaxKind.PropertyAccessExpression ? declarationNameToString((<PropertyAccessExpression>node).name) : getTextOfNode((<ElementAccessExpression>node).argumentExpression)
@@ -2180,12 +2180,12 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
 
       def tryGetConstEnumValue(node: Node): Int {
         if (compilerOptions.isolatedModules) {
-          return undefined
+          return ()
         }
 
         return node.kind == SyntaxKind.PropertyAccessExpression || node.kind == SyntaxKind.ElementAccessExpression
           ? resolver.getConstantValue(<PropertyAccessExpression | ElementAccessExpression>node)
-          : undefined
+          : ()
       }
 
       // Returns 'true' if the code was actually indented, false otherwise.
@@ -2239,7 +2239,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           else {
             // check if constant enum value is integer
             val constantValue = tryGetConstEnumValue(node.expression)
-            // isFinite handles cases when constantValue is undefined
+            // isFinite handles cases when constantValue is ()
             shouldEmitSpace = isFinite(constantValue) && Math.floor(constantValue) == constantValue
           }
         }
@@ -2289,7 +2289,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
             if (useFallback) {
               write("typeof ")
               emitExpressionIdentifier(<Identifier>node)
-              write(" != 'undefined' && ")
+              write(" != '()' && ")
             }
 
             emitExpressionIdentifier(<Identifier>node)
@@ -2385,7 +2385,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
         else {
           // Calls of form foo(...)
-          write("void 0")
+          write("Unit 0")
         }
         write(", ")
         emitListWithSpread(node.arguments, /*needsUniqueCopy*/ false, /*multiLine*/ false, /*trailingComma*/ false, /*useConcat*/ true)
@@ -2460,10 +2460,10 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         //   is compiled into the following ES5:
         //
         //     var args = [1, 2, 3, 4, 5]
-        //     new (Array.bind.apply(Array, [void 0].concat(args)))
+        //     new (Array.bind.apply(Array, [Unit 0].concat(args)))
         //
         // The 'thisArg' to 'bind' is ignored when invoking the result of 'bind' with 'new',
-        // Thus, we set it to undefined ('void 0').
+        // Thus, we set it to () ('Unit 0').
         if (languageVersion == ScriptTarget.ES5 &&
           node.arguments &&
           hasSpreadElement(node.arguments)) {
@@ -2472,7 +2472,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           val target = emitCallTarget(node.expression)
           write(".bind.apply(")
           emit(target)
-          write(", [void 0].concat(")
+          write(", [Unit 0].concat(")
           emitListWithSpread(node.arguments, /*needsUniqueCopy*/ false, /*multiLine*/ false, /*trailingComma*/ false, /*useConcat*/ false)
           write(")))")
           write("()")
@@ -2487,7 +2487,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitTaggedTemplateExpression(node: TaggedTemplateExpression): void {
+      def emitTaggedTemplateExpression(node: TaggedTemplateExpression): Unit {
         if (languageVersion >= ScriptTarget.ES6) {
           emit(node.tag)
           write(" ")
@@ -2769,7 +2769,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
             //   emitted as
             //    3
             //      + 2
-            val indentedBeforeOperator = indentIfOnDifferentLines(node, node.left, node.operatorToken, node.operatorToken.kind != SyntaxKind.CommaToken ? " " : undefined)
+            val indentedBeforeOperator = indentIfOnDifferentLines(node, node.left, node.operatorToken, node.operatorToken.kind != SyntaxKind.CommaToken ? " " : ())
             write(tokenToString(node.operatorToken.kind))
             val indentedAfterOperator = indentIfOnDifferentLines(node, node.operatorToken, node.right, " ")
             emit(node.right)
@@ -2981,7 +2981,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         return started
       }
 
-      interface ConvertedLoop {
+      trait ConvertedLoop {
         functionName: String
         paramList: String
         state: ConvertedLoopState
@@ -2992,10 +2992,10 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           (resolver.getNodeCheckFlags(node) & NodeCheckFlags.LoopWithCapturedBlockScopedBinding) != 0
       }
 
-      def emitLoop(node: IterationStatement, loopEmitter: (n: IterationStatement, convertedLoop: ConvertedLoop) => void): void {
+      def emitLoop(node: IterationStatement, loopEmitter: (n: IterationStatement, convertedLoop: ConvertedLoop) => Unit): Unit {
         val shouldConvert = shouldConvertLoopBody(node)
         if (!shouldConvert) {
-          loopEmitter(node, /* convertedLoop*/ undefined)
+          loopEmitter(node, /* convertedLoop*/ ())
         }
         else {
           val loop = convertLoopBody(node)
@@ -3042,7 +3042,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         convertedLoopState = { loopOutParameters }
 
         if (convertedOuterLoopState) {
-          // convertedOuterLoopState != undefined means that this converted loop is nested in another converted loop.
+          // convertedOuterLoopState != () means that this converted loop is nested in another converted loop.
           // if outer converted loop has already accumulated some state - pass it through
           if (convertedOuterLoopState.argumentsName) {
             // outer loop has already used 'arguments' so we've already have some name to alias it
@@ -3124,7 +3124,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
 
         if (convertedLoopState.hoistedLocalVariables) {
-          // if hoistedLocalVariables != undefined this means that we've possibly collected some variable declarations to be hoisted later
+          // if hoistedLocalVariables != () this means that we've possibly collected some variable declarations to be hoisted later
           if (convertedOuterLoopState) {
             // pass them to outer converted loop
             convertedOuterLoopState.hoistedLocalVariables = convertedLoopState.hoistedLocalVariables
@@ -3158,7 +3158,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
 
         return { functionName, paramList, state: currentLoopState }
 
-        def processVariableDeclaration(name: Identifier | BindingPattern): void {
+        def processVariableDeclaration(name: Identifier | BindingPattern): Unit {
           if (name.kind == SyntaxKind.Identifier) {
             val nameText = isNameOfNestedBlockScopedRedeclarationOrCapturedBinding(<Identifier>name)
               ? getGeneratedNameForNode(name)
@@ -3178,7 +3178,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitNormalLoopBody(node: IterationStatement, emitAsEmbeddedStatement: Boolean): void {
+      def emitNormalLoopBody(node: IterationStatement, emitAsEmbeddedStatement: Boolean): Unit {
         var saveAllowedNonLabeledJumps: Jump
         if (convertedLoopState) {
           // we get here if we are trying to emit normal loop loop inside converted loop
@@ -3225,7 +3225,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitConvertedLoopCall(loop: ConvertedLoop, emitAsBlock: Boolean): void {
+      def emitConvertedLoopCall(loop: ConvertedLoop, emitAsBlock: Boolean): Unit {
         if (emitAsBlock) {
           write(" {")
           writeLine()
@@ -3307,7 +3307,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           write("}")
         }
 
-        def emitDispatchEntriesForLabeledJumps(table: Map<String>, isBreak: Boolean, loopResultVariable: String, outerLoop: ConvertedLoopState): void {
+        def emitDispatchEntriesForLabeledJumps(table: Map<String>, isBreak: Boolean, loopResultVariable: String, outerLoop: ConvertedLoopState): Unit {
           if (!table) {
             return
           }
@@ -3533,7 +3533,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           if (node.initializer.kind == SyntaxKind.ArrayLiteralExpression || node.initializer.kind == SyntaxKind.ObjectLiteralExpression) {
             // This is a destructuring pattern, so call emitDestructuring instead of emit. Calling emit will not work, because it will cause
             // the BinaryExpression to be passed in instead of the expression statement, which will cause emitDestructuring to crash.
-            emitDestructuring(assignmentExpression, /*isAssignmentExpressionStatement*/ true, /*value*/ undefined)
+            emitDestructuring(assignmentExpression, /*isAssignmentExpressionStatement*/ true, /*value*/ ())
           }
           else {
             emitNodeWithCommentsAndWithoutSourcemap(assignmentExpression)
@@ -3610,7 +3610,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
             emit(node.expression)
           }
           else {
-            write("void 0")
+            write("Unit 0")
           }
           write(" };")
           return
@@ -3648,7 +3648,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitCaseBlock(node: CaseBlock, startPos: Int): void {
+      def emitCaseBlock(node: CaseBlock, startPos: Int): Unit {
         emitToken(SyntaxKind.OpenBraceToken, startPos)
         increaseIndent()
         emitLines(node.clauses)
@@ -3726,7 +3726,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         write(";")
       }
 
-      def emitLabelAndColon(node: LabeledStatement): void {
+      def emitLabelAndColon(node: LabeledStatement): Unit {
         emit(node.label)
         write(": ")
       }
@@ -3746,7 +3746,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         emit(node.statement)
 
         if (convertedLoopState) {
-          convertedLoopState.labels[node.label.text] = undefined
+          convertedLoopState.labels[node.label.text] = ()
         }
       }
 
@@ -3867,7 +3867,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitExportSpecifierInSystemModule(specifier: ExportSpecifier): void {
+      def emitExportSpecifierInSystemModule(specifier: ExportSpecifier): Unit {
         Debug.assert(modulekind == ModuleKind.System)
 
         if (!resolver.getReferencedValueDeclaration(specifier.propertyName || specifier.name) && !resolver.isValueAliasDeclaration(specifier) ) {
@@ -4004,7 +4004,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           // we need to generate a temporary variable
           // If the temporary variable needs to be emitted use the source Map node for assignment of that statement
           value = ensureIdentifier(value, /*reuseIdentifierExpressions*/ true, sourceMapNode)
-          // Return the expression 'value == void 0 ? defaultValue : value'
+          // Return the expression 'value == Unit 0 ? defaultValue : value'
           val equals = <BinaryExpression>createSynthesizedNode(SyntaxKind.BinaryExpression)
           equals.left = value
           equals.operatorToken = createSynthesizedNode(SyntaxKind.EqualsEqualsEqualsToken)
@@ -4162,7 +4162,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
             value = value ? createDefaultValueCheck(value, target.initializer, target) : target.initializer
           }
           else if (!value) {
-            // Use 'void 0' in absence of value and initializer
+            // Use 'Unit 0' in absence of value and initializer
             value = createVoidZero()
           }
           if (isBindingPattern(target.name)) {
@@ -4226,7 +4226,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
 
             // nested var bindings might need to be initialized explicitly to preserve ES6 semantic
             // { var x = 1; }
-            // { var x; } // x here should be undefined. not 1
+            // { var x; } // x here should be (). not 1
             // NOTES:
             // Top level bindings never collide with anything and thus don't require explicit initialization.
             // As for nested var bindings there are two cases:
@@ -4244,7 +4244,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
             //   as if it was declared anew.
             //   * Why non-captured binding - because if loop contains block scoped binding captured in some def then loop body will be rewritten
             //   to have a fresh scope on every iteration so everything will just work.
-            //   * Why loop initializer is excluded - since we've introduced a fresh name it already will be undefined.
+            //   * Why loop initializer is excluded - since we've introduced a fresh name it already will be ().
             val isCapturedInFunction = flags & NodeCheckFlags.CapturedBlockScopedBinding
             val isDeclaredInLoop = flags & NodeCheckFlags.BlockScopedBindingInLoop
 
@@ -4417,7 +4417,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
               emitStart(parameter)
               write("if (")
               emitNodeWithoutSourceMap(paramName)
-              write(" == void 0)")
+              write(" == Unit 0)")
               emitEnd(parameter)
               write(" { ")
               emitStart(parameter)
@@ -4528,7 +4528,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           //
           //      var obj = {
           //        id:
-          //          /*comment*/ () => void
+          //          /*comment*/ () => Unit
           //      }
           //
           // 3. If the def is an argument in call expression, emitting of comments will be
@@ -4572,7 +4572,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitCaptureThisForNodeIfNecessary(node: Node): void {
+      def emitCaptureThisForNodeIfNecessary(node: Node): Unit {
         if (resolver.getNodeCheckFlags(node) & NodeCheckFlags.CaptureThis) {
           writeLine()
           emitStart(node)
@@ -4620,7 +4620,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         //  var a = async (b) => { await b; }
         //
         //  // output
-        //  var a = (b) => __awaiter(this, void 0, void 0, def* () {
+        //  var a = (b) => __awaiter(this, Unit 0, Unit 0, def* () {
         //    yield b
         //  })
         //
@@ -4630,7 +4630,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         //  var a = async (b) => { await arguments[0]; }
         //
         //  // output
-        //  var a = (b) => __awaiter(this, arguments, void 0, def* (arguments) {
+        //  var a = (b) => __awaiter(this, arguments, Unit 0, def* (arguments) {
         //    yield arguments[0]
         //  })
         //
@@ -4644,7 +4644,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         //
         //  // output
         //  var a = def (b) {
-        //    return __awaiter(this, void 0, void 0, def* () {
+        //    return __awaiter(this, Unit 0, Unit 0, def* () {
         //      yield b
         //    })
         //  }
@@ -4659,7 +4659,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         //
         //  // output
         //  var a = def (b) {
-        //    return __awaiter(this, arguments, void 0, def* (_arguments) {
+        //    return __awaiter(this, arguments, Unit 0, def* (_arguments) {
         //      yield _arguments[0]
         //    })
         //  }
@@ -4708,11 +4708,11 @@ val _super = (def (geti, seti) {
           write(", arguments, ")
         }
         else {
-          write(", void 0, ")
+          write(", Unit 0, ")
         }
 
         if (languageVersion >= ScriptTarget.ES6 || !promiseConstructor) {
-          write("void 0")
+          write("Unit 0")
         }
         else {
           emitEntityNameAsExpression(promiseConstructor, /*useFallback*/ false)
@@ -4756,10 +4756,10 @@ val _super = (def (geti, seti) {
         val saveTempVariables = tempVariables
         val saveTempParameters = tempParameters
 
-        convertedLoopState = undefined
+        convertedLoopState = ()
         tempFlags = 0
-        tempVariables = undefined
-        tempParameters = undefined
+        tempVariables = ()
+        tempParameters = ()
 
         // When targeting ES6, emit arrow def natively in ES6
         if (shouldEmitAsArrowFunction(node)) {
@@ -4782,7 +4782,7 @@ val _super = (def (geti, seti) {
           emitExportMemberAssignment(node)
         }
 
-        Debug.assert(convertedLoopState == undefined)
+        Debug.assert(convertedLoopState == ())
         convertedLoopState = saveConvertedLoopState
 
         tempFlags = saveTempFlags
@@ -4791,7 +4791,7 @@ val _super = (def (geti, seti) {
       }
 
       // Returns true if any preamble code was emitted.
-      def emitFunctionBodyPreamble(node: FunctionLikeDeclaration): void {
+      def emitFunctionBodyPreamble(node: FunctionLikeDeclaration): Unit {
         emitCaptureThisForNodeIfNecessary(node)
         emitDefaultValueAssignments(node)
         emitRestParameter(node)
@@ -4904,17 +4904,17 @@ val _super = (def (geti, seti) {
        */
       def getSuperCallAtGivenIndex(ctor: ConstructorDeclaration, index: Int): ExpressionStatement {
         if (!ctor.body) {
-          return undefined
+          return ()
         }
         val statements = ctor.body.statements
 
         if (!statements || index >= statements.length) {
-          return undefined
+          return ()
         }
 
         val statement = statements[index]
         if (statement.kind == SyntaxKind.ExpressionStatement) {
-          return isSuperCallExpression((<ExpressionStatement>statement).expression) ? <ExpressionStatement>statement : undefined
+          return isSuperCallExpression((<ExpressionStatement>statement).expression) ? <ExpressionStatement>statement : ()
         }
       }
 
@@ -5112,14 +5112,14 @@ val _super = (def (geti, seti) {
         val saveTempVariables = tempVariables
         val saveTempParameters = tempParameters
 
-        convertedLoopState = undefined
+        convertedLoopState = ()
         tempFlags = 0
-        tempVariables = undefined
-        tempParameters = undefined
+        tempVariables = ()
+        tempParameters = ()
 
         emitConstructorWorker(node, baseTypeElement)
 
-        Debug.assert(convertedLoopState == undefined)
+        Debug.assert(convertedLoopState == ())
         convertedLoopState = saveConvertedLoopState
 
         tempFlags = saveTempFlags
@@ -5361,7 +5361,7 @@ val _super = (def (geti, seti) {
 
             write("var ")
             emitDeclarationName(node)
-            if (decoratedClassAlias != undefined) {
+            if (decoratedClassAlias != ()) {
               write(` = ${decoratedClassAlias}`)
             }
 
@@ -5424,7 +5424,7 @@ val _super = (def (geti, seti) {
         emitToken(SyntaxKind.CloseBraceToken, node.members.end)
 
         if (thisNodeIsDecorated) {
-          decoratedClassAliases[getNodeId(node)] = undefined
+          decoratedClassAliases[getNodeId(node)] = ()
           write(";")
         }
 
@@ -5504,11 +5504,11 @@ val _super = (def (geti, seti) {
         val saveComputedPropertyNamesToGeneratedNames = computedPropertyNamesToGeneratedNames
         val saveConvertedLoopState = convertedLoopState
 
-        convertedLoopState = undefined
+        convertedLoopState = ()
         tempFlags = 0
-        tempVariables = undefined
-        tempParameters = undefined
-        computedPropertyNamesToGeneratedNames = undefined
+        tempVariables = ()
+        tempParameters = ()
+        computedPropertyNamesToGeneratedNames = ()
         increaseIndent()
         if (baseTypeNode) {
           writeLine()
@@ -5523,7 +5523,7 @@ val _super = (def (geti, seti) {
         emitMemberFunctionsForES5AndLower(node)
         emitPropertyDeclarations(node, getInitializedProperties(node, /*isStatic*/ true))
         writeLine()
-        emitDecoratorsOfClass(node, /*decoratedClassAlias*/ undefined)
+        emitDecoratorsOfClass(node, /*decoratedClassAlias*/ ())
         writeLine()
         emitToken(SyntaxKind.CloseBraceToken, node.members.end, () => {
           write("return ")
@@ -5532,7 +5532,7 @@ val _super = (def (geti, seti) {
         write(";")
         emitTempDeclarations(/*newLine*/ true)
 
-        Debug.assert(convertedLoopState == undefined)
+        Debug.assert(convertedLoopState == ())
         convertedLoopState = saveConvertedLoopState
 
         tempFlags = saveTempFlags
@@ -5595,7 +5595,7 @@ val _super = (def (geti, seti) {
         writeLine()
         emitStart(node.decorators || firstParameterDecorator)
         emitDeclarationName(node)
-        if (decoratedClassAlias != undefined) {
+        if (decoratedClassAlias != ()) {
           write(` = ${decoratedClassAlias}`)
         }
 
@@ -5681,14 +5681,14 @@ val _super = (def (geti, seti) {
           //     __param(0, dec2),
           //     __metadata("design:type", Function),
           //     __metadata("design:paramtypes", [Object]),
-          //     __metadata("design:returntype", void 0)
-          //   ], C.prototype, "method", undefined)
+          //     __metadata("design:returntype", Unit 0)
+          //   ], C.prototype, "method", ())
           //
           // The emit for an accessor is:
           //
           //   __decorate([
           //     dec
-          //   ], C.prototype, "accessor", undefined)
+          //   ], C.prototype, "accessor", ())
           //
           // The emit for a property is:
           //
@@ -5726,9 +5726,9 @@ val _super = (def (geti, seti) {
               write(", null")
             }
             else {
-              // We emit `void 0` here to indicate to `__decorate` that it can invoke `Object.defineProperty` directly, but that it
+              // We emit `Unit 0` here to indicate to `__decorate` that it can invoke `Object.defineProperty` directly, but that it
               // should not invoke `Object.getOwnPropertyDescriptor`.
-              write(", void 0")
+              write(", Unit 0")
             }
           }
 
@@ -5807,7 +5807,7 @@ val _super = (def (geti, seti) {
         // * The serialized type of a PropertyDeclaration is the serialized type of its type annotation.
         // * The serialized type of an AccessorDeclaration is the serialized type of the return type annotation of its getter or parameter type annotation of its setter.
         // * The serialized type of any other FunctionLikeDeclaration is "Function".
-        // * The serialized type of any other node is "void 0".
+        // * The serialized type of any other node is "Unit 0".
         //
         // For rules on serializing type annotations, see `serializeTypeNode`.
         switch (node.kind) {
@@ -5838,14 +5838,14 @@ val _super = (def (geti, seti) {
           return
         }
 
-        write("void 0")
+        write("Unit 0")
       }
 
       def emitSerializedTypeNode(node: TypeNode) {
         if (node) {
           switch (node.kind) {
             case SyntaxKind.VoidKeyword:
-              write("void 0")
+              write("Unit 0")
               return
 
             case SyntaxKind.ParenthesizedType:
@@ -5927,7 +5927,7 @@ val _super = (def (geti, seti) {
             break
 
           case TypeReferenceSerializationKind.VoidType:
-            write("void 0")
+            write("Unit 0")
             break
 
           case TypeReferenceSerializationKind.BooleanType:
@@ -6000,7 +6000,7 @@ val _super = (def (geti, seti) {
                     parameterType = (<TypeReferenceNode>parameterType).typeArguments[0]
                   }
                   else {
-                    parameterType = undefined
+                    parameterType = ()
                   }
 
                   emitSerializedTypeNode(parameterType)
@@ -6021,7 +6021,7 @@ val _super = (def (geti, seti) {
           return
         }
 
-        write("void 0")
+        write("Unit 0")
       }
 
 
@@ -6157,7 +6157,7 @@ val _super = (def (geti, seti) {
 
       def writeEnumMemberDeclarationValue(member: EnumMember) {
         val value = resolver.getConstantValue(member)
-        if (value != undefined) {
+        if (value != ()) {
           write(value.toString())
           return
         }
@@ -6165,7 +6165,7 @@ val _super = (def (geti, seti) {
           emit(member.initializer)
         }
         else {
-          write("undefined")
+          write("()")
         }
       }
 
@@ -6223,13 +6223,13 @@ val _super = (def (geti, seti) {
           val saveConvertedLoopState = convertedLoopState
           val saveTempFlags = tempFlags
           val saveTempVariables = tempVariables
-          convertedLoopState = undefined
+          convertedLoopState = ()
           tempFlags = 0
-          tempVariables = undefined
+          tempVariables = ()
 
           emit(node.body)
 
-          Debug.assert(convertedLoopState == undefined)
+          Debug.assert(convertedLoopState == ())
           convertedLoopState = saveConvertedLoopState
 
           tempFlags = saveTempFlags
@@ -6278,7 +6278,7 @@ val _super = (def (geti, seti) {
         if (renamedDependencies && hasProperty(renamedDependencies, moduleName.text)) {
           return `"${renamedDependencies[moduleName.text]}"`
         }
-        return undefined
+        return ()
       }
 
       def emitRequire(moduleName: Expression) {
@@ -6618,7 +6618,7 @@ val _super = (def (geti, seti) {
       def collectExternalModuleInfo(sourceFile: SourceFile) {
         externalImports = []
         exportSpecifiers = {}
-        exportEquals = undefined
+        exportEquals = ()
         hasExportStarsToExportValues = false
         for (val node of sourceFile.statements) {
           switch (node.kind) {
@@ -6708,10 +6708,10 @@ val _super = (def (geti, seti) {
           return tryRenameExternalModule(<LiteralExpression>moduleName) || getLiteralText(<LiteralExpression>moduleName)
         }
 
-        return undefined
+        return ()
       }
 
-      def emitVariableDeclarationsForImports(): void {
+      def emitVariableDeclarationsForImports(): Unit {
         if (externalImports.length == 0) {
           return
         }
@@ -6751,7 +6751,7 @@ val _super = (def (geti, seti) {
         // this set is used to filter names brought by star exports.
         if (!hasExportStarsToExportValues) {
           // local names set is needed only in presence of star exports
-          return undefined
+          return ()
         }
 
         // local names set should only be added if we have anything exported
@@ -6768,7 +6768,7 @@ val _super = (def (geti, seti) {
 
           if (!hasExportDeclarationWithExportClause) {
             // we still need to emit exportStar helper
-            return emitExportStarFunction(/*localNames*/ undefined)
+            return emitExportStarFunction(/*localNames*/ ())
           }
         }
 
@@ -6849,7 +6849,7 @@ val _super = (def (geti, seti) {
           return exportStarFunction
         }
 
-        def writeExportedName(node: Identifier | Declaration): void {
+        def writeExportedName(node: Identifier | Declaration): Unit {
           // do not record default exports
           // they are local to module and never overwritten (explicitly skipped) by star export
           if (node.kind != SyntaxKind.Identifier && node.flags & NodeFlags.Default) {
@@ -6879,7 +6879,7 @@ val _super = (def (geti, seti) {
       def processTopLevelVariableAndFunctionDeclarations(node: SourceFile): (Identifier | Declaration)[] {
         // per ES6 spec:
         // 15.2.1.16.4 ModuleDeclarationInstantiation() Concrete Method
-        // - var declarations are initialized to undefined - 14.a.ii
+        // - var declarations are initialized to () - 14.a.ii
         // - def/generator declarations are instantiated - 16.a.iv
         // this means that after module is instantiated but before its evaluation
         // exported functions are already accessible at import sites
@@ -6951,7 +6951,7 @@ val _super = (def (geti, seti) {
 
         return exportedDeclarations
 
-        def visit(node: Node): void {
+        def visit(node: Node): Unit {
           if (node.flags & NodeFlags.Ambient) {
             return
           }
@@ -7051,7 +7051,7 @@ val _super = (def (geti, seti) {
         return modulekind == ModuleKind.System && isCurrentFileExternalModule
       }
 
-      def emitSystemModuleBody(node: SourceFile, dependencyGroups: DependencyGroup[], startIndex: Int): void {
+      def emitSystemModuleBody(node: SourceFile, dependencyGroups: DependencyGroup[], startIndex: Int): Unit {
         // shape of the body in system modules:
         // def (exports) {
         //   <list of local aliases for imports>
@@ -7235,14 +7235,14 @@ val _super = (def (geti, seti) {
         write("}"); // execute
       }
 
-      def writeModuleName(node: SourceFile, emitRelativePathAsModuleName?: Boolean): void {
+      def writeModuleName(node: SourceFile, emitRelativePathAsModuleName?: Boolean): Unit {
         var moduleName = node.moduleName
         if (moduleName || (emitRelativePathAsModuleName && (moduleName = getResolvedExternalModuleName(host, node)))) {
           write(`"${moduleName}", `)
         }
       }
 
-      def emitSystemModule(node: SourceFile,  emitRelativePathAsModuleName?: Boolean): void {
+      def emitSystemModule(node: SourceFile,  emitRelativePathAsModuleName?: Boolean): Unit {
         collectExternalModuleInfo(node)
         // System modules has the following shape
         // System.register(['dep-1', ... 'dep-n'], def(exports) {/* module body def */})
@@ -7266,7 +7266,7 @@ val _super = (def (geti, seti) {
 
         for (var i = 0; i < externalImports.length; i++) {
           val text = getExternalModuleNameText(externalImports[i], emitRelativePathAsModuleName)
-          if (text == undefined) {
+          if (text == ()) {
             continue
           }
 
@@ -7306,7 +7306,7 @@ val _super = (def (geti, seti) {
         write("});")
       }
 
-      interface AMDDependencyNames {
+      trait AMDDependencyNames {
         aliasedModuleNames: String[]
         unaliasedModuleNames: String[]
         importAliasNames: String[]
@@ -7431,7 +7431,7 @@ val _super = (def (geti, seti) {
         // Module is detected first to support Browserify users that load into a browser with an AMD loader
         writeLines(`(def (factory) {
   if (typeof module == 'object' && typeof module.exports == 'object') {
-    var v = factory(require, exports); if (v != undefined) module.exports = v
+    var v = factory(require, exports); if (v != ()) module.exports = v
   }
   else if (typeof define == 'def' && define.amd) {
     define(`)
@@ -7453,9 +7453,9 @@ val _super = (def (geti, seti) {
       }
 
       def emitES6Module(node: SourceFile) {
-        externalImports = undefined
-        exportSpecifiers = undefined
-        exportEquals = undefined
+        externalImports = ()
+        exportSpecifiers = ()
+        exportEquals = ()
         hasExportStarsToExportValues = false
         val startIndex = emitDirectivePrologues(node.statements, /*startWithNewLine*/ false)
         emitEmitHelpers(node)
@@ -7491,7 +7491,7 @@ val _super = (def (geti, seti) {
       }
 
       def trimReactWhitespaceAndApplyEntities(node: JsxText): String {
-        var result: String = undefined
+        var result: String = ()
         val text = getTextOfNode(node, /*includeTrivia*/ true)
         var firstNonWhitespace = 0
         var lastNonWhitespace = -1
@@ -7524,7 +7524,7 @@ val _super = (def (geti, seti) {
         if (result) {
           // Replace entities like &nbsp
           result = result.replace(/&(\w+);/g, def(s: any, m: String) {
-            if (entities[m] != undefined) {
+            if (entities[m] != ()) {
               val ch = String.fromCharCode(entities[m])
               // &quot; needs to be escaped
               return ch == "\"" ? "\\\"" : ch
@@ -7556,8 +7556,8 @@ val _super = (def (geti, seti) {
         switch (compilerOptions.jsx) {
           case JsxEmit.React:
             var text = trimReactWhitespaceAndApplyEntities(node)
-            if (text == undefined || text.length == 0) {
-              return undefined
+            if (text == () || text.length == 0) {
+              return ()
             }
             else {
               return text
@@ -7634,7 +7634,7 @@ val _super = (def (geti, seti) {
         return statements.length
       }
 
-      def writeLines(text: String): void {
+      def writeLines(text: String): Unit {
         val lines = text.split(/\r\n|\r|\n/g)
         for (var i = 0; i < lines.length; i++) {
           val line = lines[i]
@@ -7645,7 +7645,7 @@ val _super = (def (geti, seti) {
         }
       }
 
-      def emitEmitHelpers(node: SourceFile): void {
+      def emitEmitHelpers(node: SourceFile): Unit {
         // Only emit helpers if the user did not say otherwise.
         if (!compilerOptions.noEmitHelpers) {
           // Only Emit __extends def when target ES5.
@@ -7693,9 +7693,9 @@ val _super = (def (geti, seti) {
         else {
           // emit prologue directives prior to __extends
           val startIndex = emitDirectivePrologues(node.statements, /*startWithNewLine*/ false)
-          externalImports = undefined
-          exportSpecifiers = undefined
-          exportEquals = undefined
+          externalImports = ()
+          exportSpecifiers = ()
+          exportEquals = ()
           hasExportStarsToExportValues = false
           emitEmitHelpers(node)
           emitCaptureThisForNodeIfNecessary(node)
@@ -7706,15 +7706,15 @@ val _super = (def (geti, seti) {
         emitLeadingComments(node.endOfFileToken)
       }
 
-      def emit(node: Node): void {
+      def emit(node: Node): Unit {
         emitNodeConsideringCommentsOption(node, emitNodeWithSourceMap)
       }
 
-      def emitNodeWithCommentsAndWithoutSourcemap(node: Node): void {
+      def emitNodeWithCommentsAndWithoutSourcemap(node: Node): Unit {
         emitNodeConsideringCommentsOption(node, emitNodeWithoutSourceMap)
       }
 
-      def emitNodeConsideringCommentsOption(node: Node, emitNodeConsideringSourcemap: (node: Node) => void): void {
+      def emitNodeConsideringCommentsOption(node: Node, emitNodeConsideringSourcemap: (node: Node) => Unit): Unit {
         if (node) {
           if (node.flags & NodeFlags.Ambient) {
             return emitCommentsOnNotEmittedNode(node)
@@ -7738,7 +7738,7 @@ val _super = (def (geti, seti) {
         }
       }
 
-      def emitNodeWithSourceMap(node: Node): void {
+      def emitNodeWithSourceMap(node: Node): Unit {
         if (node) {
           emitStart(node)
           emitNodeWithoutSourceMap(node)
@@ -7746,7 +7746,7 @@ val _super = (def (geti, seti) {
         }
       }
 
-      def emitNodeWithoutSourceMap(node: Node): void {
+      def emitNodeWithoutSourceMap(node: Node): Unit {
         if (node) {
           emitJavaScriptWorker(node)
         }
@@ -7760,7 +7760,7 @@ val _super = (def (geti, seti) {
         setSourceFile = writer.setSourceFile
       }
 
-      def withTemporaryNoSourceMap(callback: () => void) {
+      def withTemporaryNoSourceMap(callback: () => Unit) {
         val prevSourceMap = sourceMap
         setSourceMapWriterEmit(getNullSourceMapWriter())
         callback()
@@ -7990,7 +7990,7 @@ val _super = (def (geti, seti) {
       }
 
       def hasDetachedComments(pos: Int) {
-        return detachedCommentsInfo != undefined && lastOrUndefined(detachedCommentsInfo).nodePos == pos
+        return detachedCommentsInfo != () && lastOrUndefined(detachedCommentsInfo).nodePos == pos
       }
 
       def getLeadingCommentsWithoutDetachedComments() {
@@ -8001,7 +8001,7 @@ val _super = (def (geti, seti) {
           detachedCommentsInfo.pop()
         }
         else {
-          detachedCommentsInfo = undefined
+          detachedCommentsInfo = ()
         }
 
         return leadingComments
@@ -8078,7 +8078,7 @@ val _super = (def (geti, seti) {
           //    /// <reference-path ...>
           //    declare var x
           //    /// <reference-path ...>
-          //    interface F {}
+          //    trait F {}
           //  The first /// will NOT be removed while the second one will be removed even though both node will not be emitted
           if (node.pos == 0) {
             leadingComments = filter(getLeadingCommentsToEmit(node), isTripleSlashComment)

@@ -1,7 +1,7 @@
 package be.doeraene.tsc
 
 object Types {
-  interface Map<T> {
+  trait Map<T> {
     [index: String]: T
   }
 
@@ -9,17 +9,17 @@ object Types {
   // arbitrary file name can be converted to Path via toPath def
   type Path = String & { __pathBrand: any }
 
-  interface FileMap<T> {
+  trait FileMap<T> {
     get(fileName: Path): T
-    set(fileName: Path, value: T): void
+    set(fileName: Path, value: T): Unit
     contains(fileName: Path): Boolean
-    remove(fileName: Path): void
+    remove(fileName: Path): Unit
 
-    forEachValue(f: (key: Path, v: T) => void): void
-    clear(): void
+    forEachValue(f: (key: Path, v: T) => Unit): Unit
+    clear(): Unit
   }
 
-  interface TextRange {
+  trait TextRange {
     pos: Int
     end: Int
   }
@@ -420,9 +420,9 @@ object Types {
 
   val enum JsxFlags {
     None = 0,
-    /** An element from a named property of the JSX.IntrinsicElements interface */
+    /** An element from a named property of the JSX.IntrinsicElements trait */
     IntrinsicNamedElement = 1 << 0,
-    /** An element inferred from the String index signature of the JSX.IntrinsicElements interface */
+    /** An element inferred from the String index signature of the JSX.IntrinsicElements trait */
     IntrinsicIndexedElement = 1 << 1,
 
     IntrinsicElement = IntrinsicNamedElement | IntrinsicIndexedElement,
@@ -436,7 +436,7 @@ object Types {
     FailedAndReported = 3
   }
 
-  interface Node extends TextRange {
+  trait Node extends TextRange {
     kind: SyntaxKind
     flags: NodeFlags
     decorators?: NodeArray<Decorator>;        // Array of decorators (in document order)
@@ -450,11 +450,11 @@ object Types {
     /* @internal */ localSymbol?: Symbol;       // Local symbol declared by node (initialized by binding only for exported nodes)
   }
 
-  interface NodeArray<T> extends Array<T>, TextRange {
+  trait NodeArray<T> extends Array<T>, TextRange {
     hasTrailingComma?: Boolean
   }
 
-  interface ModifiersArray extends NodeArray<Modifier> {
+  trait ModifiersArray extends NodeArray<Modifier> {
     flags: Int
   }
 
@@ -468,16 +468,16 @@ object Types {
   // @kind(SyntaxKind.PrivateKeyword)
   // @kind(SyntaxKind.ProtectedKeyword)
   // @kind(SyntaxKind.StaticKeyword)
-  interface Modifier extends Node { }
+  trait Modifier extends Node { }
 
   // @kind(SyntaxKind.Identifier)
-  interface Identifier extends PrimaryExpression {
+  trait Identifier extends PrimaryExpression {
     text: String;                  // Text of identifier (with escapes converted to characters)
     originalKeywordKind?: SyntaxKind;        // Original syntaxKind which get set so that we can report an error later
   }
 
   // @kind(SyntaxKind.QualifiedName)
-  interface QualifiedName extends Node {
+  trait QualifiedName extends Node {
     // Must have same layout as PropertyAccess
     left: EntityName
     right: Identifier
@@ -489,27 +489,27 @@ object Types {
 
   type DeclarationName = Identifier | LiteralExpression | ComputedPropertyName | BindingPattern
 
-  interface Declaration extends Node {
+  trait Declaration extends Node {
     _declarationBrand: any
     name?: DeclarationName
   }
 
-  interface DeclarationStatement extends Declaration, Statement {
+  trait DeclarationStatement extends Declaration, Statement {
     name?: Identifier
   }
 
   // @kind(SyntaxKind.ComputedPropertyName)
-  interface ComputedPropertyName extends Node {
+  trait ComputedPropertyName extends Node {
     expression: Expression
   }
 
   // @kind(SyntaxKind.Decorator)
-  interface Decorator extends Node {
+  trait Decorator extends Node {
     expression: LeftHandSideExpression
   }
 
   // @kind(SyntaxKind.TypeParameter)
-  interface TypeParameterDeclaration extends Declaration {
+  trait TypeParameterDeclaration extends Declaration {
     name: Identifier
     constraint?: TypeNode
 
@@ -517,7 +517,7 @@ object Types {
     expression?: Expression
   }
 
-  interface SignatureDeclaration extends Declaration {
+  trait SignatureDeclaration extends Declaration {
     name?: PropertyName
     typeParameters?: NodeArray<TypeParameterDeclaration>
     parameters: NodeArray<ParameterDeclaration>
@@ -525,13 +525,13 @@ object Types {
   }
 
   // @kind(SyntaxKind.CallSignature)
-  interface CallSignatureDeclaration extends SignatureDeclaration, TypeElement { }
+  trait CallSignatureDeclaration extends SignatureDeclaration, TypeElement { }
 
   // @kind(SyntaxKind.ConstructSignature)
-  interface ConstructSignatureDeclaration extends SignatureDeclaration, TypeElement { }
+  trait ConstructSignatureDeclaration extends SignatureDeclaration, TypeElement { }
 
   // @kind(SyntaxKind.VariableDeclaration)
-  interface VariableDeclaration extends Declaration {
+  trait VariableDeclaration extends Declaration {
     parent?: VariableDeclarationList
     name: Identifier | BindingPattern;  // Declared variable name
     type?: TypeNode;          // Optional type annotation
@@ -539,12 +539,12 @@ object Types {
   }
 
   // @kind(SyntaxKind.VariableDeclarationList)
-  interface VariableDeclarationList extends Node {
+  trait VariableDeclarationList extends Node {
     declarations: NodeArray<VariableDeclaration>
   }
 
   // @kind(SyntaxKind.Parameter)
-  interface ParameterDeclaration extends Declaration {
+  trait ParameterDeclaration extends Declaration {
     dotDotDotToken?: Node;        // Present on rest parameter
     name: Identifier | BindingPattern;  // Declared parameter name
     questionToken?: Node;         // Present on optional parameter
@@ -553,7 +553,7 @@ object Types {
   }
 
   // @kind(SyntaxKind.BindingElement)
-  interface BindingElement extends Declaration {
+  trait BindingElement extends Declaration {
     propertyName?: PropertyName;    // Binding property name (in object binding pattern)
     dotDotDotToken?: Node;        // Present on rest binding element
     name: Identifier | BindingPattern;  // Declared binding element name
@@ -561,7 +561,7 @@ object Types {
   }
 
   // @kind(SyntaxKind.PropertySignature)
-  interface PropertySignature extends TypeElement {
+  trait PropertySignature extends TypeElement {
     name: PropertyName;         // Declared property name
     questionToken?: Node;         // Present on optional property
     type?: TypeNode;          // Optional type annotation
@@ -569,20 +569,20 @@ object Types {
   }
 
   // @kind(SyntaxKind.PropertyDeclaration)
-  interface PropertyDeclaration extends ClassElement {
+  trait PropertyDeclaration extends ClassElement {
     questionToken?: Node;         // Present for use with reporting a grammar error
     name: PropertyName
     type?: TypeNode
     initializer?: Expression;       // Optional initializer
   }
 
-  interface ObjectLiteralElement extends Declaration {
+  trait ObjectLiteralElement extends Declaration {
     _objectLiteralBrandBrand: any
     name?: PropertyName
    }
 
   // @kind(SyntaxKind.PropertyAssignment)
-  interface PropertyAssignment extends ObjectLiteralElement {
+  trait PropertyAssignment extends ObjectLiteralElement {
     _propertyAssignmentBrand: any
     name: PropertyName
     questionToken?: Node
@@ -590,7 +590,7 @@ object Types {
   }
 
   // @kind(SyntaxKind.ShorthandPropertyAssignment)
-  interface ShorthandPropertyAssignment extends ObjectLiteralElement {
+  trait ShorthandPropertyAssignment extends ObjectLiteralElement {
     name: Identifier
     questionToken?: Node
     // used when ObjectLiteralExpression is used in ObjectAssignmentPattern
@@ -606,7 +606,7 @@ object Types {
   // SyntaxKind.PropertyAssignment
   // SyntaxKind.ShorthandPropertyAssignment
   // SyntaxKind.EnumMember
-  interface VariableLikeDeclaration extends Declaration {
+  trait VariableLikeDeclaration extends Declaration {
     propertyName?: PropertyName
     dotDotDotToken?: Node
     name: DeclarationName
@@ -615,19 +615,19 @@ object Types {
     initializer?: Expression
   }
 
-  interface PropertyLikeDeclaration extends Declaration {
+  trait PropertyLikeDeclaration extends Declaration {
     name: PropertyName
   }
 
-  interface BindingPattern extends Node {
+  trait BindingPattern extends Node {
     elements: NodeArray<BindingElement>
   }
 
   // @kind(SyntaxKind.ObjectBindingPattern)
-  interface ObjectBindingPattern extends BindingPattern { }
+  trait ObjectBindingPattern extends BindingPattern { }
 
   // @kind(SyntaxKind.ArrayBindingPattern)
-  interface ArrayBindingPattern extends BindingPattern { }
+  trait ArrayBindingPattern extends BindingPattern { }
 
   /**
    * Several node kinds share def-like features such as a signature,
@@ -637,7 +637,7 @@ object Types {
    * - MethodDeclaration
    * - AccessorDeclaration
    */
-  interface FunctionLikeDeclaration extends SignatureDeclaration {
+  trait FunctionLikeDeclaration extends SignatureDeclaration {
     _functionLikeDeclarationBrand: any
 
     asteriskToken?: Node
@@ -646,13 +646,13 @@ object Types {
   }
 
   // @kind(SyntaxKind.FunctionDeclaration)
-  interface FunctionDeclaration extends FunctionLikeDeclaration, DeclarationStatement {
+  trait FunctionDeclaration extends FunctionLikeDeclaration, DeclarationStatement {
     name?: Identifier
     body?: FunctionBody
   }
 
   // @kind(SyntaxKind.MethodSignature)
-  interface MethodSignature extends SignatureDeclaration, TypeElement {
+  trait MethodSignature extends SignatureDeclaration, TypeElement {
     name: PropertyName
   }
 
@@ -666,38 +666,38 @@ object Types {
   // at later stages of the compiler pipeline.  In that case, you can either check the parent kind
   // of the method, or use helpers like isObjectLiteralMethodDeclaration
   // @kind(SyntaxKind.MethodDeclaration)
-  interface MethodDeclaration extends FunctionLikeDeclaration, ClassElement, ObjectLiteralElement {
+  trait MethodDeclaration extends FunctionLikeDeclaration, ClassElement, ObjectLiteralElement {
     name: PropertyName
     body?: FunctionBody
   }
 
   // @kind(SyntaxKind.Constructor)
-  interface ConstructorDeclaration extends FunctionLikeDeclaration, ClassElement {
+  trait ConstructorDeclaration extends FunctionLikeDeclaration, ClassElement {
     body?: FunctionBody
   }
 
   // For when we encounter a semicolon in a class declaration.  ES6 allows these as class elements.
   // @kind(SyntaxKind.SemicolonClassElement)
-  interface SemicolonClassElement extends ClassElement {
+  trait SemicolonClassElement extends ClassElement {
     _semicolonClassElementBrand: any
   }
 
   // See the comment on MethodDeclaration for the intuition behind AccessorDeclaration being a
   // ClassElement and an ObjectLiteralElement.
-  interface AccessorDeclaration extends FunctionLikeDeclaration, ClassElement, ObjectLiteralElement {
+  trait AccessorDeclaration extends FunctionLikeDeclaration, ClassElement, ObjectLiteralElement {
     _accessorDeclarationBrand: any
     name: PropertyName
     body: FunctionBody
   }
 
   // @kind(SyntaxKind.GetAccessor)
-  interface GetAccessorDeclaration extends AccessorDeclaration { }
+  trait GetAccessorDeclaration extends AccessorDeclaration { }
 
   // @kind(SyntaxKind.SetAccessor)
-  interface SetAccessorDeclaration extends AccessorDeclaration { }
+  trait SetAccessorDeclaration extends AccessorDeclaration { }
 
   // @kind(SyntaxKind.IndexSignature)
-  interface IndexSignatureDeclaration extends SignatureDeclaration, ClassElement, TypeElement {
+  trait IndexSignatureDeclaration extends SignatureDeclaration, ClassElement, TypeElement {
     _indexSignatureDeclarationBrand: any
   }
 
@@ -707,80 +707,80 @@ object Types {
   // @kind(SyntaxKind.StringKeyword)
   // @kind(SyntaxKind.SymbolKeyword)
   // @kind(SyntaxKind.VoidKeyword)
-  interface TypeNode extends Node {
+  trait TypeNode extends Node {
     _typeNodeBrand: any
   }
 
   // @kind(SyntaxKind.ThisType)
-  interface ThisTypeNode extends TypeNode {
+  trait ThisTypeNode extends TypeNode {
     _thisTypeNodeBrand: any
   }
 
-  interface FunctionOrConstructorTypeNode extends TypeNode, SignatureDeclaration {
+  trait FunctionOrConstructorTypeNode extends TypeNode, SignatureDeclaration {
     _functionOrConstructorTypeNodeBrand: any
   }
 
   // @kind(SyntaxKind.FunctionType)
-  interface FunctionTypeNode extends FunctionOrConstructorTypeNode { }
+  trait FunctionTypeNode extends FunctionOrConstructorTypeNode { }
 
   // @kind(SyntaxKind.ConstructorType)
-  interface ConstructorTypeNode extends FunctionOrConstructorTypeNode { }
+  trait ConstructorTypeNode extends FunctionOrConstructorTypeNode { }
 
   // @kind(SyntaxKind.TypeReference)
-  interface TypeReferenceNode extends TypeNode {
+  trait TypeReferenceNode extends TypeNode {
     typeName: EntityName
     typeArguments?: NodeArray<TypeNode>
   }
 
   // @kind(SyntaxKind.TypePredicate)
-  interface TypePredicateNode extends TypeNode {
+  trait TypePredicateNode extends TypeNode {
     parameterName: Identifier | ThisTypeNode
     type: TypeNode
   }
 
   // @kind(SyntaxKind.TypeQuery)
-  interface TypeQueryNode extends TypeNode {
+  trait TypeQueryNode extends TypeNode {
     exprName: EntityName
   }
 
   // A TypeLiteral is the declaration node for an anonymous symbol.
   // @kind(SyntaxKind.TypeLiteral)
-  interface TypeLiteralNode extends TypeNode, Declaration {
+  trait TypeLiteralNode extends TypeNode, Declaration {
     members: NodeArray<TypeElement>
   }
 
   // @kind(SyntaxKind.ArrayType)
-  interface ArrayTypeNode extends TypeNode {
+  trait ArrayTypeNode extends TypeNode {
     elementType: TypeNode
   }
 
   // @kind(SyntaxKind.TupleType)
-  interface TupleTypeNode extends TypeNode {
+  trait TupleTypeNode extends TypeNode {
     elementTypes: NodeArray<TypeNode>
   }
 
-  interface UnionOrIntersectionTypeNode extends TypeNode {
+  trait UnionOrIntersectionTypeNode extends TypeNode {
     types: NodeArray<TypeNode>
   }
 
   // @kind(SyntaxKind.UnionType)
-  interface UnionTypeNode extends UnionOrIntersectionTypeNode { }
+  trait UnionTypeNode extends UnionOrIntersectionTypeNode { }
 
   // @kind(SyntaxKind.IntersectionType)
-  interface IntersectionTypeNode extends UnionOrIntersectionTypeNode { }
+  trait IntersectionTypeNode extends UnionOrIntersectionTypeNode { }
 
   // @kind(SyntaxKind.ParenthesizedType)
-  interface ParenthesizedTypeNode extends TypeNode {
+  trait ParenthesizedTypeNode extends TypeNode {
     type: TypeNode
   }
 
   // @kind(SyntaxKind.StringLiteralType)
-  interface StringLiteralTypeNode extends LiteralLikeNode, TypeNode {
+  trait StringLiteralTypeNode extends LiteralLikeNode, TypeNode {
     _stringLiteralTypeBrand: any
   }
 
   // @kind(SyntaxKind.StringLiteral)
-  interface StringLiteral extends LiteralExpression {
+  trait StringLiteral extends LiteralExpression {
     _stringLiteralBrand: any
   }
 
@@ -791,43 +791,43 @@ object Types {
   // checker actually thinks you have something of the right type.  Note: the brands are
   // never actually given values.  At runtime they have zero cost.
 
-  interface Expression extends Node {
+  trait Expression extends Node {
     _expressionBrand: any
     contextualType?: Type;  // Used to temporarily assign a contextual type during overload resolution
   }
 
   // @kind(SyntaxKind.OmittedExpression)
-  interface OmittedExpression extends Expression { }
+  trait OmittedExpression extends Expression { }
 
-  interface UnaryExpression extends Expression {
+  trait UnaryExpression extends Expression {
     _unaryExpressionBrand: any
   }
 
-  interface IncrementExpression extends UnaryExpression {
+  trait IncrementExpression extends UnaryExpression {
     _incrementExpressionBrand: any
   }
 
   // @kind(SyntaxKind.PrefixUnaryExpression)
-  interface PrefixUnaryExpression extends IncrementExpression {
+  trait PrefixUnaryExpression extends IncrementExpression {
     operator: SyntaxKind
     operand: UnaryExpression
   }
 
   // @kind(SyntaxKind.PostfixUnaryExpression)
-  interface PostfixUnaryExpression extends IncrementExpression {
+  trait PostfixUnaryExpression extends IncrementExpression {
     operand: LeftHandSideExpression
     operator: SyntaxKind
   }
 
-  interface PostfixExpression extends UnaryExpression {
+  trait PostfixExpression extends UnaryExpression {
     _postfixExpressionBrand: any
   }
 
-  interface LeftHandSideExpression extends IncrementExpression {
+  trait LeftHandSideExpression extends IncrementExpression {
     _leftHandSideExpressionBrand: any
   }
 
-  interface MemberExpression extends LeftHandSideExpression {
+  trait MemberExpression extends LeftHandSideExpression {
     _memberExpressionBrand: any
   }
 
@@ -836,46 +836,46 @@ object Types {
   // @kind(SyntaxKind.NullKeyword)
   // @kind(SyntaxKind.ThisKeyword)
   // @kind(SyntaxKind.SuperKeyword)
-  interface PrimaryExpression extends MemberExpression {
+  trait PrimaryExpression extends MemberExpression {
     _primaryExpressionBrand: any
   }
 
   // @kind(SyntaxKind.DeleteExpression)
-  interface DeleteExpression extends UnaryExpression {
+  trait DeleteExpression extends UnaryExpression {
     expression: UnaryExpression
   }
 
   // @kind(SyntaxKind.TypeOfExpression)
-  interface TypeOfExpression extends UnaryExpression {
+  trait TypeOfExpression extends UnaryExpression {
     expression: UnaryExpression
   }
 
   // @kind(SyntaxKind.VoidExpression)
-  interface VoidExpression extends UnaryExpression {
+  trait VoidExpression extends UnaryExpression {
     expression: UnaryExpression
   }
 
   // @kind(SyntaxKind.AwaitExpression)
-  interface AwaitExpression extends UnaryExpression {
+  trait AwaitExpression extends UnaryExpression {
     expression: UnaryExpression
   }
 
   // @kind(SyntaxKind.YieldExpression)
-  interface YieldExpression extends Expression {
+  trait YieldExpression extends Expression {
     asteriskToken?: Node
     expression?: Expression
   }
 
   // @kind(SyntaxKind.BinaryExpression)
   // Binary expressions can be declarations if they are 'exports.foo = bar' expressions in JS files
-  interface BinaryExpression extends Expression, Declaration {
+  trait BinaryExpression extends Expression, Declaration {
     left: Expression
     operatorToken: Node
     right: Expression
   }
 
   // @kind(SyntaxKind.ConditionalExpression)
-  interface ConditionalExpression extends Expression {
+  trait ConditionalExpression extends Expression {
     condition: Expression
     questionToken: Node
     whenTrue: Expression
@@ -887,18 +887,18 @@ object Types {
   type ConciseBody = FunctionBody | Expression
 
   // @kind(SyntaxKind.FunctionExpression)
-  interface FunctionExpression extends PrimaryExpression, FunctionLikeDeclaration {
+  trait FunctionExpression extends PrimaryExpression, FunctionLikeDeclaration {
     name?: Identifier
     body: FunctionBody;  // Required, whereas the member inherited from FunctionDeclaration is optional
   }
 
   // @kind(SyntaxKind.ArrowFunction)
-  interface ArrowFunction extends Expression, FunctionLikeDeclaration {
+  trait ArrowFunction extends Expression, FunctionLikeDeclaration {
     equalsGreaterThanToken: Node
     body: ConciseBody
   }
 
-  interface LiteralLikeNode extends Node {
+  trait LiteralLikeNode extends Node {
     text: String
     isUnterminated?: Boolean
     hasExtendedUnicodeEscape?: Boolean
@@ -912,19 +912,19 @@ object Types {
   // @kind(SyntaxKind.NumericLiteral)
   // @kind(SyntaxKind.RegularExpressionLiteral)
   // @kind(SyntaxKind.NoSubstitutionTemplateLiteral)
-  interface LiteralExpression extends LiteralLikeNode, PrimaryExpression {
+  trait LiteralExpression extends LiteralLikeNode, PrimaryExpression {
     _literalExpressionBrand: any
   }
 
   // @kind(SyntaxKind.TemplateHead)
   // @kind(SyntaxKind.TemplateMiddle)
   // @kind(SyntaxKind.TemplateTail)
-  interface TemplateLiteralFragment extends LiteralLikeNode {
+  trait TemplateLiteralFragment extends LiteralLikeNode {
     _templateLiteralFragmentBrand: any
   }
 
   // @kind(SyntaxKind.TemplateExpression)
-  interface TemplateExpression extends PrimaryExpression {
+  trait TemplateExpression extends PrimaryExpression {
     head: TemplateLiteralFragment
     templateSpans: NodeArray<TemplateSpan>
   }
@@ -932,67 +932,67 @@ object Types {
   // Each of these corresponds to a substitution expression and a template literal, in that order.
   // The template literal must have kind TemplateMiddleLiteral or TemplateTailLiteral.
   // @kind(SyntaxKind.TemplateSpan)
-  interface TemplateSpan extends Node {
+  trait TemplateSpan extends Node {
     expression: Expression
     literal: TemplateLiteralFragment
   }
 
   // @kind(SyntaxKind.ParenthesizedExpression)
-  interface ParenthesizedExpression extends PrimaryExpression {
+  trait ParenthesizedExpression extends PrimaryExpression {
     expression: Expression
   }
 
   // @kind(SyntaxKind.ArrayLiteralExpression)
-  interface ArrayLiteralExpression extends PrimaryExpression {
+  trait ArrayLiteralExpression extends PrimaryExpression {
     elements: NodeArray<Expression>
     /* @internal */
     multiLine?: Boolean
   }
 
   // @kind(SyntaxKind.SpreadElementExpression)
-  interface SpreadElementExpression extends Expression {
+  trait SpreadElementExpression extends Expression {
     expression: Expression
   }
 
   // An ObjectLiteralExpression is the declaration node for an anonymous symbol.
   // @kind(SyntaxKind.ObjectLiteralExpression)
-  interface ObjectLiteralExpression extends PrimaryExpression, Declaration {
+  trait ObjectLiteralExpression extends PrimaryExpression, Declaration {
     properties: NodeArray<ObjectLiteralElement>
     /* @internal */
     multiLine?: Boolean
   }
 
   // @kind(SyntaxKind.PropertyAccessExpression)
-  interface PropertyAccessExpression extends MemberExpression, Declaration {
+  trait PropertyAccessExpression extends MemberExpression, Declaration {
     expression: LeftHandSideExpression
     dotToken: Node
     name: Identifier
   }
 
   // @kind(SyntaxKind.ElementAccessExpression)
-  interface ElementAccessExpression extends MemberExpression {
+  trait ElementAccessExpression extends MemberExpression {
     expression: LeftHandSideExpression
     argumentExpression?: Expression
   }
 
   // @kind(SyntaxKind.CallExpression)
-  interface CallExpression extends LeftHandSideExpression, Declaration {
+  trait CallExpression extends LeftHandSideExpression, Declaration {
     expression: LeftHandSideExpression
     typeArguments?: NodeArray<TypeNode>
     arguments: NodeArray<Expression>
   }
 
   // @kind(SyntaxKind.ExpressionWithTypeArguments)
-  interface ExpressionWithTypeArguments extends TypeNode {
+  trait ExpressionWithTypeArguments extends TypeNode {
     expression: LeftHandSideExpression
     typeArguments?: NodeArray<TypeNode>
   }
 
   // @kind(SyntaxKind.NewExpression)
-  interface NewExpression extends CallExpression, PrimaryExpression { }
+  trait NewExpression extends CallExpression, PrimaryExpression { }
 
   // @kind(SyntaxKind.TaggedTemplateExpression)
-  interface TaggedTemplateExpression extends MemberExpression {
+  trait TaggedTemplateExpression extends MemberExpression {
     tag: LeftHandSideExpression
     template: LiteralExpression | TemplateExpression
   }
@@ -1000,13 +1000,13 @@ object Types {
   type CallLikeExpression = CallExpression | NewExpression | TaggedTemplateExpression | Decorator
 
   // @kind(SyntaxKind.AsExpression)
-  interface AsExpression extends Expression {
+  trait AsExpression extends Expression {
     expression: Expression
     type: TypeNode
   }
 
   // @kind(SyntaxKind.TypeAssertionExpression)
-  interface TypeAssertion extends UnaryExpression {
+  trait TypeAssertion extends UnaryExpression {
     type: TypeNode
     expression: UnaryExpression
   }
@@ -1015,7 +1015,7 @@ object Types {
 
   /// A JSX expression of the form <TagName attrs>...</TagName>
   // @kind(SyntaxKind.JsxElement)
-  interface JsxElement extends PrimaryExpression {
+  trait JsxElement extends PrimaryExpression {
     openingElement: JsxOpeningElement
     children: NodeArray<JsxChild>
     closingElement: JsxClosingElement
@@ -1023,7 +1023,7 @@ object Types {
 
   /// The opening element of a <Tag>...</Tag> JsxElement
   // @kind(SyntaxKind.JsxOpeningElement)
-  interface JsxOpeningElement extends Expression {
+  trait JsxOpeningElement extends Expression {
     _openingElementBrand?: any
     tagName: EntityName
     attributes: NodeArray<JsxAttribute | JsxSpreadAttribute>
@@ -1031,7 +1031,7 @@ object Types {
 
   /// A JSX expression of the form <TagName attrs />
   // @kind(SyntaxKind.JsxSelfClosingElement)
-  interface JsxSelfClosingElement extends PrimaryExpression, JsxOpeningElement {
+  trait JsxSelfClosingElement extends PrimaryExpression, JsxOpeningElement {
     _selfClosingElementBrand?: any
   }
 
@@ -1039,178 +1039,178 @@ object Types {
   type JsxOpeningLikeElement = JsxSelfClosingElement | JsxOpeningElement
 
   // @kind(SyntaxKind.JsxAttribute)
-  interface JsxAttribute extends Node {
+  trait JsxAttribute extends Node {
     name: Identifier
     /// JSX attribute initializers are optional; <X y /> is sugar for <X y={true} />
     initializer?: Expression
   }
 
   // @kind(SyntaxKind.JsxSpreadAttribute)
-  interface JsxSpreadAttribute extends Node {
+  trait JsxSpreadAttribute extends Node {
     expression: Expression
   }
 
   // @kind(SyntaxKind.JsxClosingElement)
-  interface JsxClosingElement extends Node {
+  trait JsxClosingElement extends Node {
     tagName: EntityName
   }
 
   // @kind(SyntaxKind.JsxExpression)
-  interface JsxExpression extends Expression {
+  trait JsxExpression extends Expression {
     expression?: Expression
   }
 
   // @kind(SyntaxKind.JsxText)
-  interface JsxText extends Node {
+  trait JsxText extends Node {
     _jsxTextExpressionBrand: any
   }
 
   type JsxChild = JsxText | JsxExpression | JsxElement | JsxSelfClosingElement
 
-  interface Statement extends Node {
+  trait Statement extends Node {
     _statementBrand: any
   }
 
   // @kind(SyntaxKind.EmptyStatement)
-  interface EmptyStatement extends Statement { }
+  trait EmptyStatement extends Statement { }
 
   // @kind(SyntaxKind.DebuggerStatement)
-  interface DebuggerStatement extends Statement { }
+  trait DebuggerStatement extends Statement { }
 
   // @kind(SyntaxKind.MissingDeclaration)
-  interface MissingDeclaration extends DeclarationStatement, ClassElement, ObjectLiteralElement, TypeElement {
+  trait MissingDeclaration extends DeclarationStatement, ClassElement, ObjectLiteralElement, TypeElement {
     name?: Identifier
   }
 
   type BlockLike = SourceFile | Block | ModuleBlock | CaseClause
 
   // @kind(SyntaxKind.Block)
-  interface Block extends Statement {
+  trait Block extends Statement {
     statements: NodeArray<Statement>
   }
 
   // @kind(SyntaxKind.VariableStatement)
-  interface VariableStatement extends Statement {
+  trait VariableStatement extends Statement {
     declarationList: VariableDeclarationList
   }
 
   // @kind(SyntaxKind.ExpressionStatement)
-  interface ExpressionStatement extends Statement {
+  trait ExpressionStatement extends Statement {
     expression: Expression
   }
 
   // @kind(SyntaxKind.IfStatement)
-  interface IfStatement extends Statement {
+  trait IfStatement extends Statement {
     expression: Expression
     thenStatement: Statement
     elseStatement?: Statement
   }
 
-  interface IterationStatement extends Statement {
+  trait IterationStatement extends Statement {
     statement: Statement
   }
 
   // @kind(SyntaxKind.DoStatement)
-  interface DoStatement extends IterationStatement {
+  trait DoStatement extends IterationStatement {
     expression: Expression
   }
 
   // @kind(SyntaxKind.WhileStatement)
-  interface WhileStatement extends IterationStatement {
+  trait WhileStatement extends IterationStatement {
     expression: Expression
   }
 
   // @kind(SyntaxKind.ForStatement)
-  interface ForStatement extends IterationStatement {
+  trait ForStatement extends IterationStatement {
     initializer?: VariableDeclarationList | Expression
     condition?: Expression
     incrementor?: Expression
   }
 
   // @kind(SyntaxKind.ForInStatement)
-  interface ForInStatement extends IterationStatement {
+  trait ForInStatement extends IterationStatement {
     initializer: VariableDeclarationList | Expression
     expression: Expression
   }
 
   // @kind(SyntaxKind.ForOfStatement)
-  interface ForOfStatement extends IterationStatement {
+  trait ForOfStatement extends IterationStatement {
     initializer: VariableDeclarationList | Expression
     expression: Expression
   }
 
   // @kind(SyntaxKind.BreakStatement)
-  interface BreakStatement extends Statement {
+  trait BreakStatement extends Statement {
     label?: Identifier
   }
 
   // @kind(SyntaxKind.ContinueStatement)
-  interface ContinueStatement extends Statement {
+  trait ContinueStatement extends Statement {
     label?: Identifier
   }
 
   type BreakOrContinueStatement = BreakStatement | ContinueStatement
 
   // @kind(SyntaxKind.ReturnStatement)
-  interface ReturnStatement extends Statement {
+  trait ReturnStatement extends Statement {
     expression?: Expression
   }
 
   // @kind(SyntaxKind.WithStatement)
-  interface WithStatement extends Statement {
+  trait WithStatement extends Statement {
     expression: Expression
     statement: Statement
   }
 
   // @kind(SyntaxKind.SwitchStatement)
-  interface SwitchStatement extends Statement {
+  trait SwitchStatement extends Statement {
     expression: Expression
     caseBlock: CaseBlock
   }
 
   // @kind(SyntaxKind.CaseBlock)
-  interface CaseBlock extends Node {
+  trait CaseBlock extends Node {
     clauses: NodeArray<CaseOrDefaultClause>
   }
 
   // @kind(SyntaxKind.CaseClause)
-  interface CaseClause extends Node {
+  trait CaseClause extends Node {
     expression: Expression
     statements: NodeArray<Statement>
   }
 
   // @kind(SyntaxKind.DefaultClause)
-  interface DefaultClause extends Node {
+  trait DefaultClause extends Node {
     statements: NodeArray<Statement>
   }
 
   type CaseOrDefaultClause = CaseClause | DefaultClause
 
   // @kind(SyntaxKind.LabeledStatement)
-  interface LabeledStatement extends Statement {
+  trait LabeledStatement extends Statement {
     label: Identifier
     statement: Statement
   }
 
   // @kind(SyntaxKind.ThrowStatement)
-  interface ThrowStatement extends Statement {
+  trait ThrowStatement extends Statement {
     expression: Expression
   }
 
   // @kind(SyntaxKind.TryStatement)
-  interface TryStatement extends Statement {
+  trait TryStatement extends Statement {
     tryBlock: Block
     catchClause?: CatchClause
     finallyBlock?: Block
   }
 
   // @kind(SyntaxKind.CatchClause)
-  interface CatchClause extends Node {
+  trait CatchClause extends Node {
     variableDeclaration: VariableDeclaration
     block: Block
   }
 
-  interface ClassLikeDeclaration extends Declaration {
+  trait ClassLikeDeclaration extends Declaration {
     name?: Identifier
     typeParameters?: NodeArray<TypeParameterDeclaration>
     heritageClauses?: NodeArray<HeritageClause>
@@ -1218,27 +1218,27 @@ object Types {
   }
 
   // @kind(SyntaxKind.ClassDeclaration)
-  interface ClassDeclaration extends ClassLikeDeclaration, DeclarationStatement {
+  trait ClassDeclaration extends ClassLikeDeclaration, DeclarationStatement {
     name?: Identifier
   }
 
   // @kind(SyntaxKind.ClassExpression)
-  interface ClassExpression extends ClassLikeDeclaration, PrimaryExpression {
+  trait ClassExpression extends ClassLikeDeclaration, PrimaryExpression {
   }
 
-  interface ClassElement extends Declaration {
+  trait ClassElement extends Declaration {
     _classElementBrand: any
     name?: PropertyName
   }
 
-  interface TypeElement extends Declaration {
+  trait TypeElement extends Declaration {
     _typeElementBrand: any
     name?: PropertyName
     questionToken?: Node
   }
 
   // @kind(SyntaxKind.InterfaceDeclaration)
-  interface InterfaceDeclaration extends DeclarationStatement {
+  trait InterfaceDeclaration extends DeclarationStatement {
     name: Identifier
     typeParameters?: NodeArray<TypeParameterDeclaration>
     heritageClauses?: NodeArray<HeritageClause>
@@ -1246,20 +1246,20 @@ object Types {
   }
 
   // @kind(SyntaxKind.HeritageClause)
-  interface HeritageClause extends Node {
+  trait HeritageClause extends Node {
     token: SyntaxKind
     types?: NodeArray<ExpressionWithTypeArguments>
   }
 
   // @kind(SyntaxKind.TypeAliasDeclaration)
-  interface TypeAliasDeclaration extends DeclarationStatement {
+  trait TypeAliasDeclaration extends DeclarationStatement {
     name: Identifier
     typeParameters?: NodeArray<TypeParameterDeclaration>
     type: TypeNode
   }
 
   // @kind(SyntaxKind.EnumMember)
-  interface EnumMember extends Declaration {
+  trait EnumMember extends Declaration {
     // This does include ComputedPropertyName, but the parser will give an error
     // if it parses a ComputedPropertyName in an EnumMember
     name: DeclarationName
@@ -1267,7 +1267,7 @@ object Types {
   }
 
   // @kind(SyntaxKind.EnumDeclaration)
-  interface EnumDeclaration extends DeclarationStatement {
+  trait EnumDeclaration extends DeclarationStatement {
     name: Identifier
     members: NodeArray<EnumMember>
   }
@@ -1275,18 +1275,18 @@ object Types {
   type ModuleBody = ModuleBlock | ModuleDeclaration
 
   // @kind(SyntaxKind.ModuleDeclaration)
-  interface ModuleDeclaration extends DeclarationStatement {
+  trait ModuleDeclaration extends DeclarationStatement {
     name: Identifier | LiteralExpression
     body: ModuleBlock | ModuleDeclaration
   }
 
   // @kind(SyntaxKind.ModuleBlock)
-  interface ModuleBlock extends Node, Statement {
+  trait ModuleBlock extends Node, Statement {
     statements: NodeArray<Statement>
   }
 
   // @kind(SyntaxKind.ImportEqualsDeclaration)
-  interface ImportEqualsDeclaration extends DeclarationStatement {
+  trait ImportEqualsDeclaration extends DeclarationStatement {
     name: Identifier
 
     // 'EntityName' for an internal module reference, 'ExternalModuleReference' for an external
@@ -1295,216 +1295,216 @@ object Types {
   }
 
   // @kind(SyntaxKind.ExternalModuleReference)
-  interface ExternalModuleReference extends Node {
+  trait ExternalModuleReference extends Node {
     expression?: Expression
   }
 
   // In case of:
-  // import "mod"  => importClause = undefined, moduleSpecifier = "mod"
+  // import "mod"  => importClause = (), moduleSpecifier = "mod"
   // In rest of the cases, module specifier is String literal corresponding to module
   // ImportClause information is shown at its declaration below.
   // @kind(SyntaxKind.ImportDeclaration)
-  interface ImportDeclaration extends Statement {
+  trait ImportDeclaration extends Statement {
     importClause?: ImportClause
     moduleSpecifier: Expression
   }
 
   // In case of:
-  // import d from "mod" => name = d, namedBinding = undefined
-  // import * as ns from "mod" => name = undefined, namedBinding: NamespaceImport = { name: ns }
+  // import d from "mod" => name = d, namedBinding = ()
+  // import * as ns from "mod" => name = (), namedBinding: NamespaceImport = { name: ns }
   // import d, * as ns from "mod" => name = d, namedBinding: NamespaceImport = { name: ns }
-  // import { a, b as x } from "mod" => name = undefined, namedBinding: NamedImports = { elements: [{ name: a }, { name: x, propertyName: b}]}
+  // import { a, b as x } from "mod" => name = (), namedBinding: NamedImports = { elements: [{ name: a }, { name: x, propertyName: b}]}
   // import d, { a, b as x } from "mod" => name = d, namedBinding: NamedImports = { elements: [{ name: a }, { name: x, propertyName: b}]}
   // @kind(SyntaxKind.ImportClause)
-  interface ImportClause extends Declaration {
+  trait ImportClause extends Declaration {
     name?: Identifier; // Default binding
     namedBindings?: NamespaceImport | NamedImports
   }
 
   // @kind(SyntaxKind.NamespaceImport)
-  interface NamespaceImport extends Declaration {
+  trait NamespaceImport extends Declaration {
     name: Identifier
   }
 
   // @kind(SyntaxKind.ExportDeclaration)
-  interface ExportDeclaration extends DeclarationStatement {
+  trait ExportDeclaration extends DeclarationStatement {
     exportClause?: NamedExports
     moduleSpecifier?: Expression
   }
 
   // @kind(SyntaxKind.NamedImports)
-  interface NamedImports extends Node {
+  trait NamedImports extends Node {
     elements: NodeArray<ImportSpecifier>
   }
 
   // @kind(SyntaxKind.NamedExports)
-  interface NamedExports extends Node {
+  trait NamedExports extends Node {
     elements: NodeArray<ExportSpecifier>
   }
 
   type NamedImportsOrExports = NamedImports | NamedExports
 
   // @kind(SyntaxKind.ImportSpecifier)
-  interface ImportSpecifier extends Declaration {
-    propertyName?: Identifier;  // Name preceding "as" keyword (or undefined when "as" is absent)
+  trait ImportSpecifier extends Declaration {
+    propertyName?: Identifier;  // Name preceding "as" keyword (or () when "as" is absent)
     name: Identifier;       // Declared name
   }
 
   // @kind(SyntaxKind.ExportSpecifier)
-  interface ExportSpecifier extends Declaration {
-    propertyName?: Identifier;  // Name preceding "as" keyword (or undefined when "as" is absent)
+  trait ExportSpecifier extends Declaration {
+    propertyName?: Identifier;  // Name preceding "as" keyword (or () when "as" is absent)
     name: Identifier;       // Declared name
   }
 
   type ImportOrExportSpecifier = ImportSpecifier | ExportSpecifier
 
   // @kind(SyntaxKind.ExportAssignment)
-  interface ExportAssignment extends DeclarationStatement {
+  trait ExportAssignment extends DeclarationStatement {
     isExportEquals?: Boolean
     expression: Expression
   }
 
-  interface FileReference extends TextRange {
+  trait FileReference extends TextRange {
     fileName: String
   }
 
-  interface CommentRange extends TextRange {
+  trait CommentRange extends TextRange {
     hasTrailingNewLine?: Boolean
     kind: SyntaxKind
   }
 
   // represents a top level: { type } expression in a JSDoc comment.
   // @kind(SyntaxKind.JSDocTypeExpression)
-  interface JSDocTypeExpression extends Node {
+  trait JSDocTypeExpression extends Node {
     type: JSDocType
   }
 
-  interface JSDocType extends TypeNode {
+  trait JSDocType extends TypeNode {
     _jsDocTypeBrand: any
   }
 
   // @kind(SyntaxKind.JSDocAllType)
-  interface JSDocAllType extends JSDocType {
+  trait JSDocAllType extends JSDocType {
     _JSDocAllTypeBrand: any
   }
 
   // @kind(SyntaxKind.JSDocUnknownType)
-  interface JSDocUnknownType extends JSDocType {
+  trait JSDocUnknownType extends JSDocType {
     _JSDocUnknownTypeBrand: any
   }
 
   // @kind(SyntaxKind.JSDocArrayType)
-  interface JSDocArrayType extends JSDocType {
+  trait JSDocArrayType extends JSDocType {
     elementType: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocUnionType)
-  interface JSDocUnionType extends JSDocType {
+  trait JSDocUnionType extends JSDocType {
     types: NodeArray<JSDocType>
   }
 
   // @kind(SyntaxKind.JSDocTupleType)
-  interface JSDocTupleType extends JSDocType {
+  trait JSDocTupleType extends JSDocType {
     types: NodeArray<JSDocType>
   }
 
   // @kind(SyntaxKind.JSDocNonNullableType)
-  interface JSDocNonNullableType extends JSDocType {
+  trait JSDocNonNullableType extends JSDocType {
     type: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocNullableType)
-  interface JSDocNullableType extends JSDocType {
+  trait JSDocNullableType extends JSDocType {
     type: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocRecordType)
-  interface JSDocRecordType extends JSDocType, TypeLiteralNode {
+  trait JSDocRecordType extends JSDocType, TypeLiteralNode {
     members: NodeArray<JSDocRecordMember>
   }
 
   // @kind(SyntaxKind.JSDocTypeReference)
-  interface JSDocTypeReference extends JSDocType {
+  trait JSDocTypeReference extends JSDocType {
     name: EntityName
     typeArguments: NodeArray<JSDocType>
   }
 
   // @kind(SyntaxKind.JSDocOptionalType)
-  interface JSDocOptionalType extends JSDocType {
+  trait JSDocOptionalType extends JSDocType {
     type: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocFunctionType)
-  interface JSDocFunctionType extends JSDocType, SignatureDeclaration {
+  trait JSDocFunctionType extends JSDocType, SignatureDeclaration {
     parameters: NodeArray<ParameterDeclaration>
     type: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocVariadicType)
-  interface JSDocVariadicType extends JSDocType {
+  trait JSDocVariadicType extends JSDocType {
     type: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocConstructorType)
-  interface JSDocConstructorType extends JSDocType {
+  trait JSDocConstructorType extends JSDocType {
     type: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocThisType)
-  interface JSDocThisType extends JSDocType {
+  trait JSDocThisType extends JSDocType {
     type: JSDocType
   }
 
   type JSDocTypeReferencingNode = JSDocThisType | JSDocConstructorType | JSDocVariadicType | JSDocOptionalType | JSDocNullableType | JSDocNonNullableType
 
   // @kind(SyntaxKind.JSDocRecordMember)
-  interface JSDocRecordMember extends PropertySignature {
+  trait JSDocRecordMember extends PropertySignature {
     name: Identifier | LiteralExpression
     type?: JSDocType
   }
 
   // @kind(SyntaxKind.JSDocComment)
-  interface JSDocComment extends Node {
+  trait JSDocComment extends Node {
     tags: NodeArray<JSDocTag>
   }
 
   // @kind(SyntaxKind.JSDocTag)
-  interface JSDocTag extends Node {
+  trait JSDocTag extends Node {
     atToken: Node
     tagName: Identifier
   }
 
   // @kind(SyntaxKind.JSDocTemplateTag)
-  interface JSDocTemplateTag extends JSDocTag {
+  trait JSDocTemplateTag extends JSDocTag {
     typeParameters: NodeArray<TypeParameterDeclaration>
   }
 
   // @kind(SyntaxKind.JSDocReturnTag)
-  interface JSDocReturnTag extends JSDocTag {
+  trait JSDocReturnTag extends JSDocTag {
     typeExpression: JSDocTypeExpression
   }
 
   // @kind(SyntaxKind.JSDocTypeTag)
-  interface JSDocTypeTag extends JSDocTag {
+  trait JSDocTypeTag extends JSDocTag {
     typeExpression: JSDocTypeExpression
   }
 
   // @kind(SyntaxKind.JSDocParameterTag)
-  interface JSDocParameterTag extends JSDocTag {
+  trait JSDocParameterTag extends JSDocTag {
     preParameterName?: Identifier
     typeExpression?: JSDocTypeExpression
     postParameterName?: Identifier
     isBracketed: Boolean
   }
 
-  interface AmdDependency {
+  trait AmdDependency {
     path: String
     name: String
   }
 
   // Source files are declarations when they are external modules.
   // @kind(SyntaxKind.SourceFile)
-  interface SourceFile extends Declaration {
+  trait SourceFile extends Declaration {
     statements: NodeArray<Statement>
     endOfFileToken: Node
 
@@ -1555,7 +1555,7 @@ object Types {
     // This field should never be used directly to obtain line map, use getLineMap def instead.
     /* @internal */ lineMap: Int[]
     /* @internal */ classifiableNames?: Map<String>
-    // Stores a mapping 'external module reference text' -> 'resolved file name' | undefined
+    // Stores a mapping 'external module reference text' -> 'resolved file name' | ()
     // It is used to resolve module names in the checker.
     // Content of this field should never be used directly - use getResolvedModuleFileName/setResolvedModuleFileName functions instead
     /* @internal */ resolvedModules: Map<ResolvedModule>
@@ -1563,30 +1563,30 @@ object Types {
     /* @internal */ moduleAugmentations: LiteralExpression[]
   }
 
-  interface ScriptReferenceHost {
+  trait ScriptReferenceHost {
     getCompilerOptions(): CompilerOptions
     getSourceFile(fileName: String): SourceFile
     getCurrentDirectory(): String
   }
 
-  interface ParseConfigHost {
+  trait ParseConfigHost {
     readDirectory(rootDir: String, extension: String, exclude: String[]): String[]
   }
 
-  interface WriteFileCallback {
-    (fileName: String, data: String, writeByteOrderMark: Boolean, onError?: (message: String) => void): void
+  trait WriteFileCallback {
+    (fileName: String, data: String, writeByteOrderMark: Boolean, onError?: (message: String) => Unit): Unit
   }
 
   class OperationCanceledException { }
 
-  interface CancellationToken {
+  trait CancellationToken {
     isCancellationRequested(): Boolean
 
     /** @throws OperationCanceledException if isCancellationRequested is true */
-    throwIfCancellationRequested(): void
+    throwIfCancellationRequested(): Unit
   }
 
-  interface Program extends ScriptReferenceHost {
+  trait Program extends ScriptReferenceHost {
 
     /**
      * Get a list of root file names that were passed to a 'createProgram'
@@ -1639,7 +1639,7 @@ object Types {
     /* @internal */ structureIsReused?: Boolean
   }
 
-  interface SourceMapSpan {
+  trait SourceMapSpan {
     /** Line Int in the .js file. */
     emittedLine: Int
     /** Column Int in the .js file. */
@@ -1654,7 +1654,7 @@ object Types {
     sourceIndex: Int
   }
 
-  interface SourceMapData {
+  trait SourceMapData {
     sourceMapFilePath: String;       // Where the sourcemap file is written
     jsSourceMappingURL: String;      // source map URL written in the .js file
     sourceMapFile: String;         // Source map's file field - .js file name
@@ -1681,21 +1681,21 @@ object Types {
     DiagnosticsPresent_OutputsGenerated = 2,
   }
 
-  interface EmitResult {
+  trait EmitResult {
     emitSkipped: Boolean
     diagnostics: Diagnostic[]
     /* @internal */ sourceMaps: SourceMapData[];  // Array of sourceMapData if compiler emitted sourcemaps
   }
 
   /* @internal */
-  interface TypeCheckerHost {
+  trait TypeCheckerHost {
     getCompilerOptions(): CompilerOptions
 
     getSourceFiles(): SourceFile[]
     getSourceFile(fileName: String): SourceFile
   }
 
-  interface TypeChecker {
+  trait TypeChecker {
     getTypeOfSymbolAtLocation(symbol: Symbol, node: Node): Type
     getDeclaredTypeOfSymbol(symbol: Symbol): Type
     getPropertiesOfType(type: Type): Symbol[]
@@ -1745,36 +1745,36 @@ object Types {
     /* @internal */ getTypeCount(): Int
   }
 
-  interface SymbolDisplayBuilder {
-    buildTypeDisplay(type: Type, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void
-    buildSymbolDisplay(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, meaning?: SymbolFlags, flags?: SymbolFormatFlags): void
-    buildSignatureDisplay(signatures: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind): void
-    buildParameterDisplay(parameter: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void
-    buildTypeParameterDisplay(tp: TypeParameter, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void
-    buildTypeParameterDisplayFromSymbol(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void
-    buildDisplayForParametersAndDelimiters(parameters: Symbol[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void
-    buildDisplayForTypeParametersAndDelimiters(typeParameters: TypeParameter[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void
-    buildReturnTypeDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): void
+  trait SymbolDisplayBuilder {
+    buildTypeDisplay(type: Type, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildSymbolDisplay(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, meaning?: SymbolFlags, flags?: SymbolFormatFlags): Unit
+    buildSignatureDisplay(signatures: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags, kind?: SignatureKind): Unit
+    buildParameterDisplay(parameter: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildTypeParameterDisplay(tp: TypeParameter, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildTypeParameterDisplayFromSymbol(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildDisplayForParametersAndDelimiters(parameters: Symbol[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildDisplayForTypeParametersAndDelimiters(typeParameters: TypeParameter[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildReturnTypeDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
   }
 
-  interface SymbolWriter {
-    writeKeyword(text: String): void
-    writeOperator(text: String): void
-    writePunctuation(text: String): void
-    writeSpace(text: String): void
-    writeStringLiteral(text: String): void
-    writeParameter(text: String): void
-    writeSymbol(text: String, symbol: Symbol): void
-    writeLine(): void
-    increaseIndent(): void
-    decreaseIndent(): void
-    clear(): void
+  trait SymbolWriter {
+    writeKeyword(text: String): Unit
+    writeOperator(text: String): Unit
+    writePunctuation(text: String): Unit
+    writeSpace(text: String): Unit
+    writeStringLiteral(text: String): Unit
+    writeParameter(text: String): Unit
+    writeSymbol(text: String, symbol: Symbol): Unit
+    writeLine(): Unit
+    increaseIndent(): Unit
+    decreaseIndent(): Unit
+    clear(): Unit
 
     // Called when the symbol writer encounters a symbol to write.  Currently only used by the
     // declaration emitter to help determine if it should patch up the final declaration file
     // with import statements it previously saw (but chose not to emit).
-    trackSymbol(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags): void
-    reportInaccessibleThisError(): void
+    trackSymbol(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags): Unit
+    reportInaccessibleThisError(): Unit
   }
 
   val enum TypeFormatFlags {
@@ -1816,18 +1816,18 @@ object Types {
     Identifier
   }
 
-  interface TypePredicate {
+  trait TypePredicate {
     kind: TypePredicateKind
     type: Type
   }
 
   // @kind (TypePredicateKind.This)
-  interface ThisTypePredicate extends TypePredicate {
+  trait ThisTypePredicate extends TypePredicate {
     _thisTypePredicateBrand: any
   }
 
   // @kind (TypePredicateKind.Identifier)
-  interface IdentifierTypePredicate extends TypePredicate {
+  trait IdentifierTypePredicate extends TypePredicate {
     parameterName: String
     parameterIndex: Int
   }
@@ -1836,7 +1836,7 @@ object Types {
   type AnyImportSyntax = ImportDeclaration | ImportEqualsDeclaration
 
   /* @internal */
-  interface SymbolVisibilityResult {
+  trait SymbolVisibilityResult {
     accessibility: SymbolAccessibility
     aliasesToMakeVisible?: AnyImportSyntax[]; // aliases that need to have this symbol visible
     errorSymbolName?: String; // Optional symbol name that results in error
@@ -1844,7 +1844,7 @@ object Types {
   }
 
   /* @internal */
-  interface SymbolAccessibilityResult extends SymbolVisibilityResult {
+  trait SymbolAccessibilityResult extends SymbolVisibilityResult {
     errorModuleName?: String; // If the symbol is not visible from module, module's name
   }
 
@@ -1870,7 +1870,7 @@ object Types {
   }
 
   /* @internal */
-  interface EmitResolver {
+  trait EmitResolver {
     hasGlobalName(name: String): Boolean
     getReferencedExportContainer(node: Identifier): SourceFile | ModuleDeclaration | EnumDeclaration
     getReferencedImportDeclaration(node: Identifier): Declaration
@@ -1883,12 +1883,12 @@ object Types {
     isDeclarationVisible(node: Declaration): Boolean
     collectLinkedAliases(node: Identifier): Node[]
     isImplementationOfOverload(node: FunctionLikeDeclaration): Boolean
-    writeTypeOfDeclaration(declaration: AccessorDeclaration | VariableLikeDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): void
-    writeReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): void
-    writeTypeOfExpression(expr: Expression, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): void
+    writeTypeOfDeclaration(declaration: AccessorDeclaration | VariableLikeDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): Unit
+    writeReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): Unit
+    writeTypeOfExpression(expr: Expression, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): Unit
     isSymbolAccessible(symbol: Symbol, enclosingDeclaration: Node, meaning: SymbolFlags): SymbolAccessibilityResult
     isEntityNameVisible(entityName: EntityName | Expression, enclosingDeclaration: Node): SymbolVisibilityResult
-    // Returns the constant value this property access resolves to, or 'undefined' for a non-constant
+    // Returns the constant value this property access resolves to, or '()' for a non-constant
     getConstantValue(node: EnumMember | PropertyAccessExpression | ElementAccessExpression): Int
     getReferencedValueDeclaration(reference: Identifier): Declaration
     getTypeReferenceSerializationKind(typeName: EntityName): TypeReferenceSerializationKind
@@ -1952,7 +1952,7 @@ object Types {
     PropertyExcludes = Value,
     EnumMemberExcludes = Value,
     FunctionExcludes = Value & ~(Function | ValueModule),
-    ClassExcludes = (Value | Type) & ~(ValueModule | Interface), // class-interface mergability done in checker.ts
+    ClassExcludes = (Value | Type) & ~(ValueModule | Interface), // class-trait mergability done in checker.ts
     InterfaceExcludes = Type & ~(Interface | Class),
     RegularEnumExcludes = (Value | Type) & ~(RegularEnum | ValueModule), // regular enums merge only with regular enums and modules
     ConstEnumExcludes = (Value | Type) & ~ConstEnum, // val enums merge only with val enums
@@ -1983,13 +1983,13 @@ object Types {
     Classifiable = Class | Enum | TypeAlias | Interface | TypeParameter | Module,
   }
 
-  interface Symbol {
+  trait Symbol {
     flags: SymbolFlags;           // Symbol flags
     name: String;               // Name of symbol
     declarations?: Declaration[];       // Declarations associated with this symbol
     valueDeclaration?: Declaration;     // First value declaration of the symbol
 
-    members?: SymbolTable;          // Class, interface or literal instance members
+    members?: SymbolTable;          // Class, trait or literal instance members
     exports?: SymbolTable;          // Module exports
     /* @internal */ id?: Int;      // Unique id (used to look up SymbolLinks)
     /* @internal */ mergeId?: Int;     // Merge id (used to look up merged symbol)
@@ -1999,13 +1999,13 @@ object Types {
   }
 
   /* @internal */
-  interface SymbolLinks {
+  trait SymbolLinks {
     target?: Symbol;          // Resolved (non-alias) target of an alias
     type?: Type;            // Type of value symbol
-    declaredType?: Type;        // Type of class, interface, enum, type alias, or type parameter
-    typeParameters?: TypeParameter[];   // Type parameters of type alias (undefined if non-generic)
+    declaredType?: Type;        // Type of class, trait, enum, type alias, or type parameter
+    typeParameters?: TypeParameter[];   // Type parameters of type alias (() if non-generic)
     inferredClassType?: Type;       // Type of an inferred ES5 class
-    instantiations?: Map<Type>;     // Instantiations of generic type alias (undefined if non-generic)
+    instantiations?: Map<Type>;     // Instantiations of generic type alias (() if non-generic)
     mapper?: TypeMapper;        // Type mapper for instantiation alias
     referenced?: Boolean;         // True if alias symbol has been referenced as a value
     containingType?: UnionOrIntersectionType; // Containing union or intersection type for synthetic property
@@ -2017,9 +2017,9 @@ object Types {
   }
 
   /* @internal */
-  interface TransientSymbol extends Symbol, SymbolLinks { }
+  trait TransientSymbol extends Symbol, SymbolLinks { }
 
-  interface SymbolTable {
+  trait SymbolTable {
     [index: String]: Symbol
   }
 
@@ -2046,7 +2046,7 @@ object Types {
   }
 
   /* @internal */
-  interface NodeLinks {
+  trait NodeLinks {
     resolvedType?: Type;        // Cached type of type node
     resolvedAwaitedType?: Type;     // Cached awaited type of type node
     resolvedSignature?: Signature;  // Cached signature of signature node or call expression
@@ -2117,7 +2117,7 @@ object Types {
   type DestructuringPattern = BindingPattern | ObjectLiteralExpression | ArrayLiteralExpression
 
   // Properties common to all types
-  interface Type {
+  trait Type {
     flags: TypeFlags;        // Flags
     /* @internal */ id: Int;    // Unique ID
     symbol?: Symbol;         // Symbol associated with type (if any)
@@ -2126,36 +2126,36 @@ object Types {
 
   /* @internal */
   // Intrinsic types (TypeFlags.Intrinsic)
-  interface IntrinsicType extends Type {
+  trait IntrinsicType extends Type {
     intrinsicName: String;  // Name of intrinsic type
   }
 
   // Predicate types (TypeFlags.Predicate)
-  interface PredicateType extends Type {
+  trait PredicateType extends Type {
     predicate: ThisTypePredicate | IdentifierTypePredicate
   }
 
   // String literal types (TypeFlags.StringLiteral)
-  interface StringLiteralType extends Type {
+  trait StringLiteralType extends Type {
     text: String;  // Text of String literal
   }
 
   // Object types (TypeFlags.ObjectType)
-  interface ObjectType extends Type { }
+  trait ObjectType extends Type { }
 
-  // Class and interface types (TypeFlags.Class and TypeFlags.Interface)
-  interface InterfaceType extends ObjectType {
-    typeParameters: TypeParameter[];       // Type parameters (undefined if non-generic)
-    outerTypeParameters: TypeParameter[];    // Outer type parameters (undefined if none)
-    localTypeParameters: TypeParameter[];    // Local type parameters (undefined if none)
-    thisType: TypeParameter;           // The "this" type (undefined if none)
+  // Class and trait types (TypeFlags.Class and TypeFlags.Interface)
+  trait InterfaceType extends ObjectType {
+    typeParameters: TypeParameter[];       // Type parameters (() if non-generic)
+    outerTypeParameters: TypeParameter[];    // Outer type parameters (() if none)
+    localTypeParameters: TypeParameter[];    // Local type parameters (() if none)
+    thisType: TypeParameter;           // The "this" type (() if none)
     /* @internal */
     resolvedBaseConstructorType?: Type;    // Resolved base constructor type of class
     /* @internal */
     resolvedBaseTypes: ObjectType[];       // Resolved base types
   }
 
-  interface InterfaceTypeWithDeclaredMembers extends InterfaceType {
+  trait InterfaceTypeWithDeclaredMembers extends InterfaceType {
     declaredProperties: Symbol[];        // Declared members
     declaredCallSignatures: Signature[];     // Declared call signatures
     declaredConstructSignatures: Signature[];  // Declared construct signatures
@@ -2163,30 +2163,30 @@ object Types {
     declaredNumberIndexInfo: IndexInfo;    // Declared numeric indexing info
   }
 
-  // Type references (TypeFlags.Reference). When a class or interface has type parameters or
-  // a "this" type, references to the class or interface are made using type references. The
+  // Type references (TypeFlags.Reference). When a class or trait has type parameters or
+  // a "this" type, references to the class or trait are made using type references. The
   // typeArguments property specifies the types to substitute for the type parameters of the
-  // class or interface and optionally includes an extra element that specifies the type to
+  // class or trait and optionally includes an extra element that specifies the type to
   // substitute for "this" in the resulting instantiation. When no extra argument is present,
-  // the type reference itself is substituted for "this". The typeArguments property is undefined
-  // if the class or interface has no type parameters and the reference isn't specifying an
+  // the type reference itself is substituted for "this". The typeArguments property is ()
+  // if the class or trait has no type parameters and the reference isn't specifying an
   // explicit "this" argument.
-  interface TypeReference extends ObjectType {
+  trait TypeReference extends ObjectType {
     target: GenericType;  // Type reference target
-    typeArguments: Type[];  // Type reference type arguments (undefined if none)
+    typeArguments: Type[];  // Type reference type arguments (() if none)
   }
 
-  // Generic class and interface types
-  interface GenericType extends InterfaceType, TypeReference {
+  // Generic class and trait types
+  trait GenericType extends InterfaceType, TypeReference {
     /* @internal */
     instantiations: Map<TypeReference>;   // Generic instantiation cache
   }
 
-  interface TupleType extends ObjectType {
+  trait TupleType extends ObjectType {
     elementTypes: Type[];  // Element types
   }
 
-  interface UnionOrIntersectionType extends Type {
+  trait UnionOrIntersectionType extends Type {
     types: Type[];          // Constituent types
     /* @internal */
     reducedType: Type;        // Reduced union type (all subtypes removed)
@@ -2194,20 +2194,20 @@ object Types {
     resolvedProperties: SymbolTable;  // Cache of resolved properties
   }
 
-  interface UnionType extends UnionOrIntersectionType { }
+  trait UnionType extends UnionOrIntersectionType { }
 
-  interface IntersectionType extends UnionOrIntersectionType { }
+  trait IntersectionType extends UnionOrIntersectionType { }
 
   /* @internal */
   // An instantiated anonymous type has a target and a mapper
-  interface AnonymousType extends ObjectType {
+  trait AnonymousType extends ObjectType {
     target?: AnonymousType;  // Instantiation target
     mapper?: TypeMapper;   // Instantiation mapper
   }
 
   /* @internal */
   // Resolved object, union, or intersection type
-  interface ResolvedType extends ObjectType, UnionOrIntersectionType {
+  trait ResolvedType extends ObjectType, UnionOrIntersectionType {
     members: SymbolTable;        // Properties by name
     properties: Symbol[];        // Properties
     callSignatures: Signature[];     // Call signatures of type
@@ -2220,19 +2220,19 @@ object Types {
   // Object literals are initially marked fresh. Freshness disappears following an assignment,
   // before a type assertion, or when when an object literal's type is widened. The regular
   // version of a fresh type is identical except for the TypeFlags.FreshObjectLiteral flag.
-  interface FreshObjectLiteralType extends ResolvedType {
+  trait FreshObjectLiteralType extends ResolvedType {
     regularType: ResolvedType;  // Regular version of fresh type
   }
 
   // Just a place to cache element types of iterables and iterators
   /* @internal */
-  interface IterableOrIteratorType extends ObjectType, UnionType {
+  trait IterableOrIteratorType extends ObjectType, UnionType {
     iterableElementType?: Type
     iteratorElementType?: Type
   }
 
   // Type parameters (TypeFlags.TypeParameter)
-  interface TypeParameter extends Type {
+  trait TypeParameter extends Type {
     constraint: Type;    // Constraint
     /* @internal */
     target?: TypeParameter;  // Instantiation target
@@ -2247,9 +2247,9 @@ object Types {
     Construct,
   }
 
-  interface Signature {
+  trait Signature {
     declaration: SignatureDeclaration;  // Originating declaration
-    typeParameters: TypeParameter[];  // Type parameters (undefined if non-generic)
+    typeParameters: TypeParameter[];  // Type parameters (() if non-generic)
     parameters: Symbol[];         // Parameters
     /* @internal */
     resolvedReturnType: Type;       // Resolved return type
@@ -2276,14 +2276,14 @@ object Types {
     Number,
   }
 
-  interface IndexInfo {
+  trait IndexInfo {
     type: Type
     isReadonly: Boolean
     declaration?: SignatureDeclaration
   }
 
   /* @internal */
-  interface TypeMapper {
+  trait TypeMapper {
     (t: TypeParameter): Type
     instantiations?: Type[];  // Cache of instantiations created using this type mapper.
     context?: InferenceContext; // The inference context this mapper was created from.
@@ -2292,7 +2292,7 @@ object Types {
   }
 
   /* @internal */
-  interface TypeInferences {
+  trait TypeInferences {
     primary: Type[];  // Inferences made directly to a type parameter
     secondary: Type[];  // Inferences made to a type parameter in a union type
     isFixed: Boolean;   // Whether the type parameter is fixed, as defined in section 4.12.2 of the TypeScript spec
@@ -2300,7 +2300,7 @@ object Types {
   }
 
   /* @internal */
-  interface InferenceContext {
+  trait InferenceContext {
     typeParameters: TypeParameter[];  // Type parameters for which inferences are made
     inferUnionTypes: Boolean;       // Infer union types for disjoint candidates (otherwise undefinedType)
     inferences: TypeInferences[];     // Inferences made for each type parameter
@@ -2323,7 +2323,7 @@ object Types {
     ThisProperty
   }
 
-  interface DiagnosticMessage {
+  trait DiagnosticMessage {
     key: String
     category: DiagnosticCategory
     code: Int
@@ -2336,14 +2336,14 @@ object Types {
    * While it seems that DiagnosticMessageChain is structurally similar to DiagnosticMessage,
    * the difference is that messages are all preformatted in DMC.
    */
-  interface DiagnosticMessageChain {
+  trait DiagnosticMessageChain {
     messageText: String
     category: DiagnosticCategory
     code: Int
     next?: DiagnosticMessageChain
   }
 
-  interface Diagnostic {
+  trait Diagnostic {
     file: SourceFile
     start: Int
     length: Int
@@ -2367,7 +2367,7 @@ object Types {
   type PathSubstitutions = Map<String[]>
   type TsConfigOnlyOptions = RootPaths | PathSubstitutions
 
-  interface CompilerOptions {
+  trait CompilerOptions {
     allowNonTsExtensions?: Boolean
     charset?: String
     declaration?: Boolean
@@ -2453,7 +2453,7 @@ object Types {
     LineFeed = 1,
   }
 
-  interface LineAndCharacter {
+  trait LineAndCharacter {
     line: Int
     /*
      * This value denotes the character position in line and is different from the 'column' because of tab characters.
@@ -2480,14 +2480,14 @@ object Types {
     Pretty,
   }
 
-  interface ParsedCommandLine {
+  trait ParsedCommandLine {
     options: CompilerOptions
     fileNames: String[]
     errors: Diagnostic[]
   }
 
   /* @internal */
-  interface CommandLineOptionBase {
+  trait CommandLineOptionBase {
     name: String
     type: "String" | "Int" | "Boolean" | "object" | Map<Int>;  // a value of a primitive type, or an object literal mapping named values to actual values
     isFilePath?: Boolean;                   // True if option value is a path or fileName
@@ -2499,18 +2499,18 @@ object Types {
   }
 
   /* @internal */
-  interface CommandLineOptionOfPrimitiveType extends CommandLineOptionBase {
+  trait CommandLineOptionOfPrimitiveType extends CommandLineOptionBase {
     type: "String" | "Int" | "Boolean"
   }
 
   /* @internal */
-  interface CommandLineOptionOfCustomType extends CommandLineOptionBase {
+  trait CommandLineOptionOfCustomType extends CommandLineOptionBase {
     type: Map<Int>;       // an object literal mapping named values to actual values
     error: DiagnosticMessage;    // The error given when the argument does not fit a customized 'type'
   }
 
   /* @internal */
-  interface TsConfigOnlyOption extends CommandLineOptionBase {
+  trait TsConfigOnlyOption extends CommandLineOptionBase {
     type: "object"
   }
 
@@ -2654,16 +2654,16 @@ object Types {
     verticalTab = 0x0B,       // \v
   }
 
-  interface ModuleResolutionHost {
+  trait ModuleResolutionHost {
     fileExists(fileName: String): Boolean
     // readFile def is used to read arbitrary text files on disk, i.e. when resolution procedure needs the content of 'package.json'
     // to determine location of bundled typings for node module
     readFile(fileName: String): String
-    trace?(s: String): void
+    trace?(s: String): Unit
     directoryExists?(directoryName: String): Boolean
   }
 
-  interface ResolvedModule {
+  trait ResolvedModule {
     resolvedFileName: String
     /*
      * Denotes if 'resolvedFileName' is isExternalLibraryImport and thus should be proper external module:
@@ -2674,13 +2674,13 @@ object Types {
     isExternalLibraryImport?: Boolean
   }
 
-  interface ResolvedModuleWithFailedLookupLocations {
+  trait ResolvedModuleWithFailedLookupLocations {
     resolvedModule: ResolvedModule
     failedLookupLocations: String[]
   }
 
-  interface CompilerHost extends ModuleResolutionHost {
-    getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => void): SourceFile
+  trait CompilerHost extends ModuleResolutionHost {
+    getSourceFile(fileName: String, languageVersion: ScriptTarget, onError?: (message: String) => Unit): SourceFile
     getCancellationToken?(): CancellationToken
     getDefaultLibFileName(options: CompilerOptions): String
     writeFile: WriteFileCallback
@@ -2699,20 +2699,20 @@ object Types {
     resolveModuleNames?(moduleNames: String[], containingFile: String): ResolvedModule[]
   }
 
-  interface TextSpan {
+  trait TextSpan {
     start: Int
     length: Int
   }
 
-  interface TextChangeRange {
+  trait TextChangeRange {
     span: TextSpan
     newLength: Int
   }
 
   /* @internal */
-  interface DiagnosticCollection {
+  trait DiagnosticCollection {
     // Adds a diagnostic to this diagnostic collection.
-    add(diagnostic: Diagnostic): void
+    add(diagnostic: Diagnostic): Unit
 
     // Gets all the diagnostics that aren't associated with a file.
     getGlobalDiagnostics(): Diagnostic[]
@@ -2728,6 +2728,6 @@ object Types {
     // of this method before/after the operation is performed.
     getModificationCount(): Int
 
-    /* @internal */ reattachFileDiagnostics(newFile: SourceFile): void
+    /* @internal */ reattachFileDiagnostics(newFile: SourceFile): Unit
   }
 }

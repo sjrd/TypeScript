@@ -332,7 +332,7 @@ object CommandLineParser {
   ]
 
   /* @internal */
-  interface OptionNameMap {
+  trait OptionNameMap {
     optionNameMap: Map<CommandLineOption>
     shortOptionNames: Map<String>
   }

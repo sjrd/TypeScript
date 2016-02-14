@@ -4,13 +4,13 @@ package be.doeraene.tsc
 
 /* @internal */
 object Utilities {
-  interface ReferencePathMatchResult {
+  trait ReferencePathMatchResult {
     fileReference?: FileReference
     diagnosticMessage?: DiagnosticMessage
     isNoDefaultLib?: Boolean
   }
 
-  interface SynthesizedNode extends Node {
+  trait SynthesizedNode extends Node {
     leadingCommentRanges?: CommentRange[]
     trailingCommentRanges?: CommentRange[]
     startsOnNewLine: Boolean
@@ -26,14 +26,14 @@ object Utilities {
       }
     }
 
-    return undefined
+    return ()
   }
 
-  interface StringSymbolWriter extends SymbolWriter {
+  trait StringSymbolWriter extends SymbolWriter {
     String(): String
   }
 
-  interface EmitHost extends ScriptReferenceHost {
+  trait EmitHost extends ScriptReferenceHost {
     getSourceFiles(): SourceFile[]
 
     getCommonSourceDirectory(): String
@@ -51,7 +51,7 @@ object Utilities {
     if (stringWriters.length == 0) {
       var str = ""
 
-      val writeText: (text: String) => void = text => str += text
+      val writeText: (text: String) => Unit = text => str += text
       return {
         String: () => str,
         writeKeyword: writeText,
@@ -109,10 +109,10 @@ object Utilities {
   }
 
   def getResolvedModule(sourceFile: SourceFile, moduleNameText: String): ResolvedModule {
-    return hasResolvedModule(sourceFile, moduleNameText) ? sourceFile.resolvedModules[moduleNameText] : undefined
+    return hasResolvedModule(sourceFile, moduleNameText) ? sourceFile.resolvedModules[moduleNameText] : ()
   }
 
-  def setResolvedModule(sourceFile: SourceFile, moduleNameText: String, resolvedModule: ResolvedModule): void {
+  def setResolvedModule(sourceFile: SourceFile, moduleNameText: String, resolvedModule: ResolvedModule): Unit {
     if (!sourceFile.resolvedModules) {
       sourceFile.resolvedModules = {}
     }
@@ -126,7 +126,7 @@ object Utilities {
     return (node.flags & NodeFlags.ThisNodeOrAnySubNodesHasError) != 0
   }
 
-  def aggregateChildData(node: Node): void {
+  def aggregateChildData(node: Node): Unit {
     if (!(node.flags & NodeFlags.HasAggregatedChildData)) {
       // A node is considered to contain a parse error if:
       //  a) the parser explicitly marked that it had an error
@@ -182,7 +182,7 @@ object Utilities {
   }
 
   // Returns true if this node is missing from the actual source code. A 'missing' node is different
-  // from 'undefined/defined'. When a node is undefined (which can happen for optional nodes
+  // from '()/defined'. When a node is () (which can happen for optional nodes
   // in the tree), it is definitely missing. However, a node may be defined, but still be
   // missing.  This happens whenever the parser knows it needs to parse something, but can't
   // get anything in the source code that it expects at that location. For example:
@@ -360,7 +360,7 @@ object Utilities {
   }
 
   def getSpanOfTokenAtPosition(sourceFile: SourceFile, pos: Int): TextSpan {
-    val scanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/ true, sourceFile.languageVariant, sourceFile.text, /*onError:*/ undefined, pos)
+    val scanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/ true, sourceFile.languageVariant, sourceFile.text, /*onError:*/ (), pos)
     scanner.scan()
     val start = scanner.getTokenPos()
     return createTextSpanFromBounds(start, scanner.getTextPos())
@@ -396,7 +396,7 @@ object Utilities {
         break
     }
 
-    if (errorNode == undefined) {
+    if (errorNode == ()) {
       // If we don't have a better node, then just set the error on the first token of
       // construct.
       return getSpanOfTokenAtPosition(sourceFile, node.pos)
@@ -410,11 +410,11 @@ object Utilities {
   }
 
   def isExternalModule(file: SourceFile): Boolean {
-    return file.externalModuleIndicator != undefined
+    return file.externalModuleIndicator != ()
   }
 
   def isExternalOrCommonJsModule(file: SourceFile): Boolean {
-    return (file.externalModuleIndicator || file.commonJsModuleIndicator) != undefined
+    return (file.externalModuleIndicator || file.commonJsModuleIndicator) != ()
   }
 
   def isDeclarationFile(file: SourceFile): Boolean {
@@ -619,11 +619,11 @@ object Utilities {
     }
   }
 
-  def forEachYieldExpression(body: Block, visitor: (expr: YieldExpression) => void): void {
+  def forEachYieldExpression(body: Block, visitor: (expr: YieldExpression) => Unit): Unit {
 
     return traverse(body)
 
-    def traverse(node: Node): void {
+    def traverse(node: Node): Unit {
       switch (node.kind) {
         case SyntaxKind.YieldExpression:
           visitor(<YieldExpression>node)
@@ -772,7 +772,7 @@ object Utilities {
     while (true) {
       node = node.parent
       if (!node) {
-        return undefined
+        return ()
       }
       switch (node.kind) {
         case SyntaxKind.ComputedPropertyName:
@@ -900,7 +900,7 @@ object Utilities {
       }
     }
 
-    return undefined
+    return ()
   }
 
   def getInvokedExpression(node: CallLikeExpression): Expression {
@@ -926,12 +926,12 @@ object Utilities {
       case SyntaxKind.SetAccessor:
       case SyntaxKind.MethodDeclaration:
         // if this method has a body and its parent is a class declaration, this is a valid target.
-        return (<FunctionLikeDeclaration>node).body != undefined
+        return (<FunctionLikeDeclaration>node).body != ()
           && node.parent.kind == SyntaxKind.ClassDeclaration
 
       case SyntaxKind.Parameter:
         // if the parameter's parent has a body and its grandparent is a class declaration, this is a valid target
-        return (<FunctionLikeDeclaration>node.parent).body != undefined
+        return (<FunctionLikeDeclaration>node.parent).body != ()
           && (node.parent.kind == SyntaxKind.Constructor
           || node.parent.kind == SyntaxKind.MethodDeclaration
           || node.parent.kind == SyntaxKind.SetAccessor)
@@ -942,7 +942,7 @@ object Utilities {
   }
 
   def nodeIsDecorated(node: Node): Boolean {
-    return node.decorators != undefined
+    return node.decorators != ()
       && nodeCanBeDecorated(node)
   }
 
@@ -1168,7 +1168,7 @@ object Utilities {
         case SyntaxKind.PropertyAssignment:
         case SyntaxKind.PropertyDeclaration:
         case SyntaxKind.PropertySignature:
-          return (<ParameterDeclaration | MethodDeclaration | PropertyDeclaration>node).questionToken != undefined
+          return (<ParameterDeclaration | MethodDeclaration | PropertyDeclaration>node).questionToken != ()
       }
     }
 
@@ -1183,12 +1183,12 @@ object Utilities {
 
   def getJSDocTag(node: Node, kind: SyntaxKind, checkParentVariableStatement: Boolean): JSDocTag {
     if (!node) {
-      return undefined
+      return ()
     }
 
     val jsDocComment = getJSDocComment(node, checkParentVariableStatement)
     if (!jsDocComment) {
-      return undefined
+      return ()
     }
 
     for (val tag of jsDocComment.tags) {
@@ -1214,7 +1214,7 @@ object Utilities {
         (<VariableDeclaration>node.parent).initializer == node &&
         node.parent.parent.parent.kind == SyntaxKind.VariableStatement
 
-      val variableStatementNode = isInitializerOfVariableDeclarationInStatement ? node.parent.parent.parent : undefined
+      val variableStatementNode = isInitializerOfVariableDeclarationInStatement ? node.parent.parent.parent : ()
       if (variableStatementNode) {
         return variableStatementNode.jsDocComment
       }
@@ -1236,7 +1236,7 @@ object Utilities {
       }
     }
 
-    return undefined
+    return ()
   }
 
   def getJSDocTypeTag(node: Node): JSDocTypeTag {
@@ -1271,7 +1271,7 @@ object Utilities {
       }
     }
 
-    return undefined
+    return ()
   }
 
   def hasRestParameter(s: SignatureDeclaration): Boolean {
@@ -1291,7 +1291,7 @@ object Utilities {
         }
       }
 
-      return node.dotDotDotToken != undefined
+      return node.dotDotDotToken != ()
     }
 
     return false
@@ -1482,17 +1482,17 @@ object Utilities {
 
   def getClassExtendsHeritageClauseElement(node: ClassLikeDeclaration) {
     val heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ExtendsKeyword)
-    return heritageClause && heritageClause.types.length > 0 ? heritageClause.types[0] : undefined
+    return heritageClause && heritageClause.types.length > 0 ? heritageClause.types[0] : ()
   }
 
   def getClassImplementsHeritageClauseElements(node: ClassLikeDeclaration) {
     val heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ImplementsKeyword)
-    return heritageClause ? heritageClause.types : undefined
+    return heritageClause ? heritageClause.types : ()
   }
 
   def getInterfaceBaseTypeNodes(node: InterfaceDeclaration) {
     val heritageClause = getHeritageClause(node.heritageClauses, SyntaxKind.ExtendsKeyword)
-    return heritageClause ? heritageClause.types : undefined
+    return heritageClause ? heritageClause.types : ()
   }
 
   def getHeritageClause(clauses: NodeArray<HeritageClause>, kind: SyntaxKind) {
@@ -1504,7 +1504,7 @@ object Utilities {
       }
     }
 
-    return undefined
+    return ()
   }
 
   def tryResolveScriptReference(host: ScriptReferenceHost, sourceFile: SourceFile, reference: FileReference) {
@@ -1521,7 +1521,7 @@ object Utilities {
       }
       node = node.parent
     }
-    return undefined
+    return ()
   }
 
   def getFileReferenceFromReferencePath(comment: String, commentRange: CommentRange): ReferencePathMatchResult {
@@ -1556,7 +1556,7 @@ object Utilities {
       }
     }
 
-    return undefined
+    return ()
   }
 
   def isKeyword(token: SyntaxKind): Boolean {
@@ -1613,7 +1613,7 @@ object Utilities {
       }
     }
 
-    return undefined
+    return ()
   }
 
   def getPropertyNameForKnownSymbolName(symbolName: String): String {
@@ -1674,7 +1674,7 @@ object Utilities {
     // We don't use "clone" from core.ts here, as we need to preserve the prototype chain of
     // the original node. We also need to exclude specific properties and only include own-
     // properties (to skip members already defined on the shared prototype).
-    val clone = location != undefined
+    val clone = location != ()
       ? <T>createNode(node.kind, location.pos, location.end)
       : <T>createSynthesizedNode(node.kind)
 
@@ -1686,11 +1686,11 @@ object Utilities {
       (<any>clone)[key] = (<any>node)[key]
     }
 
-    if (flags != undefined) {
+    if (flags != ()) {
       clone.flags = flags
     }
 
-    if (parent != undefined) {
+    if (parent != ()) {
       clone.parent = parent
     }
 
@@ -1753,7 +1753,7 @@ object Utilities {
       return modificationCount
     }
 
-    def reattachFileDiagnostics(newFile: SourceFile): void {
+    def reattachFileDiagnostics(newFile: SourceFile): Unit {
       if (!hasProperty(fileDiagnostics, newFile.fileName)) {
         return
       }
@@ -1763,7 +1763,7 @@ object Utilities {
       }
     }
 
-    def add(diagnostic: Diagnostic): void {
+    def add(diagnostic: Diagnostic): Unit {
       var diagnostics: Diagnostic[]
       if (diagnostic.file) {
         diagnostics = fileDiagnostics[diagnostic.file.fileName]
@@ -1881,25 +1881,25 @@ object Utilities {
       s
   }
 
-  interface EmitTextWriter {
-    write(s: String): void
-    writeTextOfNode(text: String, node: Node): void
-    writeLine(): void
-    increaseIndent(): void
-    decreaseIndent(): void
+  trait EmitTextWriter {
+    write(s: String): Unit
+    writeTextOfNode(text: String, node: Node): Unit
+    writeLine(): Unit
+    increaseIndent(): Unit
+    decreaseIndent(): Unit
     getText(): String
-    rawWrite(s: String): void
-    writeLiteral(s: String): void
+    rawWrite(s: String): Unit
+    writeLiteral(s: String): Unit
     getTextPos(): Int
     getLine(): Int
     getColumn(): Int
     getIndent(): Int
-    reset(): void
+    reset(): Unit
   }
 
   val indentStrings: String[] = ["", "  "]
   def getIndentString(level: Int) {
-    if (indentStrings[level] == undefined) {
+    if (indentStrings[level] == ()) {
       indentStrings[level] = getIndentString(level - 1) + indentStrings[1]
     }
     return indentStrings[level]
@@ -1926,7 +1926,7 @@ object Utilities {
       }
     }
 
-    def reset(): void {
+    def reset(): Unit {
       output = ""
       indent = 0
       lineStart = true
@@ -1935,7 +1935,7 @@ object Utilities {
     }
 
     def rawWrite(s: String) {
-      if (s != undefined) {
+      if (s != ()) {
         if (lineStart) {
           lineStart = false
         }
@@ -2020,14 +2020,14 @@ object Utilities {
       getEmitScriptTarget(compilerOptions) == ScriptTarget.ES6 ? ModuleKind.ES6 : ModuleKind.CommonJS
   }
 
-  interface EmitFileNames {
+  trait EmitFileNames {
     jsFilePath: String
     sourceMapFilePath: String
     declarationFilePath: String
   }
 
   def forEachExpectedEmitFile(host: EmitHost,
-    action: (emitFileNames: EmitFileNames, sourceFiles: SourceFile[], isBundledEmit: Boolean) => void,
+    action: (emitFileNames: EmitFileNames, sourceFiles: SourceFile[], isBundledEmit: Boolean) => Unit,
     targetSourceFile?: SourceFile) {
     val options = host.getCompilerOptions()
     // Emit on each source file
@@ -2035,7 +2035,7 @@ object Utilities {
       onBundledEmit(host)
     }
     else {
-      val sourceFiles = targetSourceFile == undefined ? host.getSourceFiles() : [targetSourceFile]
+      val sourceFiles = targetSourceFile == () ? host.getSourceFiles() : [targetSourceFile]
       for (val sourceFile of sourceFiles) {
         if (!isDeclarationFile(sourceFile)) {
           onSingleFileEmit(host, sourceFile)
@@ -2063,7 +2063,7 @@ object Utilities {
       val emitFileNames: EmitFileNames = {
         jsFilePath,
         sourceMapFilePath: getSourceMapFilePath(jsFilePath, options),
-        declarationFilePath: !isSourceFileJavaScript(sourceFile) ? getDeclarationEmitFilePath(jsFilePath, options) : undefined
+        declarationFilePath: !isSourceFileJavaScript(sourceFile) ? getDeclarationEmitFilePath(jsFilePath, options) : ()
       }
       action(emitFileNames, [sourceFile], /*isBundledEmit*/false)
     }
@@ -2086,11 +2086,11 @@ object Utilities {
     }
 
     def getSourceMapFilePath(jsFilePath: String, options: CompilerOptions) {
-      return options.sourceMap ? jsFilePath + ".map" : undefined
+      return options.sourceMap ? jsFilePath + ".map" : ()
     }
 
     def getDeclarationEmitFilePath(jsFilePath: String, options: CompilerOptions) {
-      return options.declaration ? removeFileExtension(jsFilePath) + ".d.ts" : undefined
+      return options.declaration ? removeFileExtension(jsFilePath) + ".d.ts" : ()
     }
   }
 
@@ -2185,7 +2185,7 @@ object Utilities {
   }
 
   def emitComments(text: String, lineMap: Int[], writer: EmitTextWriter, comments: CommentRange[], trailingSeparator: Boolean, newLine: String,
-    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => void) {
+    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => Unit) {
     var emitLeadingSpace = !trailingSeparator
     forEach(comments, comment => {
       if (emitLeadingSpace) {
@@ -2211,7 +2211,7 @@ object Utilities {
    * the next statement by space.
    */
   def emitDetachedComments(text: String, lineMap: Int[], writer: EmitTextWriter,
-    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => void,
+    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => Unit,
     node: TextRange, newLine: String, removeComments: Boolean) {
     var leadingComments: CommentRange[]
     var currentDetachedCommentInfo: {nodePos: Int, detachedCommentEndPos: Int}
@@ -2287,7 +2287,7 @@ object Utilities {
 
         if (pos != comment.pos) {
           // If we are not emitting first line, we need to write the spaces to adjust the alignment
-          if (firstCommentLineIndent == undefined) {
+          if (firstCommentLineIndent == ()) {
             firstCommentLineIndent = calculateIndent(text, lineMap[firstCommentLineAndCharacter.line], comment.pos)
           }
 
@@ -2467,7 +2467,7 @@ object Utilities {
   }
 
   def getLocalSymbolForExportDefault(symbol: Symbol) {
-    return symbol && symbol.valueDeclaration && (symbol.valueDeclaration.flags & NodeFlags.Default) ? symbol.valueDeclaration.localSymbol : undefined
+    return symbol && symbol.valueDeclaration && (symbol.valueDeclaration.flags & NodeFlags.Default) ? symbol.valueDeclaration.localSymbol : ()
   }
 
   def hasJavaScriptFileExtension(fileName: String) {
@@ -2516,7 +2516,7 @@ object Utilities {
    * Serialize an object graph into a JSON String. This is intended only for use on an acyclic graph
    * as the fallback implementation does not check for circular references by default.
    */
-  val stringify: (value: any) => String = typeof JSON != "undefined" && JSON.stringify
+  val stringify: (value: any) => String = typeof JSON != "()" && JSON.stringify
     ? JSON.stringify
     : stringifyFallback
 
@@ -2524,8 +2524,8 @@ object Utilities {
    * Serialize an object graph into a JSON String.
    */
   def stringifyFallback(value: any): String {
-    // JSON.stringify returns `undefined` here, instead of the String "undefined".
-    return value == undefined ? undefined : stringifyValue(value)
+    // JSON.stringify returns `()` here, instead of the String "()".
+    return value == () ? () : stringifyValue(value)
   }
 
   def stringifyValue(value: any): String {
@@ -2557,7 +2557,7 @@ object Utilities {
   }
 
   def stringifyProperty(memo: String, value: any, key: String) {
-    return value == undefined || typeof value == "def" || key == "__cycle" ? memo
+    return value == () || typeof value == "def" || key == "__cycle" ? memo
        : (memo ? memo + "," : memo) + `"${escapeString(key)}":${stringifyValue(value)}`
   }
 
@@ -2655,7 +2655,7 @@ package ts {
     if (overlapStart < overlapEnd) {
       return createTextSpanFromBounds(overlapStart, overlapEnd)
     }
-    return undefined
+    return ()
   }
 
   def textSpanIntersectsWithTextSpan(span: TextSpan, other: TextSpan) {
@@ -2683,7 +2683,7 @@ package ts {
     if (intersectStart <= intersectEnd) {
       return createTextSpanFromBounds(intersectStart, intersectEnd)
     }
-    return undefined
+    return ()
   }
 
   def createTextSpan(start: Int, length: Int): TextSpan {
