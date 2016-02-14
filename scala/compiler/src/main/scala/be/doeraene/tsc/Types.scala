@@ -1512,9 +1512,9 @@ object Types {
     /* internal */ path: Path
     text: String
 
-    amdDependencies: AmdDependency[]
+    amdDependencies: Array[AmdDependency]
     moduleName: String
-    referencedFiles: FileReference[]
+    referencedFiles: Array[FileReference]
     languageVariant: LanguageVariant
     isDeclarationFile: Boolean
 
@@ -1546,21 +1546,21 @@ object Types {
 
     // File level diagnostics reported by the parser (includes diagnostics about /// references
     // as well as code diagnostics).
-    /* @internal */ parseDiagnostics: Diagnostic[]
+    /* @internal */ parseDiagnostics: Array[Diagnostic]
 
     // File level diagnostics reported by the binder.
-    /* @internal */ bindDiagnostics: Diagnostic[]
+    /* @internal */ bindDiagnostics: Array[Diagnostic]
 
     // Stores a line map for the file.
     // This field should never be used directly to obtain line map, use getLineMap def instead.
-    /* @internal */ lineMap: Int[]
+    /* @internal */ lineMap: Array[Int]
     /* @internal */ classifiableNames?: Map<String>
     // Stores a mapping 'external module reference text' -> 'resolved file name' | ()
     // It is used to resolve module names in the checker.
     // Content of this field should never be used directly - use getResolvedModuleFileName/setResolvedModuleFileName functions instead
     /* @internal */ resolvedModules: Map<ResolvedModule>
-    /* @internal */ imports: LiteralExpression[]
-    /* @internal */ moduleAugmentations: LiteralExpression[]
+    /* @internal */ imports: Array[LiteralExpression]
+    /* @internal */ moduleAugmentations: Array[LiteralExpression]
   }
 
   trait ScriptReferenceHost {
@@ -1570,7 +1570,7 @@ object Types {
   }
 
   trait ParseConfigHost {
-    readDirectory(rootDir: String, extension: String, exclude: String[]): String[]
+    readDirectory(rootDir: String, extension: String, exclude: Array[String]): Array[String]
   }
 
   trait WriteFileCallback {
@@ -1591,12 +1591,12 @@ object Types {
     /**
      * Get a list of root file names that were passed to a 'createProgram'
      */
-    getRootFileNames(): String[]
+    getRootFileNames(): Array[String]
 
     /**
      * Get a list of files in the program
      */
-    getSourceFiles(): SourceFile[]
+    getSourceFiles(): Array[SourceFile]
 
     /**
      * Emits the JavaScript and declaration files.  If targetSourceFile is not specified, then
@@ -1610,11 +1610,11 @@ object Types {
      */
     emit(targetSourceFile?: SourceFile, writeFile?: WriteFileCallback, cancellationToken?: CancellationToken): EmitResult
 
-    getOptionsDiagnostics(cancellationToken?: CancellationToken): Diagnostic[]
-    getGlobalDiagnostics(cancellationToken?: CancellationToken): Diagnostic[]
-    getSyntacticDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Diagnostic[]
-    getSemanticDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Diagnostic[]
-    getDeclarationDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Diagnostic[]
+    getOptionsDiagnostics(cancellationToken?: CancellationToken): Array[Diagnostic]
+    getGlobalDiagnostics(cancellationToken?: CancellationToken): Array[Diagnostic]
+    getSyntacticDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Array[Diagnostic]
+    getSemanticDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Array[Diagnostic]
+    getDeclarationDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Array[Diagnostic]
 
     /**
      * Gets a type checker that can be used to semantically analyze source fils in the program.
@@ -1659,12 +1659,12 @@ object Types {
     jsSourceMappingURL: String;      // source map URL written in the .js file
     sourceMapFile: String;         // Source map's file field - .js file name
     sourceMapSourceRoot: String;     // Source map's sourceRoot field - location where the sources will be present if not ""
-    sourceMapSources: String[];      // Source map's sources field - list of sources that can be indexed in this source map
-    sourceMapSourcesContent?: String[];  // Source map's sourcesContent field - list of the sources' text to be embedded in the source map
-    inputSourceFileNames: String[];    // Input source file (which one can use on program to get the file), 1:1 mapping with the sourceMapSources list
-    sourceMapNames?: String[];       // Source map's names field - list of names that can be indexed in this source map
+    sourceMapSources: Array[String];      // Source map's sources field - list of sources that can be indexed in this source map
+    sourceMapSourcesContent?: Array[String];  // Source map's sourcesContent field - list of the sources' text to be embedded in the source map
+    inputSourceFileNames: Array[String];    // Input source file (which one can use on program to get the file), 1:1 mapping with the sourceMapSources list
+    sourceMapNames?: Array[String];       // Source map's names field - list of names that can be indexed in this source map
     sourceMapMappings: String;       // Source map's mapping field - encoded source map spans
-    sourceMapDecodedMappings: SourceMapSpan[];  // Raw source map spans that were encoded into the sourceMapMappings
+    sourceMapDecodedMappings: Array[SourceMapSpan];  // Raw source map spans that were encoded into the sourceMapMappings
   }
 
   /** Return code used by getEmitOutput def to indicate status of the def */
@@ -1683,31 +1683,31 @@ object Types {
 
   trait EmitResult {
     emitSkipped: Boolean
-    diagnostics: Diagnostic[]
-    /* @internal */ sourceMaps: SourceMapData[];  // Array of sourceMapData if compiler emitted sourcemaps
+    diagnostics: Array[Diagnostic]
+    /* @internal */ sourceMaps: Array[SourceMapData];  // Array of sourceMapData if compiler emitted sourcemaps
   }
 
   /* @internal */
   trait TypeCheckerHost {
     getCompilerOptions(): CompilerOptions
 
-    getSourceFiles(): SourceFile[]
+    getSourceFiles(): Array[SourceFile]
     getSourceFile(fileName: String): SourceFile
   }
 
   trait TypeChecker {
     getTypeOfSymbolAtLocation(symbol: Symbol, node: Node): Type
     getDeclaredTypeOfSymbol(symbol: Symbol): Type
-    getPropertiesOfType(type: Type): Symbol[]
+    getPropertiesOfType(type: Type): Array[Symbol]
     getPropertyOfType(type: Type, propertyName: String): Symbol
-    getSignaturesOfType(type: Type, kind: SignatureKind): Signature[]
+    getSignaturesOfType(type: Type, kind: SignatureKind): Array[Signature]
     getIndexTypeOfType(type: Type, kind: IndexKind): Type
-    getBaseTypes(type: InterfaceType): ObjectType[]
+    getBaseTypes(type: InterfaceType): Array[ObjectType]
     getReturnTypeOfSignature(signature: Signature): Type
 
-    getSymbolsInScope(location: Node, meaning: SymbolFlags): Symbol[]
+    getSymbolsInScope(location: Node, meaning: SymbolFlags): Array[Symbol]
     getSymbolAtLocation(node: Node): Symbol
-    getSymbolsOfParameterPropertyDeclaration(parameter: ParameterDeclaration, parameterName: String): Symbol[]
+    getSymbolsOfParameterPropertyDeclaration(parameter: ParameterDeclaration, parameterName: String): Array[Symbol]
     getShorthandAssignmentValueSymbol(location: Node): Symbol
     getExportSpecifierLocalTargetSymbol(location: ExportSpecifier): Symbol
     getTypeAtLocation(node: Node): Type
@@ -1715,10 +1715,10 @@ object Types {
     symbolToString(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags): String
     getSymbolDisplayBuilder(): SymbolDisplayBuilder
     getFullyQualifiedName(symbol: Symbol): String
-    getAugmentedPropertiesOfType(type: Type): Symbol[]
-    getRootSymbols(symbol: Symbol): Symbol[]
+    getAugmentedPropertiesOfType(type: Type): Array[Symbol]
+    getRootSymbols(symbol: Symbol): Array[Symbol]
     getContextualType(node: Expression): Type
-    getResolvedSignature(node: CallLikeExpression, candidatesOutArray?: Signature[]): Signature
+    getResolvedSignature(node: CallLikeExpression, candidatesOutArray?: Array[Signature]): Signature
     getSignatureFromDeclaration(declaration: SignatureDeclaration): Signature
     isImplementationOfOverload(node: FunctionLikeDeclaration): Boolean
     isUndefinedSymbol(symbol: Symbol): Boolean
@@ -1728,15 +1728,15 @@ object Types {
     getConstantValue(node: EnumMember | PropertyAccessExpression | ElementAccessExpression): Int
     isValidPropertyAccess(node: PropertyAccessExpression | QualifiedName, propertyName: String): Boolean
     getAliasedSymbol(symbol: Symbol): Symbol
-    getExportsOfModule(moduleSymbol: Symbol): Symbol[]
+    getExportsOfModule(moduleSymbol: Symbol): Array[Symbol]
 
     getJsxElementAttributesType(elementNode: JsxOpeningLikeElement): Type
-    getJsxIntrinsicTagNames(): Symbol[]
+    getJsxIntrinsicTagNames(): Array[Symbol]
     isOptionalParameter(node: ParameterDeclaration): Boolean
 
     // Should not be called directly.  Should only be accessed through the Program instance.
-    /* @internal */ getDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Diagnostic[]
-    /* @internal */ getGlobalDiagnostics(): Diagnostic[]
+    /* @internal */ getDiagnostics(sourceFile?: SourceFile, cancellationToken?: CancellationToken): Array[Diagnostic]
+    /* @internal */ getGlobalDiagnostics(): Array[Diagnostic]
     /* @internal */ getEmitResolver(sourceFile?: SourceFile, cancellationToken?: CancellationToken): EmitResolver
 
     /* @internal */ getNodeCount(): Int
@@ -1752,8 +1752,8 @@ object Types {
     buildParameterDisplay(parameter: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
     buildTypeParameterDisplay(tp: TypeParameter, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
     buildTypeParameterDisplayFromSymbol(symbol: Symbol, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
-    buildDisplayForParametersAndDelimiters(parameters: Symbol[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
-    buildDisplayForTypeParametersAndDelimiters(typeParameters: TypeParameter[], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildDisplayForParametersAndDelimiters(parameters: Array[Symbol], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
+    buildDisplayForTypeParametersAndDelimiters(typeParameters: Array[TypeParameter], writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
     buildReturnTypeDisplay(signature: Signature, writer: SymbolWriter, enclosingDeclaration?: Node, flags?: TypeFormatFlags): Unit
   }
 
@@ -1779,7 +1779,7 @@ object Types {
 
   val enum TypeFormatFlags {
     None              = 0x00000000,
-    WriteArrayAsGenericType     = 0x00000001,  // Write Array<T> instead T[]
+    WriteArrayAsGenericType     = 0x00000001,  // Write Array<T> instead Array[T]
     UseTypeOfFunction         = 0x00000002,  // Write typeof instead of def type literal
     NoTruncation          = 0x00000004,  // Don't truncate typeToString result
     WriteArrowStyleSignature    = 0x00000008,  // Write arrow style signature
@@ -1838,7 +1838,7 @@ object Types {
   /* @internal */
   trait SymbolVisibilityResult {
     accessibility: SymbolAccessibility
-    aliasesToMakeVisible?: AnyImportSyntax[]; // aliases that need to have this symbol visible
+    aliasesToMakeVisible?: Array[AnyImportSyntax]; // aliases that need to have this symbol visible
     errorSymbolName?: String; // Optional symbol name that results in error
     errorNode?: Node; // optional node that results in error
   }
@@ -1881,7 +1881,7 @@ object Types {
     isTopLevelValueImportEqualsWithEntityName(node: ImportEqualsDeclaration): Boolean
     getNodeCheckFlags(node: Node): NodeCheckFlags
     isDeclarationVisible(node: Declaration): Boolean
-    collectLinkedAliases(node: Identifier): Node[]
+    collectLinkedAliases(node: Identifier): Array[Node]
     isImplementationOfOverload(node: FunctionLikeDeclaration): Boolean
     writeTypeOfDeclaration(declaration: AccessorDeclaration | VariableLikeDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): Unit
     writeReturnTypeOfSignatureDeclaration(signatureDeclaration: SignatureDeclaration, enclosingDeclaration: Node, flags: TypeFormatFlags, writer: SymbolWriter): Unit
@@ -1986,7 +1986,7 @@ object Types {
   trait Symbol {
     flags: SymbolFlags;           // Symbol flags
     name: String;               // Name of symbol
-    declarations?: Declaration[];       // Declarations associated with this symbol
+    declarations?: Array[Declaration];       // Declarations associated with this symbol
     valueDeclaration?: Declaration;     // First value declaration of the symbol
 
     members?: SymbolTable;          // Class, trait or literal instance members
@@ -2003,7 +2003,7 @@ object Types {
     target?: Symbol;          // Resolved (non-alias) target of an alias
     type?: Type;            // Type of value symbol
     declaredType?: Type;        // Type of class, trait, enum, type alias, or type parameter
-    typeParameters?: TypeParameter[];   // Type parameters of type alias (() if non-generic)
+    typeParameters?: Array[TypeParameter];   // Type parameters of type alias (() if non-generic)
     inferredClassType?: Type;       // Type of an inferred ES5 class
     instantiations?: Map<Type>;     // Instantiations of generic type alias (() if non-generic)
     mapper?: TypeMapper;        // Type mapper for instantiation alias
@@ -2145,20 +2145,20 @@ object Types {
 
   // Class and trait types (TypeFlags.Class and TypeFlags.Interface)
   trait InterfaceType extends ObjectType {
-    typeParameters: TypeParameter[];       // Type parameters (() if non-generic)
-    outerTypeParameters: TypeParameter[];    // Outer type parameters (() if none)
-    localTypeParameters: TypeParameter[];    // Local type parameters (() if none)
+    typeParameters: Array[TypeParameter];       // Type parameters (() if non-generic)
+    outerTypeParameters: Array[TypeParameter];    // Outer type parameters (() if none)
+    localTypeParameters: Array[TypeParameter];    // Local type parameters (() if none)
     thisType: TypeParameter;           // The "this" type (() if none)
     /* @internal */
     resolvedBaseConstructorType?: Type;    // Resolved base constructor type of class
     /* @internal */
-    resolvedBaseTypes: ObjectType[];       // Resolved base types
+    resolvedBaseTypes: Array[ObjectType];       // Resolved base types
   }
 
   trait InterfaceTypeWithDeclaredMembers extends InterfaceType {
-    declaredProperties: Symbol[];        // Declared members
-    declaredCallSignatures: Signature[];     // Declared call signatures
-    declaredConstructSignatures: Signature[];  // Declared construct signatures
+    declaredProperties: Array[Symbol];        // Declared members
+    declaredCallSignatures: Array[Signature];     // Declared call signatures
+    declaredConstructSignatures: Array[Signature];  // Declared construct signatures
     declaredStringIndexInfo: IndexInfo;    // Declared String indexing info
     declaredNumberIndexInfo: IndexInfo;    // Declared numeric indexing info
   }
@@ -2173,7 +2173,7 @@ object Types {
   // explicit "this" argument.
   trait TypeReference extends ObjectType {
     target: GenericType;  // Type reference target
-    typeArguments: Type[];  // Type reference type arguments (() if none)
+    typeArguments: Array[Type];  // Type reference type arguments (() if none)
   }
 
   // Generic class and trait types
@@ -2183,11 +2183,11 @@ object Types {
   }
 
   trait TupleType extends ObjectType {
-    elementTypes: Type[];  // Element types
+    elementTypes: Array[Type];  // Element types
   }
 
   trait UnionOrIntersectionType extends Type {
-    types: Type[];          // Constituent types
+    types: Array[Type];          // Constituent types
     /* @internal */
     reducedType: Type;        // Reduced union type (all subtypes removed)
     /* @internal */
@@ -2209,9 +2209,9 @@ object Types {
   // Resolved object, union, or intersection type
   trait ResolvedType extends ObjectType, UnionOrIntersectionType {
     members: SymbolTable;        // Properties by name
-    properties: Symbol[];        // Properties
-    callSignatures: Signature[];     // Call signatures of type
-    constructSignatures: Signature[];  // Construct signatures of type
+    properties: Array[Symbol];        // Properties
+    callSignatures: Array[Signature];     // Call signatures of type
+    constructSignatures: Array[Signature];  // Construct signatures of type
     stringIndexInfo?: IndexInfo;     // String indexing info
     numberIndexInfo?: IndexInfo;     // Numeric indexing info
   }
@@ -2249,8 +2249,8 @@ object Types {
 
   trait Signature {
     declaration: SignatureDeclaration;  // Originating declaration
-    typeParameters: TypeParameter[];  // Type parameters (() if non-generic)
-    parameters: Symbol[];         // Parameters
+    typeParameters: Array[TypeParameter];  // Type parameters (() if non-generic)
+    parameters: Array[Symbol];         // Parameters
     /* @internal */
     resolvedReturnType: Type;       // Resolved return type
     /* @internal */
@@ -2264,7 +2264,7 @@ object Types {
     /* @internal */
     mapper?: TypeMapper;        // Instantiation mapper
     /* @internal */
-    unionSignatures?: Signature[];    // Underlying signatures of a union signature
+    unionSignatures?: Array[Signature];    // Underlying signatures of a union signature
     /* @internal */
     erasedSignatureCache?: Signature;   // Erased version of signature (deferred)
     /* @internal */
@@ -2285,7 +2285,7 @@ object Types {
   /* @internal */
   trait TypeMapper {
     (t: TypeParameter): Type
-    instantiations?: Type[];  // Cache of instantiations created using this type mapper.
+    instantiations?: Array[Type];  // Cache of instantiations created using this type mapper.
     context?: InferenceContext; // The inference context this mapper was created from.
                   // Only inference mappers have this set (in createInferenceMapper).
                   // The identity mapper and regular instantiation mappers do not need it.
@@ -2293,18 +2293,18 @@ object Types {
 
   /* @internal */
   trait TypeInferences {
-    primary: Type[];  // Inferences made directly to a type parameter
-    secondary: Type[];  // Inferences made to a type parameter in a union type
+    primary: Array[Type];  // Inferences made directly to a type parameter
+    secondary: Array[Type];  // Inferences made to a type parameter in a union type
     isFixed: Boolean;   // Whether the type parameter is fixed, as defined in section 4.12.2 of the TypeScript spec
               // If a type parameter is fixed, no more inferences can be made for the type parameter
   }
 
   /* @internal */
   trait InferenceContext {
-    typeParameters: TypeParameter[];  // Type parameters for which inferences are made
+    typeParameters: Array[TypeParameter];  // Type parameters for which inferences are made
     inferUnionTypes: Boolean;       // Infer union types for disjoint candidates (otherwise undefinedType)
-    inferences: TypeInferences[];     // Inferences made for each type parameter
-    inferredTypes: Type[];        // Inferred type for each type parameter
+    inferences: Array[TypeInferences];     // Inferences made for each type parameter
+    inferredTypes: Array[Type];        // Inferred type for each type parameter
     mapper?: TypeMapper;        // Type mapper for this inference context
     failedTypeParameterIndex?: Int;  // Index of type parameter for which inference failed
     // It is optional because in contextual signature instantiation, nothing fails
@@ -2363,8 +2363,8 @@ object Types {
     NodeJs   = 2
   }
 
-  type RootPaths = String[]
-  type PathSubstitutions = Map<String[]>
+  type RootPaths = Array[String]
+  type PathSubstitutions = Map<Array[String]>
   type TsConfigOnlyOptions = RootPaths | PathSubstitutions
 
   trait CompilerOptions {
@@ -2482,8 +2482,8 @@ object Types {
 
   trait ParsedCommandLine {
     options: CompilerOptions
-    fileNames: String[]
-    errors: Diagnostic[]
+    fileNames: Array[String]
+    errors: Array[Diagnostic]
   }
 
   /* @internal */
@@ -2676,7 +2676,7 @@ object Types {
 
   trait ResolvedModuleWithFailedLookupLocations {
     resolvedModule: ResolvedModule
-    failedLookupLocations: String[]
+    failedLookupLocations: Array[String]
   }
 
   trait CompilerHost extends ModuleResolutionHost {
@@ -2696,7 +2696,7 @@ object Types {
      * If resolveModuleNames is implemented then implementation for members from ModuleResolutionHost can be just
      * 'throw new Error("NotImplemented")'
      */
-    resolveModuleNames?(moduleNames: String[], containingFile: String): ResolvedModule[]
+    resolveModuleNames?(moduleNames: Array[String], containingFile: String): Array[ResolvedModule]
   }
 
   trait TextSpan {
@@ -2715,11 +2715,11 @@ object Types {
     add(diagnostic: Diagnostic): Unit
 
     // Gets all the diagnostics that aren't associated with a file.
-    getGlobalDiagnostics(): Diagnostic[]
+    getGlobalDiagnostics(): Array[Diagnostic]
 
     // If fileName is provided, gets all the diagnostics associated with that file name.
     // Otherwise, returns all the diagnostics (global and file associated) in this collection.
-    getDiagnostics(fileName?: String): Diagnostic[]
+    getDiagnostics(fileName?: String): Array[Diagnostic]
 
     // Gets a count of how many times this collection has been modified.  This value changes
     // each time 'add' is called (regardless of whether or not an equivalent diagnostic was

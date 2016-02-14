@@ -9,13 +9,13 @@ object DeclarationEmitter {
     outputPos: Int
     indent: Int
     asynchronousOutput?: String; // If the output for alias was written asynchronously, the corresponding output
-    subModuleElementDeclarationEmitInfo?: ModuleElementDeclarationEmitInfo[]
+    subModuleElementDeclarationEmitInfo?: Array[ModuleElementDeclarationEmitInfo]
     isVisible?: Boolean
   }
 
   trait DeclarationEmit {
     reportedDeclarationError: Boolean
-    moduleElementDeclarationEmitInfo: ModuleElementDeclarationEmitInfo[]
+    moduleElementDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo]
     synchronousDeclarationOutput: String
     referencePathsOutput: String
   }
@@ -32,18 +32,18 @@ object DeclarationEmitter {
     typeName?: DeclarationName
   }
 
-  def getDeclarationDiagnostics(host: EmitHost, resolver: EmitResolver, targetSourceFile: SourceFile): Diagnostic[] {
+  def getDeclarationDiagnostics(host: EmitHost, resolver: EmitResolver, targetSourceFile: SourceFile): Array[Diagnostic] {
     val declarationDiagnostics = createDiagnosticCollection()
     forEachExpectedEmitFile(host, getDeclarationDiagnosticsFromFile, targetSourceFile)
     return declarationDiagnostics.getDiagnostics(targetSourceFile.fileName)
 
-    def getDeclarationDiagnosticsFromFile({ declarationFilePath }, sources: SourceFile[], isBundledEmit: Boolean) = {
+    def getDeclarationDiagnosticsFromFile({ declarationFilePath }, sources: Array[SourceFile], isBundledEmit: Boolean) = {
       emitDeclarations(host, resolver, declarationDiagnostics, declarationFilePath, sources, isBundledEmit)
     }
   }
 
   def emitDeclarations(host: EmitHost, resolver: EmitResolver, emitterDiagnostics: DiagnosticCollection, declarationFilePath: String,
-    sourceFiles: SourceFile[], isBundledEmit: Boolean): DeclarationEmit {
+    sourceFiles: Array[SourceFile], isBundledEmit: Boolean): DeclarationEmit {
     val newLine = host.getNewLine()
     val compilerOptions = host.getCompilerOptions()
 
@@ -60,7 +60,7 @@ object DeclarationEmitter {
     var enclosingDeclaration: Node
     var resultHasExternalModuleIndicator: Boolean
     var currentText: String
-    var currentLineMap: Int[]
+    var currentLineMap: Array[Int]
     var currentIdentifiers: Map<String>
     var isCurrentFileExternalModule: Boolean
     var reportedDeclarationError = false
@@ -69,8 +69,8 @@ object DeclarationEmitter {
     val emit = compilerOptions.stripInternal ? stripInternal : emitNode
     var noDeclare: Boolean
 
-    var moduleElementDeclarationEmitInfo: ModuleElementDeclarationEmitInfo[] = []
-    var asynchronousSubModuleDeclarationEmitInfo: ModuleElementDeclarationEmitInfo[]
+    var moduleElementDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo] = []
+    var asynchronousSubModuleDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo]
 
     // Contains the reference paths that needs to go in the declaration file.
     // Collecting this separately because reference paths need to be first thing in the declaration file
@@ -78,9 +78,9 @@ object DeclarationEmitter {
     var referencePathsOutput = ""
 
     // Emit references corresponding to each file
-    val emittedReferencedFiles: SourceFile[] = []
+    val emittedReferencedFiles: Array[SourceFile] = []
     var addedGlobalFileReference = false
-    var allSourcesModuleElementDeclarationEmitInfo: ModuleElementDeclarationEmitInfo[] = []
+    var allSourcesModuleElementDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo] = []
     forEach(sourceFiles, sourceFile => {
       // Dont emit for javascript file
       if (isSourceFileJavaScript(sourceFile)) {
@@ -201,7 +201,7 @@ object DeclarationEmitter {
       decreaseIndent = newWriter.decreaseIndent
     }
 
-    def writeAsynchronousModuleElements(nodes: Node[]) = {
+    def writeAsynchronousModuleElements(nodes: Array[Node]) = {
       val oldWriter = writer
       forEach(nodes, declaration => {
         var nodeToCheck: Node
@@ -324,13 +324,13 @@ object DeclarationEmitter {
       }
     }
 
-    def emitLines(nodes: Node[]) = {
+    def emitLines(nodes: Array[Node]) = {
       for (val node of nodes) {
         emit(node)
       }
     }
 
-    def emitSeparatedList(nodes: Node[], separator: String, eachNodeEmitFn: (node: Node) => Unit, canEmitFn?: (node: Node) => Boolean) = {
+    def emitSeparatedList(nodes: Array[Node], separator: String, eachNodeEmitFn: (node: Node) => Unit, canEmitFn?: (node: Node) => Boolean) = {
       var currentWriterPos = writer.getTextPos()
       for (val node of nodes) {
         if (!canEmitFn || canEmitFn(node)) {
@@ -343,7 +343,7 @@ object DeclarationEmitter {
       }
     }
 
-    def emitCommaList(nodes: Node[], eachNodeEmitFn: (node: Node) => Unit, canEmitFn?: (node: Node) => Boolean) = {
+    def emitCommaList(nodes: Array[Node], eachNodeEmitFn: (node: Node) => Unit, canEmitFn?: (node: Node) => Boolean) = {
       emitSeparatedList(nodes, ", ", eachNodeEmitFn, canEmitFn)
     }
 
@@ -895,7 +895,7 @@ object DeclarationEmitter {
       return node.parent.kind == SyntaxKind.MethodDeclaration && (node.parent.flags & NodeFlags.Private)
     }
 
-    def emitTypeParameters(typeParameters: TypeParameterDeclaration[]) = {
+    def emitTypeParameters(typeParameters: Array[TypeParameterDeclaration]) = {
       def emitTypeParameter(node: TypeParameterDeclaration) = {
         increaseIndent()
         emitJsDocComments(node)
@@ -976,7 +976,7 @@ object DeclarationEmitter {
       }
     }
 
-    def emitHeritageClause(typeReferences: ExpressionWithTypeArguments[], isImplementsList: Boolean) = {
+    def emitHeritageClause(typeReferences: Array[ExpressionWithTypeArguments], isImplementsList: Boolean) = {
       if (typeReferences) {
         write(isImplementsList ? " implements " : " extends ")
         emitCommaList(typeReferences, emitTypeOfTypeReference)
@@ -1156,7 +1156,7 @@ object DeclarationEmitter {
         // For example:
         //    original: var [, c,,] = [ 2,3,4]
         //    emitted: declare var c: Int; // instead of declare var c:Int,
-        val elements: Node[] = []
+        val elements: Array[Node] = []
         for (val element of bindingPattern.elements) {
           if (element.kind != SyntaxKind.OmittedExpression) {
             elements.push(element)
@@ -1685,7 +1685,7 @@ object DeclarationEmitter {
       }
       return addedBundledEmitReference
 
-      def getDeclFileName(emitFileNames: EmitFileNames, sourceFiles: SourceFile[], isBundledEmit: Boolean) = {
+      def getDeclFileName(emitFileNames: EmitFileNames, sourceFiles: Array[SourceFile], isBundledEmit: Boolean) = {
         // Dont add reference path to this file if it is a bundled emit and caller asked not emit bundled file path
         if (isBundledEmit && !addBundledFileReference) {
           return
@@ -1699,7 +1699,7 @@ object DeclarationEmitter {
   }
 
   /* @internal */
-  def writeDeclarationFile(declarationFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean, host: EmitHost, resolver: EmitResolver, emitterDiagnostics: DiagnosticCollection) = {
+  def writeDeclarationFile(declarationFilePath: String, sourceFiles: Array[SourceFile], isBundledEmit: Boolean, host: EmitHost, resolver: EmitResolver, emitterDiagnostics: DiagnosticCollection) = {
     val emitDeclarationResult = emitDeclarations(host, resolver, emitterDiagnostics, declarationFilePath, sourceFiles, isBundledEmit)
     val emitSkipped = emitDeclarationResult.reportedDeclarationError || host.isEmitBlocked(declarationFilePath) || host.getCompilerOptions().noEmit
     if (!emitSkipped) {
@@ -1709,7 +1709,7 @@ object DeclarationEmitter {
     }
     return emitSkipped
 
-    def getDeclarationOutput(synchronousDeclarationOutput: String, moduleElementDeclarationEmitInfo: ModuleElementDeclarationEmitInfo[]) = {
+    def getDeclarationOutput(synchronousDeclarationOutput: String, moduleElementDeclarationEmitInfo: Array[ModuleElementDeclarationEmitInfo]) = {
       var appliedSyncOutputPos = 0
       var declarationOutput = ""
       // apply asynchronous additions to the synchronous output

@@ -7,7 +7,7 @@ object Sys {
   type DirectoryWatcherCallback = (path: String) => Unit
 
   trait System {
-    args: String[]
+    args: Array[String]
     newLine: String
     useCaseSensitiveFileNames: Boolean
     write(s: String): Unit
@@ -21,7 +21,7 @@ object Sys {
     createDirectory(path: String): Unit
     getExecutingFilePath(): String
     getCurrentDirectory(): String
-    readDirectory(path: String, extension?: String, exclude?: String[]): String[]
+    readDirectory(path: String, extension?: String, exclude?: Array[String]): Array[String]
     getMemoryUsage?(): Int
     exit(exitCode?: Int): Unit
   }
@@ -58,7 +58,7 @@ object Sys {
   }
 
   declare var ChakraHost: {
-    args: String[]
+    args: Array[String]
     currentDirectory: String
     executingFile: String
     newLine?: String
@@ -71,7 +71,7 @@ object Sys {
     resolvePath(path: String): String
     readFile(path: String): String
     writeFile(path: String, contents: String): Unit
-    readDirectory(path: String, extension?: String, exclude?: String[]): String[]
+    readDirectory(path: String, extension?: String, exclude?: Array[String]): Array[String]
     watchFile?(path: String, callback: FileWatcherCallback): FileWatcher
     watchDirectory?(path: String, callback: DirectoryWatcherCallback, recursive?: Boolean): FileWatcher
   }
@@ -88,7 +88,7 @@ object Sys {
       val binaryStream = new ActiveXObject("ADODB.Stream")
       binaryStream.Type = 1 /*binary*/
 
-      val args: String[] = []
+      val args: Array[String] = []
       for (var i = 0; i < WScript.Arguments.length; i++) {
         args[i] = WScript.Arguments.Item(i)
       }
@@ -152,16 +152,16 @@ object Sys {
         return path.toLowerCase()
       }
 
-      def getNames(collection: any): String[] {
-        val result: String[] = []
+      def getNames(collection: any): Array[String] {
+        val result: Array[String] = []
         for (var e = new Enumerator(collection); !e.atEnd(); e.moveNext()) {
           result.push(e.item().Name)
         }
         return result.sort()
       }
 
-      def readDirectory(path: String, extension?: String, exclude?: String[]): String[] {
-        val result: String[] = []
+      def readDirectory(path: String, extension?: String, exclude?: Array[String]): Array[String] {
+        val result: Array[String] = []
         exclude = map(exclude, s => getCanonicalPath(combinePaths(path, s)))
         visitDirectory(path)
         return result
@@ -232,7 +232,7 @@ object Sys {
       // average async stat takes about 30 microseconds
       // set chunk size to do 30 files in < 1 millisecond
       def createPollingWatchedFileSet(interval = 2500, chunkSize = 30) = {
-        var watchedFiles: WatchedFile[] = []
+        var watchedFiles: Array[WatchedFile] = []
         var nextFileToCheck = 0
         var watchTimer: any
 
@@ -310,7 +310,7 @@ object Sys {
       def createWatchedFileSet() = {
         val dirWatchers = createFileMap<DirectoryWatcher>()
         // One file can have multiple watchers
-        val fileWatcherCallbacks = createFileMap<FileWatcherCallback[]>()
+        val fileWatcherCallbacks = createFileMap<Array[FileWatcherCallback]>()
         return { addFile, removeFile }
 
         def reduceDirWatcherRefCountForFile(filePath: Path) = {
@@ -491,14 +491,14 @@ object Sys {
         return fileSystemEntryExists(path, FileSystemEntryKind.Directory)
       }
 
-      def readDirectory(path: String, extension?: String, exclude?: String[]): String[] {
-        val result: String[] = []
+      def readDirectory(path: String, extension?: String, exclude?: Array[String]): Array[String] {
+        val result: Array[String] = []
         exclude = map(exclude, s => getCanonicalPath(combinePaths(path, s)))
         visitDirectory(path)
         return result
         def visitDirectory(path: String) = {
           val files = _fs.readdirSync(path || ".").sort()
-          val directories: String[] = []
+          val directories: Array[String] = []
           for (val current of files) {
             val name = combinePaths(path, current)
             if (!contains(exclude, getCanonicalPath(name))) {

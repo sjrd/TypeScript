@@ -13,7 +13,7 @@ object SourceMap {
     changeEmitSourcePos(): Unit
     getText(): String
     getSourceMappingURL(): String
-    initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean): Unit
+    initialize(filePath: String, sourceMapFilePath: String, sourceFiles: Array[SourceFile], isBundledEmit: Boolean): Unit
     reset(): Unit
   }
 
@@ -38,7 +38,7 @@ object SourceMap {
         changeEmitSourcePos(): Unit { },
         getText(): String { return (); },
         getSourceMappingURL(): String { return (); },
-        initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean): Unit { },
+        initialize(filePath: String, sourceMapFilePath: String, sourceFiles: Array[SourceFile], isBundledEmit: Boolean): Unit { },
         reset(): Unit { },
       }
     }
@@ -77,7 +77,7 @@ object SourceMap {
       reset,
     }
 
-    def initialize(filePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean) = {
+    def initialize(filePath: String, sourceMapFilePath: String, sourceFiles: Array[SourceFile], isBundledEmit: Boolean) = {
       if (sourceMapData) {
         reset()
       }

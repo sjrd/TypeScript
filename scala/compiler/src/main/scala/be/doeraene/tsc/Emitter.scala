@@ -381,7 +381,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
     val compilerOptions = host.getCompilerOptions()
     val languageVersion = getEmitScriptTarget(compilerOptions)
     val modulekind = getEmitModuleKind(compilerOptions)
-    val sourceMapDataList: SourceMapData[] = compilerOptions.sourceMap || compilerOptions.inlineSourceMap ? [] : ()
+    val sourceMapDataList: Array[SourceMapData] = compilerOptions.sourceMap || compilerOptions.inlineSourceMap ? [] : ()
     val emitterDiagnostics = createDiagnosticCollection()
     var emitSkipped = false
     val newLine = host.getNewLine()
@@ -468,12 +468,12 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
        * var y
        * for (var x;;) loop(x)
        */
-      hoistedLocalVariables?: Identifier[]
+      hoistedLocalVariables?: Array[Identifier]
 
       /**
        * List of loop out parameters - detailed descripion can be found in the comment to LoopOutParameter
        */
-      loopOutParameters?: LoopOutParameter[]
+      loopOutParameters?: Array[LoopOutParameter]
     }
 
     def setLabeledJump(state: ConvertedLoopState, isBreak: Boolean, labelText: String, labelMarker: String): Unit = {
@@ -510,7 +510,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
       }
     }
 
-    def createFileEmitter(): (jsFilePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean) => Unit {
+    def createFileEmitter(): (jsFilePath: String, sourceMapFilePath: String, sourceFiles: Array[SourceFile], isBundledEmit: Boolean) => Unit {
       val writer = createTextWriter(newLine)
       val { write, writeTextOfNode, writeLine, increaseIndent, decreaseIndent } = writer
 
@@ -519,7 +519,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
 
       var currentSourceFile: SourceFile
       var currentText: String
-      var currentLineMap: Int[]
+      var currentLineMap: Array[Int]
       var currentFileIdentifiers: Map<String>
       var renamedDependencies: Map<String>
       var isEs6Module: Boolean
@@ -535,9 +535,9 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
       var contextObjectForFile: String
 
       var generatedNameSet: Map<String>
-      var nodeToGeneratedName: String[]
-      var computedPropertyNamesToGeneratedNames: String[]
-      var decoratedClassAliases: String[]
+      var nodeToGeneratedName: Array[String]
+      var computedPropertyNamesToGeneratedNames: Array[String]
+      var decoratedClassAliases: Array[String]
 
       var convertedLoopState: ConvertedLoopState
 
@@ -546,10 +546,10 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
       var paramEmitted: Boolean
       var awaiterEmitted: Boolean
       var tempFlags: TempFlags = 0
-      var tempVariables: Identifier[]
-      var tempParameters: Identifier[]
+      var tempVariables: Array[Identifier]
+      var tempParameters: Array[Identifier]
       var externalImports: (ImportDeclaration | ImportEqualsDeclaration | ExportDeclaration)[]
-      var exportSpecifiers: Map<ExportSpecifier[]>
+      var exportSpecifiers: Map<Array[ExportSpecifier]>
       var exportEquals: ExportAssignment
       var hasExportStarsToExportValues: Boolean
 
@@ -584,7 +584,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
 
       return doEmit
 
-      def doEmit(jsFilePath: String, sourceMapFilePath: String, sourceFiles: SourceFile[], isBundledEmit: Boolean) = {
+      def doEmit(jsFilePath: String, sourceMapFilePath: String, sourceFiles: Array[SourceFile], isBundledEmit: Boolean) = {
         sourceMap.initialize(jsFilePath, sourceMapFilePath, sourceFiles, isBundledEmit)
         generatedNameSet = {}
         nodeToGeneratedName = []
@@ -881,7 +881,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         }
       }
 
-      def emitList<TNode extends Node>(nodes: TNode[], start: Int, count: Int, multiLine: Boolean, trailingComma: Boolean, leadingComma?: Boolean, noTrailingNewLine?: Boolean, emitNode?: (node: TNode) => Unit): Int = {
+      def emitList<TNode extends Node>(nodes: Array[TNode], start: Int, count: Int, multiLine: Boolean, trailingComma: Boolean, leadingComma?: Boolean, noTrailingNewLine?: Boolean, emitNode?: (node: TNode) => Unit): Int = {
         if (!emitNode) {
           emitNode = emit
         }
@@ -918,17 +918,17 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         return count
       }
 
-      def emitCommaList(nodes: Node[]) = {
+      def emitCommaList(nodes: Array[Node]) = {
         if (nodes) {
           emitList(nodes, 0, nodes.length, /*multiLine*/ false, /*trailingComma*/ false)
         }
       }
 
-      def emitLines(nodes: Node[]) = {
+      def emitLines(nodes: Array[Node]) = {
         emitLinesStartingAt(nodes, /*startIndex*/ 0)
       }
 
-      def emitLinesStartingAt(nodes: Node[], startIndex: Int): Unit = {
+      def emitLinesStartingAt(nodes: Array[Node], startIndex: Int): Unit = {
         for (var i = startIndex; i < nodes.length; i++) {
           writeLine()
           emit(nodes[i])
@@ -1242,7 +1242,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
           }
         }
 
-        def emitJsxElement(openingNode: JsxOpeningLikeElement, children?: JsxChild[]) = {
+        def emitJsxElement(openingNode: JsxOpeningLikeElement, children?: Array[JsxChild]) = {
           val syntheticReactRef = <Identifier>createSynthesizedNode(SyntaxKind.Identifier)
           syntheticReactRef.text = compilerOptions.reactNamespace ? compilerOptions.reactNamespace : "React"
           syntheticReactRef.parent = openingNode
@@ -1798,7 +1798,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         return true
       }
 
-      def emitListWithSpread(elements: Expression[], needsUniqueCopy: Boolean, multiLine: Boolean, trailingComma: Boolean, useConcat: Boolean) = {
+      def emitListWithSpread(elements: Array[Expression], needsUniqueCopy: Boolean, multiLine: Boolean, trailingComma: Boolean, useConcat: Boolean) = {
         var pos = 0
         var group = 0
         val length = elements.length
@@ -2323,7 +2323,7 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
         write("]")
       }
 
-      def hasSpreadElement(elements: Expression[]) = {
+      def hasSpreadElement(elements: Array[Expression]) = {
         return forEach(elements, e => e.kind == SyntaxKind.SpreadElementExpression)
       }
 
@@ -3022,8 +3022,8 @@ var __awaiter = (this && this.__awaiter) || def (thisArg, _arguments, P, generat
             break
         }
 
-        var loopParameters: String[]
-        var loopOutParameters: LoopOutParameter[]
+        var loopParameters: Array[String]
+        var loopOutParameters: Array[LoopOutParameter]
         if (loopInitializer && (getCombinedNodeFlags(loopInitializer) & NodeFlags.BlockScoped)) {
           // if loop initializer contains block scoped variables - they should be passed to converted loop body as parameters
           loopParameters = []
@@ -4954,7 +4954,7 @@ val _super = (def (geti, seti) {
       }
 
       def getInitializedProperties(node: ClassLikeDeclaration, isStatic: Boolean) = {
-        val properties: PropertyDeclaration[] = []
+        val properties: Array[PropertyDeclaration] = []
         for (val member of node.members) {
           if (member.kind == SyntaxKind.PropertyDeclaration && isStatic == ((member.flags & NodeFlags.Static) != 0) && (<PropertyDeclaration>member).initializer) {
             properties.push(<PropertyDeclaration>member)
@@ -4964,7 +4964,7 @@ val _super = (def (geti, seti) {
         return properties
       }
 
-      def emitPropertyDeclarations(node: ClassLikeDeclaration, properties: PropertyDeclaration[]) = {
+      def emitPropertyDeclarations(node: ClassLikeDeclaration, properties: Array[PropertyDeclaration]) = {
         for (val property of properties) {
           emitPropertyDeclaration(node, property)
         }
@@ -5224,7 +5224,7 @@ val _super = (def (geti, seti) {
         }
         emitPropertyDeclarations(node, getInitializedProperties(node, /*isStatic*/ false))
         if (ctor) {
-          var statements: Node[] = (<Block>ctor.body).statements
+          var statements: Array[Node] = (<Block>ctor.body).statements
           if (superCall) {
             statements = statements.slice(1)
           }
@@ -6184,7 +6184,7 @@ val _super = (def (geti, seti) {
         return languageVersion == ScriptTarget.ES6 && !!(resolver.getNodeCheckFlags(node) & NodeCheckFlags.LexicalModuleMergesWithClass)
       }
 
-      def isFirstDeclarationOfKind(node: Declaration, declarations: Declaration[], kind: SyntaxKind) = {
+      def isFirstDeclarationOfKind(node: Declaration, declarations: Array[Declaration], kind: SyntaxKind) = {
         return !forEach(declarations, declaration => declaration.kind == kind && declaration.pos < node.pos)
       }
 
@@ -6557,7 +6557,7 @@ val _super = (def (geti, seti) {
         }
       }
 
-      def emitExportOrImportSpecifierList(specifiers: ImportOrExportSpecifier[], shouldEmit: (node: Node) => Boolean) = {
+      def emitExportOrImportSpecifierList(specifiers: Array[ImportOrExportSpecifier], shouldEmit: (node: Node) => Boolean) = {
         Debug.assert(modulekind == ModuleKind.ES6)
 
         var needsComma = false
@@ -6887,7 +6887,7 @@ val _super = (def (geti, seti) {
         // in practice to simplify things we'll hoist all source level functions and variable declaration
         // including variables declarations for module and class declarations
         var hoistedVars: (Identifier | ClassDeclaration | ModuleDeclaration | EnumDeclaration)[]
-        var hoistedFunctionDeclarations: FunctionDeclaration[]
+        var hoistedFunctionDeclarations: Array[FunctionDeclaration]
         var exportedDeclarations: (Identifier | Declaration)[]
 
         visit(node)
@@ -7051,7 +7051,7 @@ val _super = (def (geti, seti) {
         return modulekind == ModuleKind.System && isCurrentFileExternalModule
       }
 
-      def emitSystemModuleBody(node: SourceFile, dependencyGroups: DependencyGroup[], startIndex: Int): Unit = {
+      def emitSystemModuleBody(node: SourceFile, dependencyGroups: Array[DependencyGroup], startIndex: Int): Unit = {
         // shape of the body in system modules:
         // def (exports) {
         //   <list of local aliases for imports>
@@ -7105,7 +7105,7 @@ val _super = (def (geti, seti) {
         emitTempDeclarations(/*newLine*/ true)
       }
 
-      def emitSetters(exportStarFunction: String, dependencyGroups: DependencyGroup[]) = {
+      def emitSetters(exportStarFunction: String, dependencyGroups: Array[DependencyGroup]) = {
         write("setters:[")
 
         for (var i = 0; i < dependencyGroups.length; i++) {
@@ -7262,7 +7262,7 @@ val _super = (def (geti, seti) {
         write("[")
 
         val groupIndices: Map<Int> = {}
-        val dependencyGroups: DependencyGroup[] = []
+        val dependencyGroups: Array[DependencyGroup] = []
 
         for (var i = 0; i < externalImports.length; i++) {
           val text = getExternalModuleNameText(externalImports[i], emitRelativePathAsModuleName)
@@ -7307,17 +7307,17 @@ val _super = (def (geti, seti) {
       }
 
       trait AMDDependencyNames {
-        aliasedModuleNames: String[]
-        unaliasedModuleNames: String[]
-        importAliasNames: String[]
+        aliasedModuleNames: Array[String]
+        unaliasedModuleNames: Array[String]
+        importAliasNames: Array[String]
       }
 
       def getAMDDependencyNames(node: SourceFile, includeNonAmdDependencies: Boolean, emitRelativePathAsModuleName?: Boolean): AMDDependencyNames = {
         // names of modules with corresponding parameter in the factory def
-        val aliasedModuleNames: String[] = []
+        val aliasedModuleNames: Array[String] = []
         // names of modules with no corresponding parameters in factory def
-        val unaliasedModuleNames: String[] = []
-        val importAliasNames: String[] = [];   // names of the parameters in the factory def; these
+        val unaliasedModuleNames: Array[String] = []
+        val importAliasNames: Array[String] = [];   // names of the parameters in the factory def; these
         // parameters need to match the indexes of the corresponding
         // module names in aliasedModuleNames.
 
@@ -7612,7 +7612,7 @@ val _super = (def (geti, seti) {
         }
       }
 
-      def emitDirectivePrologues(statements: Node[], startWithNewLine: Boolean, ensureUseStrict?: Boolean): Int = {
+      def emitDirectivePrologues(statements: Array[Node], startWithNewLine: Boolean, ensureUseStrict?: Boolean): Int = {
         var foundUseStrict = false
         for (var i = 0; i < statements.length; i++) {
           if (isPrologueDirective(statements[i])) {
@@ -8067,7 +8067,7 @@ val _super = (def (geti, seti) {
           return
         }
 
-        var leadingComments: CommentRange[]
+        var leadingComments: Array[CommentRange]
         if (isEmittedNode) {
           leadingComments = getLeadingCommentsToEmit(node)
         }
@@ -8124,7 +8124,7 @@ val _super = (def (geti, seti) {
           return
         }
 
-        var leadingComments: CommentRange[]
+        var leadingComments: Array[CommentRange]
         if (hasDetachedComments(pos)) {
           // get comments without detached comments
           leadingComments = getLeadingCommentsWithoutDetachedComments()
@@ -8153,7 +8153,7 @@ val _super = (def (geti, seti) {
         }
       }
 
-      def writeComment(text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) = {
+      def writeComment(text: String, lineMap: Array[Int], writer: EmitTextWriter, comment: CommentRange, newLine: String) = {
         emitPos(comment.pos)
         writeCommentRange(text, lineMap, writer, comment, newLine)
         emitPos(comment.end)
@@ -8169,7 +8169,7 @@ val _super = (def (geti, seti) {
     }
 
     def emitFile({ jsFilePath, sourceMapFilePath, declarationFilePath}: { jsFilePath: String, sourceMapFilePath: String, declarationFilePath: String },
-      sourceFiles: SourceFile[], isBundledEmit: Boolean) {
+      sourceFiles: Array[SourceFile], isBundledEmit: Boolean) {
       // Make sure not to write js File and source map file if any of them cannot be written
       if (!host.isEmitBlocked(jsFilePath) && !compilerOptions.noEmit) {
         emitJavaScript(jsFilePath, sourceMapFilePath, sourceFiles, isBundledEmit)

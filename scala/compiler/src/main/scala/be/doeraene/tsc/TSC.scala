@@ -10,7 +10,7 @@ object TSC {
 
   var reportDiagnostic = reportDiagnosticSimply
 
-  def reportDiagnostics(diagnostics: Diagnostic[], host: CompilerHost): Unit = {
+  def reportDiagnostics(diagnostics: Array[Diagnostic], host: CompilerHost): Unit = {
     for (val diagnostic of diagnostics) {
       reportDiagnostic(diagnostic, host)
     }
@@ -20,7 +20,7 @@ object TSC {
    * Checks to see if the locale is in the appropriate format,
    * and if it is, attempts to set the appropriate language.
    */
-  def validateLocaleAndSetLanguage(locale: String, errors: Diagnostic[]): Boolean = {
+  def validateLocaleAndSetLanguage(locale: String, errors: Array[Diagnostic]): Boolean = {
     val matchResult = /^([a-z]+)([_\-]([a-z]+))?$/.exec(locale.toLowerCase())
 
     if (!matchResult) {
@@ -42,7 +42,7 @@ object TSC {
     return true
   }
 
-  def trySetLanguageAndTerritory(language: String, territory: String, errors: Diagnostic[]): Boolean = {
+  def trySetLanguageAndTerritory(language: String, territory: String, errors: Array[Diagnostic]): Boolean = {
     val compilerFilePath = normalizePath(sys.getExecutingFilePath())
     val containingDirectoryPath = getDirectoryPath(compilerFilePath)
 
@@ -86,7 +86,7 @@ object TSC {
     return count
   }
 
-  def getDiagnosticText(message: DiagnosticMessage, ...args: any[]): String = {
+  def getDiagnosticText(message: DiagnosticMessage, ...args: Array[any]): String = {
     val diagnostic = createCompilerDiagnostic.apply((), arguments)
     return <String>diagnostic.messageText
   }
@@ -242,14 +242,14 @@ object TSC {
     return typeof JSON == "object" && typeof JSON.parse == "def"
   }
 
-  def executeCommandLine(args: String[]): Unit = {
+  def executeCommandLine(args: Array[String]): Unit = {
     val commandLine = parseCommandLine(args)
     var configFileName: String;                 // Configuration file name (if any)
     var cachedConfigFileText: String;               // Cached configuration file text, used for reparsing (if any)
     var configFileWatcher: FileWatcher;             // Configuration file watcher
     var directoryWatcher: FileWatcher;              // Directory watcher to monitor source file addition/removal
     var cachedProgram: Program;                 // Program cached from last compilation
-    var rootFileNames: String[];                // Root fileNames for compilation
+    var rootFileNames: Array[String];                // Root fileNames for compilation
     var compilerOptions: CompilerOptions;             // Compiler options for compilation
     var compilerHost: CompilerHost;               // Compiler host
     var hostGetSourceFile: typeof compilerHost.getSourceFile;   // getSourceFile method from default host
@@ -531,7 +531,7 @@ object TSC {
     }
   }
 
-  def compile(fileNames: String[], compilerOptions: CompilerOptions, compilerHost: CompilerHost) = {
+  def compile(fileNames: Array[String], compilerOptions: CompilerOptions, compilerHost: CompilerHost) = {
     ioReadTime = 0
     ioWriteTime = 0
     programTime = 0
@@ -577,7 +577,7 @@ object TSC {
     return { program, exitStatus }
 
     def compileProgram(): ExitStatus = {
-      var diagnostics: Diagnostic[]
+      var diagnostics: Array[Diagnostic]
 
       // First get and report any syntactic errors.
       diagnostics = program.getSyntacticDiagnostics()
@@ -655,8 +655,8 @@ object TSC {
     // We want our descriptions to align at the same column in our output,
     // so we keep track of the longest option usage String.
     marginLength = 0
-    val usageColumn: String[] = []; // Things like "-d, --declaration" go in here.
-    val descriptionColumn: String[] = []
+    val usageColumn: Array[String] = []; // Things like "-d, --declaration" go in here.
+    val descriptionColumn: Array[String] = []
 
     for (var i = 0; i < optsList.length; i++) {
       val option = optsList[i]
@@ -712,7 +712,7 @@ object TSC {
     }
   }
 
-  def writeConfigFile(options: CompilerOptions, fileNames: String[]) = {
+  def writeConfigFile(options: CompilerOptions, fileNames: Array[String]) = {
     val currentDirectory = sys.getCurrentDirectory()
     val file = normalizePath(combinePaths(currentDirectory, "tsconfig.json"))
     if (sys.fileExists(file)) {

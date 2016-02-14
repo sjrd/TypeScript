@@ -11,8 +11,8 @@ object Utilities {
   }
 
   trait SynthesizedNode extends Node {
-    val leadingCommentRanges?: CommentRange[]
-    val trailingCommentRanges?: CommentRange[]
+    val leadingCommentRanges?: Array[CommentRange]
+    val trailingCommentRanges?: Array[CommentRange]
     val startsOnNewLine: Boolean
   }
 
@@ -34,7 +34,7 @@ object Utilities {
   }
 
   trait EmitHost extends ScriptReferenceHost {
-    def getSourceFiles(): SourceFile[]
+    def getSourceFiles(): Array[SourceFile]
 
     def getCommonSourceDirectory(): String
     def getCanonicalFileName(fileName: String): String
@@ -46,7 +46,7 @@ object Utilities {
   }
 
   // Pool writers to avoid needing to allocate them for every symbol we write.
-  val stringWriters: StringSymbolWriter[] = []
+  val stringWriters: Array[StringSymbolWriter] = []
   def getSingleLineStringWriter(): StringSymbolWriter = {
     if (stringWriters.length == 0) {
       var str = ""
@@ -85,7 +85,7 @@ object Utilities {
     return node.end - node.pos
   }
 
-  def arrayIsEqualTo<T>(array1: T[], array2: T[], equaler?: (a: T, b: T) => Boolean): Boolean = {
+  def arrayIsEqualTo<T>(array1: Array[T], array2: Array[T], equaler?: (a: T, b: T) => Boolean): Boolean = {
     if (!array1 || !array2) {
       return array1 == array2
     }
@@ -1735,8 +1735,8 @@ object Utilities {
   }
 
   def createDiagnosticCollection(): DiagnosticCollection = {
-    var nonFileDiagnostics: Diagnostic[] = []
-    val fileDiagnostics: Map<Diagnostic[]> = {}
+    var nonFileDiagnostics: Array[Diagnostic] = []
+    val fileDiagnostics: Map<Array[Diagnostic]> = {}
 
     var diagnosticsModified = false
     var modificationCount = 0
@@ -1764,7 +1764,7 @@ object Utilities {
     }
 
     def add(diagnostic: Diagnostic): Unit = {
-      var diagnostics: Diagnostic[]
+      var diagnostics: Array[Diagnostic]
       if (diagnostic.file) {
         diagnostics = fileDiagnostics[diagnostic.file.fileName]
         if (!diagnostics) {
@@ -1781,18 +1781,18 @@ object Utilities {
       modificationCount++
     }
 
-    def getGlobalDiagnostics(): Diagnostic[] {
+    def getGlobalDiagnostics(): Array[Diagnostic] {
       sortAndDeduplicate()
       return nonFileDiagnostics
     }
 
-    def getDiagnostics(fileName?: String): Diagnostic[] {
+    def getDiagnostics(fileName?: String): Array[Diagnostic] {
       sortAndDeduplicate()
       if (fileName) {
         return fileDiagnostics[fileName] || []
       }
 
-      val allDiagnostics: Diagnostic[] = []
+      val allDiagnostics: Array[Diagnostic] = []
       def pushDiagnostic(d: Diagnostic) = {
         allDiagnostics.push(d)
       }
@@ -1897,7 +1897,7 @@ object Utilities {
     reset(): Unit
   }
 
-  val indentStrings: String[] = ["", "  "]
+  val indentStrings: Array[String] = ["", "  "]
   def getIndentString(level: Int) = {
     if (indentStrings[level] == ()) {
       indentStrings[level] = getIndentString(level - 1) + indentStrings[1]
@@ -2027,7 +2027,7 @@ object Utilities {
   }
 
   def forEachExpectedEmitFile(host: EmitHost,
-    action: (emitFileNames: EmitFileNames, sourceFiles: SourceFile[], isBundledEmit: Boolean) => Unit,
+    action: (emitFileNames: EmitFileNames, sourceFiles: Array[SourceFile], isBundledEmit: Boolean) => Unit,
     targetSourceFile?: SourceFile) {
     val options = host.getCompilerOptions()
     // Emit on each source file
@@ -2110,7 +2110,7 @@ object Utilities {
     return getLineAndCharacterOfPosition(currentSourceFile, pos).line
   }
 
-  def getLineOfLocalPositionFromLineMap(lineMap: Int[], pos: Int) = {
+  def getLineOfLocalPositionFromLineMap(lineMap: Array[Int], pos: Int) = {
     return computeLineAndCharacterOfPosition(lineMap, pos).line
   }
 
@@ -2176,7 +2176,7 @@ object Utilities {
     }
   }
 
-  def emitNewLineBeforeLeadingComments(lineMap: Int[], writer: EmitTextWriter, node: TextRange, leadingComments: CommentRange[]) = {
+  def emitNewLineBeforeLeadingComments(lineMap: Array[Int], writer: EmitTextWriter, node: TextRange, leadingComments: Array[CommentRange]) = {
     // If the leading comments start on different line than the start of node, write new line
     if (leadingComments && leadingComments.length && node.pos != leadingComments[0].pos &&
       getLineOfLocalPositionFromLineMap(lineMap, node.pos) != getLineOfLocalPositionFromLineMap(lineMap, leadingComments[0].pos)) {
@@ -2184,8 +2184,8 @@ object Utilities {
     }
   }
 
-  def emitComments(text: String, lineMap: Int[], writer: EmitTextWriter, comments: CommentRange[], trailingSeparator: Boolean, newLine: String,
-    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => Unit) {
+  def emitComments(text: String, lineMap: Array[Int], writer: EmitTextWriter, comments: Array[CommentRange], trailingSeparator: Boolean, newLine: String,
+    writeComment: (text: String, lineMap: Array[Int], writer: EmitTextWriter, comment: CommentRange, newLine: String) => Unit) {
     var emitLeadingSpace = !trailingSeparator
     forEach(comments, comment => {
       if (emitLeadingSpace) {
@@ -2210,10 +2210,10 @@ object Utilities {
    * Detached comment is a comment at the top of file or def body that is separated from
    * the next statement by space.
    */
-  def emitDetachedComments(text: String, lineMap: Int[], writer: EmitTextWriter,
-    writeComment: (text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) => Unit,
+  def emitDetachedComments(text: String, lineMap: Array[Int], writer: EmitTextWriter,
+    writeComment: (text: String, lineMap: Array[Int], writer: EmitTextWriter, comment: CommentRange, newLine: String) => Unit,
     node: TextRange, newLine: String, removeComments: Boolean) {
-    var leadingComments: CommentRange[]
+    var leadingComments: Array[CommentRange]
     var currentDetachedCommentInfo: {nodePos: Int, detachedCommentEndPos: Int}
     if (removeComments) {
       // removeComments is true, only reserve pinned comment at the top of file
@@ -2231,7 +2231,7 @@ object Utilities {
     }
 
     if (leadingComments) {
-      val detachedComments: CommentRange[] = []
+      val detachedComments: Array[CommentRange] = []
       var lastComment: CommentRange
 
       for (val comment of leadingComments) {
@@ -2275,7 +2275,7 @@ object Utilities {
 
   }
 
-  def writeCommentRange(text: String, lineMap: Int[], writer: EmitTextWriter, comment: CommentRange, newLine: String) = {
+  def writeCommentRange(text: String, lineMap: Array[Int], writer: EmitTextWriter, comment: CommentRange, newLine: String) = {
     if (text.charCodeAt(comment.pos + 1) == CharacterCodes.asterisk) {
       val firstCommentLineAndCharacter = computeLineAndCharacterOfPosition(lineMap, comment.pos)
       val lineCount = lineMap.length
@@ -2478,8 +2478,8 @@ object Utilities {
    * Replace each instance of non-ascii characters by one, two, three, or four escape sequences
    * representing the UTF-8 encoding of the character, and return the expanded char code list.
    */
-  def getExpandedCharCodes(input: String): Int[] {
-    val output: Int[] = []
+  def getExpandedCharCodes(input: String): Array[Int] {
+    val output: Array[Int] = []
     val length = input.length
 
     for (var i = 0; i < length; i++) {
@@ -2727,7 +2727,7 @@ package ts {
    * This def will then merge those changes into a single change range valid between V1 and
    * Vn.
    */
-  def collapseTextChangeRangesAcrossMultipleVersions(changes: TextChangeRange[]): TextChangeRange = {
+  def collapseTextChangeRangesAcrossMultipleVersions(changes: Array[TextChangeRange]): TextChangeRange = {
     if (changes.length == 0) {
       return unchangedTextChangeRange
     }

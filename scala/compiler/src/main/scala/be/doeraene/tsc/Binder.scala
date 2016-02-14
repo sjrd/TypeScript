@@ -115,9 +115,9 @@ object Binder {
     // state used by reachability checks
     var hasExplicitReturn: Boolean
     var currentReachabilityState: Reachability
-    var labelStack: Reachability[]
+    var labelStack: Array[Reachability]
     var labelIndexMap: Map<Int>
-    var implicitLabels: Int[]
+    var implicitLabels: Array[Int]
 
     // state used for emit helpers
     var hasClassExtends: Boolean
@@ -438,9 +438,9 @@ object Binder {
       }
 
       var savedReachabilityState: Reachability
-      var savedLabelStack: Reachability[]
+      var savedLabelStack: Array[Reachability]
       var savedLabels: Map<Int>
-      var savedImplicitLabels: Int[]
+      var savedImplicitLabels: Array[Int]
       var savedHasExplicitReturn: Boolean
 
       val kind = node.kind

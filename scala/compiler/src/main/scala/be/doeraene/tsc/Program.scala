@@ -12,7 +12,7 @@ object Program {
 
   /** The version of the TypeScript compiler release */
 
-  val emptyArray: any[] = []
+  val emptyArray: Array[any] = []
 
   val version = "1.9.0"
 
@@ -38,7 +38,7 @@ object Program {
     return normalizePath(referencedFileName)
   }
 
-  def trace(host: ModuleResolutionHost, message: DiagnosticMessage, ...args: any[]): Unit
+  def trace(host: ModuleResolutionHost, message: DiagnosticMessage, ...args: Array[any]): Unit
   def trace(host: ModuleResolutionHost, message: DiagnosticMessage): Unit = {
     host.trace(formatMessage.apply((), arguments))
   }
@@ -72,7 +72,7 @@ object Program {
     return true
   }
 
-  def createResolvedModule(resolvedFileName: String, isExternalLibraryImport: Boolean, failedLookupLocations: String[]): ResolvedModuleWithFailedLookupLocations = {
+  def createResolvedModule(resolvedFileName: String, isExternalLibraryImport: Boolean, failedLookupLocations: Array[String]): ResolvedModuleWithFailedLookupLocations = {
     return { resolvedModule: resolvedFileName ? { resolvedFileName, isExternalLibraryImport } : (), failedLookupLocations }
   }
 
@@ -143,7 +143,7 @@ object Program {
    * 'typings' entry or file 'index' with some supported extension
    * - Classic loader will only try to interpret '/a/b/c' as file.
    */
-  type ResolutionKindSpecificLoader = (candidate: String, extensions: String[], failedLookupLocations: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState) => String
+  type ResolutionKindSpecificLoader = (candidate: String, extensions: Array[String], failedLookupLocations: Array[String], onlyRecordFailures: Boolean, state: ModuleResolutionState) => String
 
   /**
    * Any module resolution kind can be augmented with optional settings: 'baseUrl', 'paths' and 'rootDirs' - they are used to
@@ -206,7 +206,7 @@ object Program {
    * entries in 'rootDirs', use them to build absolute path out of (*) and try to resolve module from this location.
    */
   def tryLoadModuleUsingOptionalResolutionSettings(moduleName: String, containingDirectory: String, loader: ResolutionKindSpecificLoader,
-    failedLookupLocations: String[], supportedExtensions: String[], state: ModuleResolutionState): String {
+    failedLookupLocations: Array[String], supportedExtensions: Array[String], state: ModuleResolutionState): String {
 
     if (moduleHasNonRelativeName(moduleName)) {
       return tryLoadModuleUsingBaseUrl(moduleName, loader, failedLookupLocations, supportedExtensions, state)
@@ -217,7 +217,7 @@ object Program {
   }
 
   def tryLoadModuleUsingRootDirs(moduleName: String, containingDirectory: String, loader: ResolutionKindSpecificLoader,
-    failedLookupLocations: String[], supportedExtensions: String[], state: ModuleResolutionState): String {
+    failedLookupLocations: Array[String], supportedExtensions: Array[String], state: ModuleResolutionState): String {
 
     if (!state.compilerOptions.rootDirs) {
       return ()
@@ -293,8 +293,8 @@ object Program {
     return ()
   }
 
-  def tryLoadModuleUsingBaseUrl(moduleName: String, loader: ResolutionKindSpecificLoader, failedLookupLocations: String[],
-    supportedExtensions: String[], state: ModuleResolutionState): String {
+  def tryLoadModuleUsingBaseUrl(moduleName: String, loader: ResolutionKindSpecificLoader, failedLookupLocations: Array[String],
+    supportedExtensions: Array[String], state: ModuleResolutionState): String {
 
     if (!state.compilerOptions.baseUrl) {
       return ()
@@ -372,7 +372,7 @@ object Program {
     val supportedExtensions = getSupportedExtensions(compilerOptions)
     val traceEnabled = isTraceEnabled(compilerOptions, host)
 
-    val failedLookupLocations: String[] = []
+    val failedLookupLocations: Array[String] = []
     val state = {compilerOptions, host, traceEnabled, skipTsx: false}
     var resolvedFileName = tryLoadModuleUsingOptionalResolutionSettings(moduleName, containingDirectory, nodeLoadModuleByRelativeName,
       failedLookupLocations, supportedExtensions, state)
@@ -396,7 +396,7 @@ object Program {
     return createResolvedModule(resolvedFileName, isExternalLibraryImport, failedLookupLocations)
   }
 
-  def nodeLoadModuleByRelativeName(candidate: String, supportedExtensions: String[], failedLookupLocations: String[],
+  def nodeLoadModuleByRelativeName(candidate: String, supportedExtensions: Array[String], failedLookupLocations: Array[String],
     onlyRecordFailures: Boolean, state: ModuleResolutionState): String {
 
     if (state.traceEnabled) {
@@ -418,7 +418,7 @@ object Program {
    * @param {Boolean} onlyRecordFailures - if true then def won't try to actually load files but instead record all attempts as failures. This flag is necessary
    * in cases when we know upfront that all load attempts will fail (because containing folder does not exists) however we still need to record all failed lookup locations.
    */
-  def loadModuleFromFile(candidate: String, extensions: String[], failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String = {
+  def loadModuleFromFile(candidate: String, extensions: Array[String], failedLookupLocation: Array[String], onlyRecordFailures: Boolean, state: ModuleResolutionState): String = {
     return forEach(extensions, tryLoad)
 
     def tryLoad(ext: String): String = {
@@ -442,7 +442,7 @@ object Program {
     }
   }
 
-  def loadNodeModuleFromDirectory(extensions: String[], candidate: String, failedLookupLocation: String[], onlyRecordFailures: Boolean, state: ModuleResolutionState): String = {
+  def loadNodeModuleFromDirectory(extensions: Array[String], candidate: String, failedLookupLocation: Array[String], onlyRecordFailures: Boolean, state: ModuleResolutionState): String = {
     val packageJsonPath = combinePaths(candidate, "package.json")
     val directoryExists = !onlyRecordFailures && directoryProbablyExists(candidate, state.host)
     if (directoryExists && state.host.fileExists(packageJsonPath)) {
@@ -493,7 +493,7 @@ object Program {
     return loadModuleFromFile(combinePaths(candidate, "index"), extensions, failedLookupLocation, !directoryExists, state)
   }
 
-  def loadModuleFromNodeModules(moduleName: String, directory: String, failedLookupLocations: String[], state: ModuleResolutionState): String = {
+  def loadModuleFromNodeModules(moduleName: String, directory: String, failedLookupLocations: Array[String], state: ModuleResolutionState): String = {
     directory = normalizeSlashes(directory)
     while (true) {
       val baseName = getBaseFileName(directory)
@@ -525,7 +525,7 @@ object Program {
   def classicNameResolver(moduleName: String, containingFile: String, compilerOptions: CompilerOptions, host: ModuleResolutionHost): ResolvedModuleWithFailedLookupLocations = {
     val traceEnabled = isTraceEnabled(compilerOptions, host)
     val state = { compilerOptions, host, traceEnabled, skipTsx: !compilerOptions.jsx }
-    val failedLookupLocations: String[] = []
+    val failedLookupLocations: Array[String] = []
     val supportedExtensions = getSupportedExtensions(compilerOptions)
     var containingDirectory = getDirectoryPath(containingFile)
 
@@ -642,7 +642,7 @@ object Program {
     }
   }
 
-  def getPreEmitDiagnostics(program: Program, sourceFile?: SourceFile, cancellationToken?: CancellationToken): Diagnostic[] {
+  def getPreEmitDiagnostics(program: Program, sourceFile?: SourceFile, cancellationToken?: CancellationToken): Array[Diagnostic] {
     var diagnostics = program.getOptionsDiagnostics(cancellationToken).concat(
               program.getSyntacticDiagnostics(sourceFile, cancellationToken),
               program.getGlobalDiagnostics(cancellationToken),
@@ -681,9 +681,9 @@ object Program {
     }
   }
 
-  def createProgram(rootNames: String[], options: CompilerOptions, host?: CompilerHost, oldProgram?: Program): Program = {
+  def createProgram(rootNames: Array[String], options: CompilerOptions, host?: CompilerHost, oldProgram?: Program): Program = {
     var program: Program
-    var files: SourceFile[] = []
+    var files: Array[SourceFile] = []
     var fileProcessingDiagnostics = createDiagnosticCollection()
     val programDiagnostics = createDiagnosticCollection()
 
@@ -703,9 +703,9 @@ object Program {
 
     val currentDirectory = host.getCurrentDirectory()
     val resolveModuleNamesWorker = host.resolveModuleNames
-      ? ((moduleNames: String[], containingFile: String) => host.resolveModuleNames(moduleNames, containingFile))
-      : ((moduleNames: String[], containingFile: String) => {
-        val resolvedModuleNames: ResolvedModule[] = []
+      ? ((moduleNames: Array[String], containingFile: String) => host.resolveModuleNames(moduleNames, containingFile))
+      : ((moduleNames: Array[String], containingFile: String) => {
+        val resolvedModuleNames: Array[ResolvedModule] = []
         // resolveModuleName does not store any results between calls.
         // lookup is a local cache to avoid resolving the same module name several times
         val lookup: Map<ResolvedModule> = {}
@@ -832,9 +832,9 @@ object Program {
       }
 
       // check if program source files has changed in the way that can affect structure of the program
-      val newSourceFiles: SourceFile[] = []
-      val filePaths: Path[] = []
-      val modifiedSourceFiles: SourceFile[] = []
+      val newSourceFiles: Array[SourceFile] = []
+      val filePaths: Array[Path] = []
+      val modifiedSourceFiles: Array[SourceFile] = []
 
       for (val oldSourceFile of oldProgram.getSourceFiles()) {
         var newSourceFile = host.getSourceFile(oldSourceFile.fileName, options.target)
@@ -985,13 +985,13 @@ object Program {
 
     def getDiagnosticsHelper(
         sourceFile: SourceFile,
-        getDiagnostics: (sourceFile: SourceFile, cancellationToken: CancellationToken) => Diagnostic[],
-        cancellationToken: CancellationToken): Diagnostic[] {
+        getDiagnostics: (sourceFile: SourceFile, cancellationToken: CancellationToken) => Array[Diagnostic],
+        cancellationToken: CancellationToken): Array[Diagnostic] {
       if (sourceFile) {
         return getDiagnostics(sourceFile, cancellationToken)
       }
 
-      val allDiagnostics: Diagnostic[] = []
+      val allDiagnostics: Array[Diagnostic] = []
       forEach(program.getSourceFiles(), sourceFile => {
         if (cancellationToken) {
           cancellationToken.throwIfCancellationRequested()
@@ -1002,19 +1002,19 @@ object Program {
       return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
 
-    def getSyntacticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getSyntacticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Array[Diagnostic] {
       return getDiagnosticsHelper(sourceFile, getSyntacticDiagnosticsForFile, cancellationToken)
     }
 
-    def getSemanticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getSemanticDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Array[Diagnostic] {
       return getDiagnosticsHelper(sourceFile, getSemanticDiagnosticsForFile, cancellationToken)
     }
 
-    def getDeclarationDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getDeclarationDiagnostics(sourceFile: SourceFile, cancellationToken: CancellationToken): Array[Diagnostic] {
       return getDiagnosticsHelper(sourceFile, getDeclarationDiagnosticsForFile, cancellationToken)
     }
 
-    def getSyntacticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getSyntacticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Array[Diagnostic] {
       return sourceFile.parseDiagnostics
     }
 
@@ -1041,7 +1041,7 @@ object Program {
       }
     }
 
-    def getSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Array[Diagnostic] {
       return runWithCancellationToken(() => {
         val typeChecker = getDiagnosticsProducingTypeChecker()
 
@@ -1060,9 +1060,9 @@ object Program {
       })
     }
 
-    def getJavaScriptSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getJavaScriptSemanticDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Array[Diagnostic] {
       return runWithCancellationToken(() => {
-        val diagnostics: Diagnostic[] = []
+        val diagnostics: Array[Diagnostic] = []
         walk(sourceFile)
 
         return diagnostics
@@ -1223,7 +1223,7 @@ object Program {
       })
     }
 
-    def getDeclarationDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Diagnostic[] {
+    def getDeclarationDiagnosticsForFile(sourceFile: SourceFile, cancellationToken: CancellationToken): Array[Diagnostic] {
       return runWithCancellationToken(() => {
         if (!isDeclarationFile(sourceFile)) {
           val resolver = getDiagnosticsProducingTypeChecker().getEmitResolver(sourceFile, cancellationToken)
@@ -1234,15 +1234,15 @@ object Program {
       })
     }
 
-    def getOptionsDiagnostics(): Diagnostic[] {
-      val allDiagnostics: Diagnostic[] = []
+    def getOptionsDiagnostics(): Array[Diagnostic] {
+      val allDiagnostics: Array[Diagnostic] = []
       addRange(allDiagnostics, fileProcessingDiagnostics.getGlobalDiagnostics())
       addRange(allDiagnostics, programDiagnostics.getGlobalDiagnostics())
       return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
 
-    def getGlobalDiagnostics(): Diagnostic[] {
-      val allDiagnostics: Diagnostic[] = []
+    def getGlobalDiagnostics(): Array[Diagnostic] {
+      val allDiagnostics: Array[Diagnostic] = []
       addRange(allDiagnostics, getDiagnosticsProducingTypeChecker().getGlobalDiagnostics())
       return sortAndDeduplicateDiagnostics(allDiagnostics)
     }
@@ -1275,8 +1275,8 @@ object Program {
       val isJavaScriptFile = isSourceFileJavaScript(file)
       val isExternalModuleFile = isExternalModule(file)
 
-      var imports: LiteralExpression[]
-      var moduleAugmentations: LiteralExpression[]
+      var imports: Array[LiteralExpression]
+      var moduleAugmentations: Array[LiteralExpression]
 
       for (val node of file.statements) {
         collectModuleReferences(node, /*inAmbientModule*/ false)
@@ -1347,7 +1347,7 @@ object Program {
     }
 
     def processSourceFile(fileName: String, isDefaultLib: Boolean, refFile?: SourceFile, refPos?: Int, refEnd?: Int) = {
-      var diagnosticArgument: String[]
+      var diagnosticArgument: Array[String]
       var diagnostic: DiagnosticMessage
       if (hasExtension(fileName)) {
         if (!options.allowNonTsExtensions && !forEach(supportedExtensions, extension => fileExtensionIs(host.getCanonicalFileName(fileName), extension))) {
@@ -1511,8 +1511,8 @@ object Program {
       return
     }
 
-    def computeCommonSourceDirectory(sourceFiles: SourceFile[]): String = {
-      var commonPathComponents: String[]
+    def computeCommonSourceDirectory(sourceFiles: Array[SourceFile]): String = {
+      var commonPathComponents: Array[String]
       val failed = forEach(files, sourceFile => {
         // Each file contributes into common source file path
         if (isDeclarationFile(sourceFile)) {
@@ -1559,7 +1559,7 @@ object Program {
       return getNormalizedPathFromPathComponents(commonPathComponents)
     }
 
-    def checkSourceFilesBelongToPath(sourceFiles: SourceFile[], rootDirectory: String): Boolean = {
+    def checkSourceFilesBelongToPath(sourceFiles: Array[SourceFile], rootDirectory: String): Boolean = {
       var allFilesBelongToPath = true
       if (sourceFiles) {
         val absoluteRootDirectoryPath = host.getCanonicalFileName(getNormalizedAbsolutePath(rootDirectory, currentDirectory))

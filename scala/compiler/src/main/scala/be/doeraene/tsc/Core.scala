@@ -81,7 +81,7 @@ object Core {
    * returns a truthy value, then returns that value.
    * If no such value is found, the callback is applied to each element of array and () is returned.
    */
-  def forEach<T, U>(array: T[], callback: (element: T, index: Int) => U): U = {
+  def forEach<T, U>(array: Array[T], callback: (element: T, index: Int) => U): U = {
     if (array) {
       for (var i = 0, len = array.length; i < len; i++) {
         val result = callback(array[i], i)
@@ -93,7 +93,7 @@ object Core {
     return ()
   }
 
-  def contains<T>(array: T[], value: T): Boolean = {
+  def contains<T>(array: Array[T], value: T): Boolean = {
     if (array) {
       for (val v of array) {
         if (v == value) {
@@ -104,7 +104,7 @@ object Core {
     return false
   }
 
-  def indexOf<T>(array: T[], value: T): Int = {
+  def indexOf<T>(array: Array[T], value: T): Int = {
     if (array) {
       for (var i = 0, len = array.length; i < len; i++) {
         if (array[i] == value) {
@@ -115,7 +115,7 @@ object Core {
     return -1
   }
 
-  def countWhere<T>(array: T[], predicate: (x: T) => Boolean): Int = {
+  def countWhere<T>(array: Array[T], predicate: (x: T) => Boolean): Int = {
     var count = 0
     if (array) {
       for (val v of array) {
@@ -127,8 +127,8 @@ object Core {
     return count
   }
 
-  def filter<T>(array: T[], f: (x: T) => Boolean): T[] {
-    var result: T[]
+  def filter<T>(array: Array[T], f: (x: T) => Boolean): Array[T] {
+    var result: Array[T]
     if (array) {
       result = []
       for (val item of array) {
@@ -140,8 +140,8 @@ object Core {
     return result
   }
 
-  def map<T, U>(array: T[], f: (x: T) => U): U[] {
-    var result: U[]
+  def map<T, U>(array: Array[T], f: (x: T) => U): Array[U] {
+    var result: Array[U]
     if (array) {
       result = []
       for (val v of array) {
@@ -151,15 +151,15 @@ object Core {
     return result
   }
 
-  def concatenate<T>(array1: T[], array2: T[]): T[] {
+  def concatenate<T>(array1: Array[T], array2: Array[T]): Array[T] {
     if (!array2 || !array2.length) return array1
     if (!array1 || !array1.length) return array2
 
     return array1.concat(array2)
   }
 
-  def deduplicate<T>(array: T[]): T[] {
-    var result: T[]
+  def deduplicate<T>(array: Array[T]): Array[T] {
+    var result: Array[T]
     if (array) {
       result = []
       for (val item of array) {
@@ -171,7 +171,7 @@ object Core {
     return result
   }
 
-  def sum(array: any[], prop: String): Int = {
+  def sum(array: Array[any], prop: String): Int = {
     var result = 0
     for (val v of array) {
       result += v[prop]
@@ -179,7 +179,7 @@ object Core {
     return result
   }
 
-  def addRange<T>(to: T[], from: T[]): Unit = {
+  def addRange<T>(to: Array[T], from: Array[T]): Unit = {
     if (to && from) {
       for (val v of from) {
         to.push(v)
@@ -187,7 +187,7 @@ object Core {
     }
   }
 
-  def rangeEquals<T>(array1: T[], array2: T[], pos: Int, end: Int) = {
+  def rangeEquals<T>(array1: Array[T], array2: Array[T], pos: Int, end: Int) = {
     while (pos < end) {
       if (array1[pos] != array2[pos]) {
         return false
@@ -200,7 +200,7 @@ object Core {
   /**
    * Returns the last element of an array if non-empty, () otherwise.
    */
-  def lastOrUndefined<T>(array: T[]): T = {
+  def lastOrUndefined<T>(array: Array[T]): T = {
     if (array.length == 0) {
       return ()
     }
@@ -215,7 +215,7 @@ object Core {
    * @param array A sorted array whose first element must be no larger than Int
    * @param Int The value to be searched for in the array.
    */
-  def binarySearch(array: Int[], value: Int): Int = {
+  def binarySearch(array: Array[Int], value: Int): Int = {
     var low = 0
     var high = array.length - 1
 
@@ -237,9 +237,9 @@ object Core {
     return ~low
   }
 
-  def reduceLeft<T>(array: T[], f: (a: T, x: T) => T): T
-  def reduceLeft<T, U>(array: T[], f: (a: U, x: T) => U, initial: U): U
-  def reduceLeft<T, U>(array: T[], f: (a: U, x: T) => U, initial?: U): U = {
+  def reduceLeft<T>(array: Array[T], f: (a: T, x: T) => T): T
+  def reduceLeft<T, U>(array: Array[T], f: (a: U, x: T) => U, initial: U): U
+  def reduceLeft<T, U>(array: Array[T], f: (a: U, x: T) => U, initial?: U): U = {
     if (array) {
       val count = array.length
       if (count > 0) {
@@ -256,9 +256,9 @@ object Core {
     return initial
   }
 
-  def reduceRight<T>(array: T[], f: (a: T, x: T) => T): T
-  def reduceRight<T, U>(array: T[], f: (a: U, x: T) => U, initial: U): U
-  def reduceRight<T, U>(array: T[], f: (a: U, x: T) => U, initial?: U): U = {
+  def reduceRight<T>(array: Array[T], f: (a: T, x: T) => T): T
+  def reduceRight<T, U>(array: Array[T], f: (a: U, x: T) => U, initial: U): U
+  def reduceRight<T, U>(array: Array[T], f: (a: U, x: T) => U, initial?: U): U = {
     if (array) {
       var pos = array.length - 1
       if (pos >= 0) {
@@ -350,7 +350,7 @@ object Core {
    * the same key with the given 'makeKey' def, then the element with the higher
    * index in the array will be the one associated with the produced key.
    */
-  def arrayToMap<T>(array: T[], makeKey: (value: T) => String): Map<T> {
+  def arrayToMap<T>(array: Array[T], makeKey: (value: T) => String): Map<T> {
     val result: Map<T> = {}
 
     forEach(array, value => {
@@ -383,7 +383,7 @@ object Core {
   /**
    * Tests whether a value is an array.
    */
-  def isArray(value: any): value is any[] {
+  def isArray(value: any): value is Array[any] {
     return Array.isArray ? Array.isArray(value) : value instanceof Array
   }
 
@@ -412,7 +412,7 @@ object Core {
       : message.message
   }
 
-  def createFileDiagnostic(file: SourceFile, start: Int, length: Int, message: DiagnosticMessage, ...args: any[]): Diagnostic
+  def createFileDiagnostic(file: SourceFile, start: Int, length: Int, message: DiagnosticMessage, ...args: Array[any]): Diagnostic
   def createFileDiagnostic(file: SourceFile, start: Int, length: Int, message: DiagnosticMessage): Diagnostic = {
     val end = start + length
 
@@ -452,7 +452,7 @@ object Core {
     return text
   }
 
-  def createCompilerDiagnostic(message: DiagnosticMessage, ...args: any[]): Diagnostic
+  def createCompilerDiagnostic(message: DiagnosticMessage, ...args: Array[any]): Diagnostic
   def createCompilerDiagnostic(message: DiagnosticMessage): Diagnostic = {
     var text = getLocaleSpecificMessage(message)
 
@@ -471,7 +471,7 @@ object Core {
     }
   }
 
-  def chainDiagnosticMessages(details: DiagnosticMessageChain, message: DiagnosticMessage, ...args: any[]): DiagnosticMessageChain
+  def chainDiagnosticMessages(details: DiagnosticMessageChain, message: DiagnosticMessage, ...args: Array[any]): DiagnosticMessageChain
   def chainDiagnosticMessages(details: DiagnosticMessageChain, message: DiagnosticMessage): DiagnosticMessageChain = {
     var text = getLocaleSpecificMessage(message)
 
@@ -542,11 +542,11 @@ object Core {
     return text1 ? Comparison.GreaterThan : Comparison.LessThan
   }
 
-  def sortAndDeduplicateDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
+  def sortAndDeduplicateDiagnostics(diagnostics: Array[Diagnostic]): Array[Diagnostic] {
     return deduplicateSortedDiagnostics(diagnostics.sort(compareDiagnostics))
   }
 
-  def deduplicateSortedDiagnostics(diagnostics: Diagnostic[]): Diagnostic[] {
+  def deduplicateSortedDiagnostics(diagnostics: Array[Diagnostic]): Array[Diagnostic] {
     if (diagnostics.length < 2) {
       return diagnostics
     }
@@ -601,7 +601,7 @@ object Core {
   var directorySeparator = "/"
   def getNormalizedParts(normalizedSlashedPath: String, rootLength: Int) = {
     val parts = normalizedSlashedPath.substr(rootLength).split(directorySeparator)
-    val normalized: String[] = []
+    val normalized: Array[String] = []
     for (val part of parts) {
       if (part != ".") {
         if (part == ".." && normalized.length > 0 && lastOrUndefined(normalized) != "..") {
@@ -662,7 +662,7 @@ object Core {
     return getNormalizedPathFromPathComponents(getNormalizedPathComponents(fileName, currentDirectory))
   }
 
-  def getNormalizedPathFromPathComponents(pathComponents: String[]) = {
+  def getNormalizedPathFromPathComponents(pathComponents: Array[String]) = {
     if (pathComponents && pathComponents.length) {
       return pathComponents[0] + pathComponents.slice(1).join(directorySeparator)
     }
@@ -787,7 +787,7 @@ object Core {
   val supportedJavascriptExtensions = [".js", ".jsx"]
   val allSupportedExtensions  = supportedTypeScriptExtensions.concat(supportedJavascriptExtensions)
 
-  def getSupportedExtensions(options?: CompilerOptions): String[] {
+  def getSupportedExtensions(options?: CompilerOptions): Array[String] {
     return options && options.allowJs ? allSupportedExtensions : supportedTypeScriptExtensions
   }
 
@@ -879,8 +879,8 @@ object Core {
     }
   }
 
-  def copyListRemovingItem<T>(item: T, list: T[]) = {
-    val copiedList: T[] = []
+  def copyListRemovingItem<T>(item: T, list: Array[T]) = {
+    val copiedList: Array[T] = []
     for (val e of list) {
       if (e != item) {
         copiedList.push(e)

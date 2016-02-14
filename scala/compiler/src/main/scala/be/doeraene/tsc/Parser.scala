@@ -24,13 +24,13 @@ object Parser {
     }
   }
 
-  def visitNodeArray<T>(cbNodes: (nodes: Node[]) => T, nodes: Node[]) = {
+  def visitNodeArray<T>(cbNodes: (nodes: Array[Node]) => T, nodes: Array[Node]) = {
     if (nodes) {
       return cbNodes(nodes)
     }
   }
 
-  def visitEachNode<T>(cbNode: (node: Node) => T, nodes: Node[]) = {
+  def visitEachNode<T>(cbNode: (node: Node) => T, nodes: Array[Node]) = {
     if (nodes) {
       for (val node of nodes) {
         val result = cbNode(node)
@@ -45,14 +45,14 @@ object Parser {
   // stored in properties. If a 'cbNodes' callback is specified, it is invoked for embedded arrays; otherwise,
   // embedded arrays are flattened and the 'cbNode' callback is invoked for each element. If a callback returns
   // a truthy value, iteration stops and that value is returned. Otherwise, () is returned.
-  def forEachChild<T>(node: Node, cbNode: (node: Node) => T, cbNodeArray?: (nodes: Node[]) => T): T = {
+  def forEachChild<T>(node: Node, cbNode: (node: Node) => T, cbNodeArray?: (nodes: Array[Node]) => T): T = {
     if (!node) {
       return
     }
     // The visitXXX functions could be written as local functions that close over the cbNode and cbNodeArray
     // callback parameters, but that causes a closure allocation for each invocation with noticeable effects
     // on performance.
-    val visitNodes: (cb: (node: Node | Node[]) => T, nodes: Node[]) => T = cbNodeArray ? visitNodeArray : visitEachNode
+    val visitNodes: (cb: (node: Node | Array[Node]) => T, nodes: Array[Node]) => T = cbNodeArray ? visitNodeArray : visitEachNode
     val cbNodes = cbNodeArray || cbNode
     switch (node.kind) {
       case SyntaxKind.QualifiedName:
@@ -447,7 +447,7 @@ object Parser {
     var SourceFileConstructor: new (kind: SyntaxKind, pos: Int, end: Int) => Node
 
     var sourceFile: SourceFile
-    var parseDiagnostics: Diagnostic[]
+    var parseDiagnostics: Array[Diagnostic]
     var syntaxCursor: IncrementalParser.SyntaxCursor
 
     var token: SyntaxKind
@@ -3722,7 +3722,7 @@ object Parser {
           val indexedAccess = <ElementAccessExpression>createNode(SyntaxKind.ElementAccessExpression, expression.pos)
           indexedAccess.expression = expression
 
-          // It's not uncommon for a user to write: "new Type[]".
+          // It's not uncommon for a user to write: "new Array[Type]".
           // Check for that common pattern and report a better error message.
           if (token != SyntaxKind.CloseBracketToken) {
             indexedAccess.argumentExpression = allowInAnd(parseExpression)
@@ -5461,7 +5461,7 @@ object Parser {
 
     def processReferenceComments(sourceFile: SourceFile): Unit = {
       val triviaScanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/false, LanguageVariant.Standard, sourceText)
-      val referencedFiles: FileReference[] = []
+      val referencedFiles: Array[FileReference] = []
       val amdDependencies: { path: String; name: String }[] = []
       var amdModuleName: String
 
@@ -6669,7 +6669,7 @@ object Parser {
       parent?: Node
       intersectsChange: Boolean
       length?: Int
-      _children: Node[]
+      _children: Array[Node]
     }
 
     trait IncrementalNode extends Node, IncrementalElement {

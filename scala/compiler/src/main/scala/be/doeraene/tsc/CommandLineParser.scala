@@ -8,7 +8,7 @@ package be.doeraene.tsc
 
 object CommandLineParser {
   /* @internal */
-  var optionDeclarations: CommandLineOption[] = [
+  var optionDeclarations: Array[CommandLineOption] = [
     {
       name: "charset",
       type: "String",
@@ -357,10 +357,10 @@ object CommandLineParser {
     return optionNameMapCache
   }
 
-  def parseCommandLine(commandLine: String[], readFile?: (path: String) => String): ParsedCommandLine = {
+  def parseCommandLine(commandLine: Array[String], readFile?: (path: String) => String): ParsedCommandLine = {
     val options: CompilerOptions = {}
-    val fileNames: String[] = []
-    val errors: Diagnostic[] = []
+    val fileNames: Array[String] = []
+    val errors: Array[Diagnostic] = []
     val { optionNameMap, shortOptionNames } = getOptionNameMap()
 
     parseStrings(commandLine)
@@ -370,7 +370,7 @@ object CommandLineParser {
       errors
     }
 
-    def parseStrings(args: String[]) = {
+    def parseStrings(args: Array[String]) = {
       var i = 0
       while (i < args.length) {
         var s = args[i]
@@ -442,7 +442,7 @@ object CommandLineParser {
         return
       }
 
-      val args: String[] = []
+      val args: Array[String] = []
       var pos = 0
       while (true) {
         while (pos < text.length && text.charCodeAt(pos) <= CharacterCodes.space) pos++
@@ -542,11 +542,11 @@ object CommandLineParser {
       errors
     }
 
-    def getFileNames(): String[] {
-      var fileNames: String[] = []
+    def getFileNames(): Array[String] {
+      var fileNames: Array[String] = []
       if (hasProperty(json, "files")) {
         if (json["files"] instanceof Array) {
-          fileNames = map(<String[]>json["files"], s => combinePaths(basePath, s))
+          fileNames = map(<Array[String]>json["files"], s => combinePaths(basePath, s))
         }
         else {
           errors.push(createCompilerDiagnostic(Diagnostics.Compiler_option_0_requires_a_value_of_type_1, "files", "Array"))
@@ -555,7 +555,7 @@ object CommandLineParser {
       else {
         val filesSeen: Map<Boolean> = {}
 
-        var exclude: String[] = []
+        var exclude: Array[String] = []
         if (json["exclude"] instanceof Array) {
           exclude = json["exclude"]
         }
@@ -605,9 +605,9 @@ object CommandLineParser {
     }
   }
 
-  def convertCompilerOptionsFromJson(jsonOptions: any, basePath: String, configFileName?: String): { options: CompilerOptions, errors: Diagnostic[] } {
+  def convertCompilerOptionsFromJson(jsonOptions: any, basePath: String, configFileName?: String): { options: CompilerOptions, errors: Array[Diagnostic] } {
     val options: CompilerOptions = {}
-    val errors: Diagnostic[] = []
+    val errors: Array[Diagnostic] = []
 
     if (configFileName && getBaseFileName(configFileName) == "jsconfig.json") {
       options.allowJs = true
@@ -643,13 +643,13 @@ object CommandLineParser {
                 break
               case "object":
                 // "object" options with 'isFilePath' = true expected to be String arrays
-                var paths: String[] = []
+                var paths: Array[String] = []
                 var invalidOptionType = false
                 if (!isArray(value)) {
                   invalidOptionType = true
                 }
                 else {
-                  for (val element of <any[]>value) {
+                  for (val element of <Array[any]>value) {
                     if (typeof element == "String") {
                       paths.push(normalizePath(combinePaths(basePath, element)))
                     }
